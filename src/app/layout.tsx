@@ -7,16 +7,25 @@ export const metadata: Metadata = {
   description: "Professional estimation tool for construction and landscaping projects",
 };
 
+function ClerkProviderWrapper({ children }: { children: React.ReactNode }) {
+  // During build, Clerk keys may not be available
+  // ClerkProvider will use NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY automatically
+  if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
+    return <>{children}</>;
+  }
+  return <ClerkProvider>{children}</ClerkProvider>;
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className="antialiased min-h-screen">{children}</body>
-      </html>
-    </ClerkProvider>
+    <html lang="en">
+      <body className="antialiased min-h-screen">
+        <ClerkProviderWrapper>{children}</ClerkProviderWrapper>
+      </body>
+    </html>
   );
 }
