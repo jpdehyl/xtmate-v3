@@ -1,11 +1,17 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton } from "@/components/user-button";
 
 // Force dynamic rendering - this page requires authentication
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
+  // Check if Clerk is configured
+  if (!process.env.CLERK_SECRET_KEY) {
+    redirect("/");
+  }
+
+  // Dynamic import of auth to avoid build-time issues
+  const { auth } = await import("@clerk/nextjs/server");
   const { userId } = await auth();
 
   if (!userId) {
@@ -18,7 +24,7 @@ export default async function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <h1 className="text-xl font-semibold">XTmate</h1>
-            <UserButton afterSignOutUrl="/" />
+            <UserButton />
           </div>
         </div>
       </header>
