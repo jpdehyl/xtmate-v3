@@ -3,7 +3,9 @@
 import { useState, useEffect, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import type { Estimate } from "@/lib/db/schema";
+import { EstimateDetailSkeleton } from "@/components/ui/skeleton";
 
 type PageParams = { id: string };
 
@@ -22,6 +24,7 @@ export default function EstimateDetailPage({
   const [isDeleting, setIsDeleting] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isExporting, setIsExporting] = useState<"pdf" | "excel" | null>(null);
+  const [isDuplicating, setIsDuplicating] = useState(false);
 
   useEffect(() => {
     async function fetchEstimate() {
@@ -29,6 +32,7 @@ export default function EstimateDetailPage({
         const response = await fetch(`/api/estimates/${id}`);
         if (!response.ok) {
           if (response.status === 404) {
+            toast.error("Estimate not found");
             router.push("/dashboard");
             return;
           }
@@ -37,7 +41,9 @@ export default function EstimateDetailPage({
         const data = await response.json();
         setEstimate(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong");
+        const message = err instanceof Error ? err.message : "Something went wrong";
+        setError(message);
+        toast.error(message);
       } finally {
         setIsLoading(false);
       }
@@ -66,7 +72,9 @@ export default function EstimateDetailPage({
         setEstimate(updatedEstimate);
         setLastSaved(new Date());
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to save");
+        const message = err instanceof Error ? err.message : "Failed to save";
+        setError(message);
+        toast.error(message);
       } finally {
         setIsSaving(false);
       }
@@ -85,11 +93,36 @@ export default function EstimateDetailPage({
         throw new Error("Failed to delete");
       }
 
+      toast.success("Estimate deleted");
       router.push("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete");
+      const message = err instanceof Error ? err.message : "Failed to delete";
+      setError(message);
+      toast.error(message);
       setIsDeleting(false);
       setShowDeleteConfirm(false);
+    }
+  }
+
+  async function handleDuplicate() {
+    setIsDuplicating(true);
+    try {
+      const response = await fetch(`/api/estimates/${id}/duplicate`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to duplicate");
+      }
+
+      const duplicated = await response.json();
+      toast.success("Estimate duplicated");
+      router.push(`/dashboard/estimates/${duplicated.id}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to duplicate";
+      toast.error(message);
+    } finally {
+      setIsDuplicating(false);
     }
   }
 
@@ -123,19 +156,19 @@ export default function EstimateDetailPage({
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+
+      toast.success(`${format.toUpperCase()} exported successfully`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Export failed");
+      const message = err instanceof Error ? err.message : "Export failed";
+      setError(message);
+      toast.error(message);
     } finally {
       setIsExporting(null);
     }
   }
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
-      </div>
-    );
+    return <EstimateDetailSkeleton />;
   }
 
   if (error && !estimate) {
@@ -176,6 +209,26 @@ export default function EstimateDetailPage({
                   Saved
                 </span>
               )}
+              <button
+                onClick={handleDuplicate}
+                disabled={isDuplicating}
+                className="px-3 py-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
+                </svg>
+                {isDuplicating ? "Duplicating..." : "Duplicate"}
+              </button>
               <button
                 onClick={() => handleExport("pdf")}
                 disabled={isExporting !== null}

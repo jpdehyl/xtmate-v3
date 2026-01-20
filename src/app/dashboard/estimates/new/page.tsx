@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function NewEstimatePage() {
   const router = useRouter();
@@ -37,9 +38,12 @@ export default function NewEstimatePage() {
       }
 
       const estimate = await response.json();
+      toast.success("Estimate created successfully");
       router.push(`/dashboard/estimates/${estimate.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
+      toast.error(message);
       setIsSubmitting(false);
     }
   }

@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "sonner";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -12,7 +13,12 @@ export function Providers({ children }: ProvidersProps) {
 
   // If no Clerk key, render children without provider
   if (!publishableKey) {
-    return <>{children}</>;
+    return (
+      <>
+        {children}
+        <Toaster position="bottom-right" richColors closeButton />
+      </>
+    );
   }
 
   return (
@@ -21,6 +27,7 @@ export function Providers({ children }: ProvidersProps) {
       afterSignOutUrl="/"
     >
       {children}
+      <Toaster position="bottom-right" richColors closeButton />
     </ClerkProvider>
   );
 }
