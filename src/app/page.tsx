@@ -1,12 +1,17 @@
 import Link from "next/link";
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-export default async function HomePage() {
-  const { userId } = await auth();
+// Force dynamic rendering - checks auth state
+export const dynamic = "force-dynamic";
 
-  if (userId) {
-    redirect("/dashboard");
+export default async function HomePage() {
+  // Only check auth if Clerk is configured
+  if (process.env.CLERK_SECRET_KEY) {
+    const { auth } = await import("@clerk/nextjs/server");
+    const { userId } = await auth();
+    if (userId) {
+      redirect("/dashboard");
+    }
   }
 
   return (
