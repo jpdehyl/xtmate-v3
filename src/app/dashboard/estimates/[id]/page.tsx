@@ -12,6 +12,9 @@ import {
   addToSyncQueue,
   deleteEstimateOffline,
 } from "@/lib/offline/storage";
+import { AIScopeModal } from "@/components/features/ai-scope-modal";
+import { EnhanceDescriptionModal } from "@/components/features/enhance-description-modal";
+import type { ScopeSuggestion } from "@/app/api/ai/suggest-scope/route";
 
 type PageParams = { id: string };
 
@@ -32,6 +35,9 @@ export default function EstimateDetailPage({
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isExporting, setIsExporting] = useState<"pdf" | "excel" | null>(null);
   const [isOfflineData, setIsOfflineData] = useState(false);
+  const [showScopeModal, setShowScopeModal] = useState(false);
+  const [showEnhanceModal, setShowEnhanceModal] = useState(false);
+  const [acceptedSuggestions, setAcceptedSuggestions] = useState<ScopeSuggestion[]>([]);
 
   useEffect(() => {
     async function fetchEstimate() {
@@ -182,6 +188,20 @@ export default function EstimateDetailPage({
     }
   }
 
+  function handleAcceptSuggestions(suggestions: ScopeSuggestion[]) {
+    setAcceptedSuggestions((prev) => [...prev, ...suggestions]);
+  }
+
+  function handleRemoveSuggestion(suggestionId: string) {
+    setAcceptedSuggestions((prev) => prev.filter((s) => s.id !== suggestionId));
+  }
+
+  async function handleEnhanceAccept(enhancedName: string) {
+    if (!estimate) return;
+    handleFieldChange("name", enhancedName);
+    await saveEstimate({ name: enhancedName });
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -310,14 +330,28 @@ export default function EstimateDetailPage({
                 >
                   Estimate Name
                 </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={estimate.name}
-                  onChange={(e) => handleFieldChange("name", e.target.value)}
-                  onBlur={(e) => handleFieldBlur("name", e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-900 dark:text-gray-100"
-                />
+                <div className="mt-1 flex gap-2">
+                  <input
+                    type="text"
+                    id="name"
+                    value={estimate.name}
+                    onChange={(e) => handleFieldChange("name", e.target.value)}
+                    onBlur={(e) => handleFieldBlur("name", e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-900 dark:text-gray-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowEnhanceModal(true)}
+                    disabled={!isOnline}
+                    title={!isOnline ? "AI features unavailable offline" : "Enhance with AI"}
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span className="hidden sm:inline">Enhance</span>
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -503,6 +537,93 @@ export default function EstimateDetailPage({
             </section>
           )}
 
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">AI Scope Suggestions</h2>
+              <button
+                type="button"
+                onClick={() => setShowScopeModal(true)}
+                disabled={!isOnline}
+                title={!isOnline ? "AI features unavailable offline" : "Get AI scope suggestions"}
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                  />
+                </svg>
+                Suggest Scope
+              </button>
+            </div>
+
+            {acceptedSuggestions.length === 0 ? (
+              <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
+                <svg
+                  className="w-10 h-10 mx-auto text-gray-400 mb-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+                <p className="text-gray-600 dark:text-gray-400">
+                  No scope items yet. Click &quot;Suggest Scope&quot; to get AI-powered recommendations.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {acceptedSuggestions.map((suggestion) => (
+                  <div
+                    key={suggestion.id}
+                    className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-medium px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
+                            {suggestion.category}
+                          </span>
+                        </div>
+                        <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                          {suggestion.item}
+                        </h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          {suggestion.description}
+                        </p>
+                        {(suggestion.estimatedQuantity || suggestion.unit) && (
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                            Est. Quantity: {suggestion.estimatedQuantity || "TBD"}{" "}
+                            {suggestion.unit && `(${suggestion.unit})`}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleRemoveSuggestion(suggestion.id)}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        title="Remove suggestion"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <p className="text-sm text-gray-500 italic">
+                  {acceptedSuggestions.length} suggested scope item{acceptedSuggestions.length !== 1 ? "s" : ""} added
+                </p>
+              </div>
+            )}
+          </section>
+
           <section className="border-t border-gray-200 dark:border-gray-800 pt-6">
             <p className="text-sm text-gray-500">
               Created:{" "}
@@ -555,6 +676,28 @@ export default function EstimateDetailPage({
           </div>
         </div>
       )}
+
+      <AIScopeModal
+        isOpen={showScopeModal}
+        onClose={() => setShowScopeModal(false)}
+        jobType={estimate.jobType}
+        propertyAddress={estimate.propertyAddress}
+        propertyCity={estimate.propertyCity}
+        propertyState={estimate.propertyState}
+        estimateName={estimate.name}
+        onAcceptSuggestions={handleAcceptSuggestions}
+      />
+
+      <EnhanceDescriptionModal
+        isOpen={showEnhanceModal}
+        onClose={() => setShowEnhanceModal(false)}
+        currentName={estimate.name}
+        jobType={estimate.jobType}
+        propertyAddress={estimate.propertyAddress}
+        propertyCity={estimate.propertyCity}
+        propertyState={estimate.propertyState}
+        onAccept={handleEnhanceAccept}
+      />
     </div>
   );
 }

@@ -15,6 +15,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
     "@clerk/nextjs": "^6.0.0",
     "@neondatabase/serverless": "^0.10.0",
     "drizzle-orm": "^0.38.0",
