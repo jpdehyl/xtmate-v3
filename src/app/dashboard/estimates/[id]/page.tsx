@@ -4,6 +4,14 @@ import { useState, useEffect, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Estimate } from "@/lib/db/schema";
+import { OfflineIndicator } from "@/components/offline-indicator";
+import { useOnlineStatus } from "@/lib/offline/hooks";
+import {
+  getEstimateOffline,
+  saveEstimateOffline,
+  addToSyncQueue,
+  deleteEstimateOffline,
+} from "@/lib/offline/storage";
 
 type PageParams = { id: string };
 
@@ -14,6 +22,7 @@ export default function EstimateDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const { isOnline } = useOnlineStatus();
   const [estimate, setEstimate] = useState<Estimate | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -22,29 +31,48 @@ export default function EstimateDetailPage({
   const [isDeleting, setIsDeleting] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isExporting, setIsExporting] = useState<"pdf" | "excel" | null>(null);
+  const [isOfflineData, setIsOfflineData] = useState(false);
 
   useEffect(() => {
     async function fetchEstimate() {
       try {
-        const response = await fetch(`/api/estimates/${id}`);
-        if (!response.ok) {
-          if (response.status === 404) {
-            router.push("/dashboard");
-            return;
+        if (isOnline) {
+          const response = await fetch(`/api/estimates/${id}`);
+          if (!response.ok) {
+            if (response.status === 404) {
+              router.push("/dashboard");
+              return;
+            }
+            throw new Error("Failed to fetch estimate");
           }
-          throw new Error("Failed to fetch estimate");
+          const data = await response.json();
+          setEstimate(data);
+          setIsOfflineData(false);
+          await saveEstimateOffline(data, "synced");
+        } else {
+          throw new Error("offline");
         }
-        const data = await response.json();
-        setEstimate(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong");
+        try {
+          const offlineEstimate = await getEstimateOffline(id);
+          if (offlineEstimate) {
+            setEstimate(offlineEstimate);
+            setIsOfflineData(true);
+          } else if (err instanceof Error && err.message !== "offline") {
+            setError(err.message);
+          } else {
+            setError("This estimate is not available offline");
+          }
+        } catch {
+          setError(err instanceof Error ? err.message : "Something went wrong");
+        }
       } finally {
         setIsLoading(false);
       }
     }
 
     fetchEstimate();
-  }, [id, router]);
+  }, [id, router, isOnline]);
 
   const saveEstimate = useCallback(
     async (updates: Partial<Estimate>) => {
@@ -52,39 +80,58 @@ export default function EstimateDetailPage({
 
       setIsSaving(true);
       try {
-        const response = await fetch(`/api/estimates/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updates),
-        });
+        if (isOnline) {
+          const response = await fetch(`/api/estimates/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updates),
+          });
 
-        if (!response.ok) {
-          throw new Error("Failed to save");
+          if (!response.ok) {
+            throw new Error("Failed to save");
+          }
+
+          const updatedEstimate = await response.json();
+          setEstimate(updatedEstimate);
+          setLastSaved(new Date());
+          await saveEstimateOffline(updatedEstimate, "synced");
+        } else {
+          const updatedEstimate = {
+            ...estimate,
+            ...updates,
+            updatedAt: new Date(),
+          } as Estimate;
+          setEstimate(updatedEstimate);
+          await saveEstimateOffline(updatedEstimate, "pending");
+          await addToSyncQueue("update", id, updates);
+          setLastSaved(new Date());
+          setIsOfflineData(true);
         }
-
-        const updatedEstimate = await response.json();
-        setEstimate(updatedEstimate);
-        setLastSaved(new Date());
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to save");
       } finally {
         setIsSaving(false);
       }
     },
-    [estimate, id]
+    [estimate, id, isOnline]
   );
 
   async function handleDelete() {
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/estimates/${id}`, {
-        method: "DELETE",
-      });
+      if (isOnline) {
+        const response = await fetch(`/api/estimates/${id}`, {
+          method: "DELETE",
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete");
+        if (!response.ok) {
+          throw new Error("Failed to delete");
+        }
+      } else {
+        await addToSyncQueue("delete", id);
       }
 
+      await deleteEstimateOffline(id);
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete");
@@ -103,6 +150,11 @@ export default function EstimateDetailPage({
   }
 
   async function handleExport(format: "pdf" | "excel") {
+    if (!isOnline) {
+      setError("Export is not available offline");
+      return;
+    }
+
     setIsExporting(format);
     try {
       const response = await fetch(`/api/estimates/${id}/export?format=${format}`);
@@ -165,20 +217,22 @@ export default function EstimateDetailPage({
               href="/dashboard"
               className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
             >
-              &larr; Back to Dashboard
+              &larr; Back
             </Link>
             <div className="flex items-center gap-2 sm:gap-4">
+              <OfflineIndicator />
               {isSaving && (
                 <span className="text-sm text-gray-500">Saving...</span>
               )}
               {lastSaved && !isSaving && (
                 <span className="text-sm text-green-600 dark:text-green-400">
-                  Saved
+                  {isOfflineData ? "Saved locally" : "Saved"}
                 </span>
               )}
               <button
                 onClick={() => handleExport("pdf")}
-                disabled={isExporting !== null}
+                disabled={isExporting !== null || !isOnline}
+                title={!isOnline ? "Export unavailable offline" : "Export as PDF"}
                 className="px-3 py-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
               >
                 <svg
@@ -194,11 +248,14 @@ export default function EstimateDetailPage({
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                {isExporting === "pdf" ? "Exporting..." : "PDF"}
+                <span className="hidden sm:inline">
+                  {isExporting === "pdf" ? "Exporting..." : "PDF"}
+                </span>
               </button>
               <button
                 onClick={() => handleExport("excel")}
-                disabled={isExporting !== null}
+                disabled={isExporting !== null || !isOnline}
+                title={!isOnline ? "Export unavailable offline" : "Export as Excel"}
                 className="px-3 py-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
               >
                 <svg
@@ -214,7 +271,9 @@ export default function EstimateDetailPage({
                     d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                {isExporting === "excel" ? "Exporting..." : "Excel"}
+                <span className="hidden sm:inline">
+                  {isExporting === "excel" ? "Exporting..." : "Excel"}
+                </span>
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(true)}
@@ -228,6 +287,12 @@ export default function EstimateDetailPage({
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {isOfflineData && (
+          <div className="mb-6 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-800 dark:text-amber-200 text-sm">
+            You are viewing cached data. Changes will sync when you&apos;re back online.
+          </div>
+        )}
+
         {error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400">
             {error}
