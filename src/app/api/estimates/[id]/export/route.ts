@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { estimates, lineItems } from "@/lib/db/schema";
+import { estimates, lineItems, photos, rooms } from "@/lib/db/schema";
 import { eq, and, asc } from "drizzle-orm";
 import { jsPDF } from "jspdf";
 import ExcelJS from "exceljs";
 import { calculateEstimateTotals } from "@/lib/calculations/estimate-totals";
 import { getCategoryByCode } from "@/lib/reference/xactimate-categories";
+import type { Photo, Room, LineItem } from "@/lib/db/schema";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -37,17 +38,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: "Estimate not found" }, { status: 404 });
   }
 
-  // Fetch line items for the estimate
-  const items = await db
-    .select()
-    .from(lineItems)
-    .where(eq(lineItems.estimateId, id))
-    .orderBy(asc(lineItems.order), asc(lineItems.createdAt));
+  // Fetch line items, photos, and rooms for the estimate
+  const [itemsList, photosList, roomsList] = await Promise.all([
+    db.select().from(lineItems).where(eq(lineItems.estimateId, id)).orderBy(asc(lineItems.order), asc(lineItems.createdAt)),
+    db.select().from(photos).where(eq(photos.estimateId, id)).orderBy(asc(photos.order)),
+    db.select().from(rooms).where(eq(rooms.estimateId, id)).orderBy(asc(rooms.order)),
+  ]);
 
   if (format === "pdf") {
-    return generatePDF(estimate, items);
+    return generatePDF(estimate, itemsList, photosList, roomsList);
   } else {
-    return generateExcel(estimate, items);
+    return generateExcel(estimate, itemsList, photosList, roomsList);
   }
 }
 
@@ -98,17 +99,41 @@ function formatCurrency(amount: number | null | undefined): string {
   }).format(amount);
 }
 
-function generatePDF(
+const PHOTO_TYPE_LABELS: Record<string, string> = {
+  BEFORE: "Before",
+  DURING: "During",
+  AFTER: "After",
+  DAMAGE: "Damage",
+  EQUIPMENT: "Equipment",
+  OVERVIEW: "Overview",
+};
+
+async function fetchImageAsBase64(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const buffer = await response.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString("base64");
+    const contentType = response.headers.get("content-type") || "image/jpeg";
+    return `data:${contentType};base64,${base64}`;
+  } catch {
+    return null;
+  }
+}
+
+async function generatePDF(
   estimate: typeof estimates.$inferSelect,
-  items: typeof lineItems.$inferSelect[]
-): NextResponse {
+  itemsList: LineItem[],
+  photosList: Photo[],
+  roomsList: Room[]
+): Promise<NextResponse> {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   let y = 20;
 
-  // Calculate totals
-  const totals = calculateEstimateTotals(items, {
+  // Calculate totals for line items
+  const totals = calculateEstimateTotals(itemsList, {
     overheadPercent: 10,
     profitPercent: 10,
     taxPercent: 0,
@@ -224,8 +249,44 @@ function generatePDF(
     y += 10;
   }
 
-  // Section: Line Items
-  if (items.length > 0) {
+  // Section: Rooms (if any)
+  if (roomsList.length > 0) {
+    checkPageBreak(60);
+    y += 10;
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text("Rooms", 20, y);
+    y += 2;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, y, pageWidth - 20, y);
+    y += 12;
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+
+    for (const room of roomsList) {
+      checkPageBreak(10);
+
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      doc.text(room.name, 20, y);
+
+      const roomDetails = [];
+      if (room.squareFeet) roomDetails.push(`${room.squareFeet.toFixed(0)} sq ft`);
+      if (room.category) roomDetails.push(room.category);
+
+      if (roomDetails.length > 0) {
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100, 100, 100);
+        doc.text(` - ${roomDetails.join(", ")}`, 20 + doc.getTextWidth(room.name), y);
+      }
+      y += 8;
+    }
+  }
+
+  // Section: Line Items (if any)
+  if (itemsList.length > 0) {
     checkPageBreak(60);
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
@@ -253,7 +314,7 @@ function generatePDF(
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
 
-    for (const item of items) {
+    for (const item of itemsList) {
       checkPageBreak(10);
 
       const categoryInfo = getCategoryByCode(item.category || "");
@@ -302,6 +363,93 @@ function generatePDF(
     doc.text(formatCurrency(totals.grandTotal), pageWidth - 22, y, { align: "right" });
   }
 
+  // Section: Photos (if any) - show up to 12 photos
+  if (photosList.length > 0) {
+    // Always start photos section on a new page
+    doc.addPage();
+    y = 20;
+
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text("Photo Documentation", 20, y);
+    y += 2;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, y, pageWidth - 20, y);
+    y += 15;
+
+    // Display photos in a grid (2 columns)
+    const photoWidth = 80;
+    const photoHeight = 60;
+    const photoGap = 10;
+    const maxPhotosPerPage = 6;
+    const photosToShow = photosList.slice(0, Math.min(photosList.length, 12)); // Max 12 photos (2 pages)
+
+    let photoIndex = 0;
+    for (const photo of photosToShow) {
+      if (photoIndex > 0 && photoIndex % maxPhotosPerPage === 0) {
+        doc.addPage();
+        y = 20;
+      }
+
+      const col = photoIndex % 2;
+      const row = Math.floor((photoIndex % maxPhotosPerPage) / 2);
+      const x = 20 + col * (photoWidth + photoGap);
+      const photoY = y + row * (photoHeight + 25);
+
+      // Try to add image
+      const imageData = await fetchImageAsBase64(photo.thumbnailUrl || photo.url);
+      if (imageData) {
+        try {
+          doc.addImage(imageData, "JPEG", x, photoY, photoWidth, photoHeight);
+        } catch {
+          // If image fails, draw placeholder
+          doc.setFillColor(240, 240, 240);
+          doc.rect(x, photoY, photoWidth, photoHeight, "F");
+          doc.setFontSize(9);
+          doc.setTextColor(150, 150, 150);
+          doc.text("Image unavailable", x + photoWidth / 2, photoY + photoHeight / 2, { align: "center" });
+        }
+      } else {
+        // Draw placeholder
+        doc.setFillColor(240, 240, 240);
+        doc.rect(x, photoY, photoWidth, photoHeight, "F");
+        doc.setFontSize(9);
+        doc.setTextColor(150, 150, 150);
+        doc.text("Image unavailable", x + photoWidth / 2, photoY + photoHeight / 2, { align: "center" });
+      }
+
+      // Add photo type label
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
+      const typeLabel = photo.photoType ? PHOTO_TYPE_LABELS[photo.photoType] || photo.photoType : "Photo";
+      doc.text(typeLabel, x, photoY + photoHeight + 5);
+
+      // Add caption if present
+      if (photo.caption) {
+        doc.setFontSize(8);
+        doc.setTextColor(80, 80, 80);
+        const captionText = photo.caption.length > 40 ? photo.caption.substring(0, 37) + "..." : photo.caption;
+        doc.text(captionText, x, photoY + photoHeight + 12);
+      }
+
+      photoIndex++;
+    }
+
+    // Note if more photos exist
+    if (photosList.length > photosToShow.length) {
+      const lastRow = Math.ceil(photosToShow.length / 2);
+      const noteY = y + lastRow * (photoHeight + 25) + 10;
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
+      doc.text(
+        `+ ${photosList.length - photosToShow.length} more photos available in the app`,
+        20,
+        Math.min(noteY, 270)
+      );
+    }
+  }
+
   // Footer
   const footerY = doc.internal.pageSize.getHeight() - 15;
   doc.setFontSize(9);
@@ -327,14 +475,16 @@ function generatePDF(
 
 async function generateExcel(
   estimate: typeof estimates.$inferSelect,
-  items: typeof lineItems.$inferSelect[]
+  itemsList: LineItem[],
+  photosList: Photo[],
+  roomsList: Room[]
 ): Promise<NextResponse> {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "XTmate";
   workbook.created = new Date();
 
-  // Calculate totals
-  const totals = calculateEstimateTotals(items, {
+  // Calculate totals for line items
+  const totals = calculateEstimateTotals(itemsList, {
     overheadPercent: 10,
     profitPercent: 10,
     taxPercent: 0,
@@ -383,17 +533,17 @@ async function generateExcel(
   };
   summarySheet.mergeCells(`A${basicHeader.number}:B${basicHeader.number}`);
 
-  const addDataRow = (label: string, value: string) => {
-    const row = summarySheet.addRow([label, value]);
+  const addDataRow = (sheet: ExcelJS.Worksheet, label: string, value: string) => {
+    const row = sheet.addRow([label, value]);
     row.getCell(1).font = { bold: true, color: { argb: "FF6B7280" } };
     row.getCell(2).alignment = { wrapText: true };
     return row;
   };
 
-  addDataRow("Status", formatStatus(estimate.status));
-  addDataRow("Job Type", formatJobType(estimate.jobType));
-  addDataRow("Created", formatDate(estimate.createdAt));
-  addDataRow("Last Updated", formatDate(estimate.updatedAt));
+  addDataRow(summarySheet, "Status", formatStatus(estimate.status));
+  addDataRow(summarySheet, "Job Type", formatJobType(estimate.jobType));
+  addDataRow(summarySheet, "Created", formatDate(estimate.createdAt));
+  addDataRow(summarySheet, "Last Updated", formatDate(estimate.updatedAt));
 
   // Empty row
   summarySheet.addRow([]);
@@ -408,10 +558,10 @@ async function generateExcel(
   };
   summarySheet.mergeCells(`A${addressHeader.number}:B${addressHeader.number}`);
 
-  addDataRow("Street Address", estimate.propertyAddress || "Not specified");
-  addDataRow("City", estimate.propertyCity || "Not specified");
-  addDataRow("State", estimate.propertyState || "Not specified");
-  addDataRow("ZIP Code", estimate.propertyZip || "Not specified");
+  addDataRow(summarySheet, "Street Address", estimate.propertyAddress || "Not specified");
+  addDataRow(summarySheet, "City", estimate.propertyCity || "Not specified");
+  addDataRow(summarySheet, "State", estimate.propertyState || "Not specified");
+  addDataRow(summarySheet, "ZIP Code", estimate.propertyZip || "Not specified");
 
   // Insurance Details (if applicable)
   if (estimate.jobType === "insurance") {
@@ -426,11 +576,11 @@ async function generateExcel(
     };
     summarySheet.mergeCells(`A${insuranceHeader.number}:B${insuranceHeader.number}`);
 
-    addDataRow("Claim Number", estimate.claimNumber || "Not specified");
-    addDataRow("Policy Number", estimate.policyNumber || "Not specified");
+    addDataRow(summarySheet, "Claim Number", estimate.claimNumber || "Not specified");
+    addDataRow(summarySheet, "Policy Number", estimate.policyNumber || "Not specified");
   }
 
-  // Section: Totals
+  // Section: Estimate Totals
   summarySheet.addRow([]);
   const totalsHeader = summarySheet.addRow(["Estimate Totals", ""]);
   totalsHeader.getCell(1).font = { bold: true, size: 12 };
@@ -441,16 +591,64 @@ async function generateExcel(
   };
   summarySheet.mergeCells(`A${totalsHeader.number}:B${totalsHeader.number}`);
 
-  addDataRow("Line Items", `${items.length}`);
-  addDataRow("Subtotal", formatCurrency(totals.subtotal));
-  addDataRow("Overhead (10%)", formatCurrency(totals.overhead));
-  addDataRow("Profit (10%)", formatCurrency(totals.profit));
+  addDataRow(summarySheet, "Line Items", `${itemsList.length}`);
+  addDataRow(summarySheet, "Subtotal", formatCurrency(totals.subtotal));
+  addDataRow(summarySheet, "Overhead (10%)", formatCurrency(totals.overhead));
+  addDataRow(summarySheet, "Profit (10%)", formatCurrency(totals.profit));
 
   const grandTotalRow = summarySheet.addRow(["Grand Total", formatCurrency(totals.grandTotal)]);
   grandTotalRow.getCell(1).font = { bold: true, size: 12 };
   grandTotalRow.getCell(2).font = { bold: true, size: 12, color: { argb: "FF2563EB" } };
 
-  // Add borders to all data cells
+  // Section: Rooms (if any)
+  if (roomsList.length > 0) {
+    summarySheet.addRow([]);
+
+    const roomsHeader = summarySheet.addRow(["Rooms", ""]);
+    roomsHeader.getCell(1).font = { bold: true, size: 12 };
+    roomsHeader.getCell(1).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFF3F4F6" },
+    };
+    summarySheet.mergeCells(`A${roomsHeader.number}:B${roomsHeader.number}`);
+
+    for (const room of roomsList) {
+      const details = [];
+      if (room.squareFeet) details.push(`${room.squareFeet.toFixed(0)} sq ft`);
+      if (room.category) details.push(room.category);
+      addDataRow(summarySheet, room.name, details.join(", ") || "No dimensions");
+    }
+  }
+
+  // Section: Photos (if any)
+  if (photosList.length > 0) {
+    summarySheet.addRow([]);
+
+    const photosHeader = summarySheet.addRow(["Photos", ""]);
+    photosHeader.getCell(1).font = { bold: true, size: 12 };
+    photosHeader.getCell(1).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFF3F4F6" },
+    };
+    summarySheet.mergeCells(`A${photosHeader.number}:B${photosHeader.number}`);
+
+    addDataRow(summarySheet, "Total Photos", photosList.length.toString());
+
+    // Count by type
+    const typeCounts: Record<string, number> = {};
+    for (const photo of photosList) {
+      const type = photo.photoType || "Other";
+      typeCounts[type] = (typeCounts[type] || 0) + 1;
+    }
+
+    for (const [type, count] of Object.entries(typeCounts)) {
+      addDataRow(summarySheet, PHOTO_TYPE_LABELS[type] || type, `${count} photo${count !== 1 ? "s" : ""}`);
+    }
+  }
+
+  // Add borders to summary sheet
   summarySheet.eachRow((row, rowNumber) => {
     if (rowNumber > 2) {
       row.eachCell((cell) => {
@@ -465,7 +663,7 @@ async function generateExcel(
   });
 
   // ============ Line Items Sheet ============
-  if (items.length > 0) {
+  if (itemsList.length > 0) {
     const itemsSheet = workbook.addWorksheet("Line Items");
 
     // Set columns
@@ -492,7 +690,7 @@ async function generateExcel(
     headerRow.height = 25;
 
     // Add data rows
-    for (const item of items) {
+    for (const item of itemsList) {
       itemsSheet.addRow({
         category: item.category || "",
         selector: item.selector || "",
@@ -506,7 +704,7 @@ async function generateExcel(
       });
     }
 
-    // Add totals row
+    // Add totals rows
     itemsSheet.addRow([]);
     const subtotalRow = itemsSheet.addRow({
       category: "",

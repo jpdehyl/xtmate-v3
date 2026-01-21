@@ -11,6 +11,7 @@ XTmate is an estimation tool for construction/landscaping projects. V3 is a comp
 - **Language**: TypeScript (strict mode)
 - **Auth**: Clerk 6
 - **Database**: Neon PostgreSQL + Drizzle ORM
+- **File Storage**: Vercel Blob
 - **Styling**: Tailwind CSS 3.4
 - **Testing**: Vitest + React Testing Library
 - **PDF Export**: jsPDF
@@ -74,6 +75,7 @@ src/
 │   │   └── command-center/  # Development tracking
 │   └── api/
 │       ├── estimates/       # Estimate CRUD + export
+│       ├── photos/          # Photo upload and management
 │       └── command-center/  # Status & prompts APIs
 ├── components/
 │   ├── ui/                  # Base UI components
@@ -329,9 +331,33 @@ Full line item management with Xactimate compatibility:
 - PDF export includes line items table with totals
 - Excel export includes separate "Line Items" worksheet
 
+#### Sprint M5: Photos & Documentation ✅ COMPLETE
+Full photo management system with upload, gallery, and export integration:
+
+**API Routes** (in `src/app/api/photos/`):
+- `GET/POST /api/photos` - List and upload photos
+- `GET/PATCH/DELETE /api/photos/[id]` - Single photo operations
+
+**Components** (in `src/components/features/`):
+- `photo-gallery.tsx` - Grid view with thumbnails, type badges, delete
+- `photo-lightbox.tsx` - Full-screen viewer with navigation, caption editing, room linking
+- `photo-upload.tsx` - Upload modal with camera capture, GPS tagging, photo type selection
+- `photos-tab.tsx` - Main Photos tab with filter by type, upload integration
+
+**Features**:
+- Vercel Blob storage for photos (max 10MB per file)
+- 6 photo types: Before, During, After, Damage, Equipment, Overview
+- GPS location tagging (optional)
+- Photo-to-room linking
+- Filter gallery by photo type
+- PDF export includes up to 12 photos in grid layout
+- Excel export includes photo counts by type
+
+**Environment Variable**:
+- `BLOB_READ_WRITE_TOKEN` - Vercel Blob storage token
+
 ### Future Migration Sprints
 - **M1**: Dashboard & Navigation (sidebar, charts, map)
-- **M5**: Photos & Documentation
 - **M6**: SLA & Workflow
 - **M7**: Portfolio & Analytics
 - **M8**: Vendor Portal
@@ -384,6 +410,7 @@ See `.env.example` for required variables:
 - `CLERK_PUBLISHABLE_KEY` - Clerk frontend key
 - `DATABASE_URL` - Neon connection string
 - `ANTHROPIC_API_KEY` - For AI features (Stage 4)
+- `BLOB_READ_WRITE_TOKEN` - Vercel Blob storage token (Sprint M5)
 
 ## Common Issues
 
