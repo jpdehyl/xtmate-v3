@@ -89,17 +89,17 @@ const KNOWN_COMPLETED: Record<string, boolean> = {
   "M2-5": true, // Photos table
   "M2-6": true, // Assignments table
 
-  // Sprint M3: Rooms & Sketch Editor
-  "M3-1": false, // Rooms tab on estimate detail
-  "M3-2": false, // Sketch canvas (Konva.js)
-  "M3-3": false, // Wall drawing tool
-  "M3-4": false, // Door tool
-  "M3-5": false, // Window tool
-  "M3-6": false, // Fixture tool
-  "M3-7": false, // Staircase tool
-  "M3-8": false, // Room detection
-  "M3-9": false, // Toolbar component
-  "M3-10": false, // Level tabs
+  // Sprint M3: Rooms & Sketch Editor - COMPLETE
+  "M3-1": true, // Rooms tab on estimate detail
+  "M3-2": true, // Sketch canvas (Konva.js)
+  "M3-3": true, // Wall drawing tool
+  "M3-4": true, // Door tool
+  "M3-5": true, // Window tool
+  "M3-6": true, // Fixture tool
+  "M3-7": true, // Staircase tool
+  "M3-8": true, // Room detection
+  "M3-9": true, // Toolbar component
+  "M3-10": true, // Level tabs
 
   // Sprint M4: Line Items & Pricing
   "M4-1": false, // Line items API
