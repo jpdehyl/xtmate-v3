@@ -82,12 +82,12 @@ const KNOWN_COMPLETED: Record<string, boolean> = {
   "M1-8": true, // Dashboard layout integration
 
   // Sprint M2: Database Schema Expansion
-  "M2-1": false, // Levels table
-  "M2-2": false, // Rooms table
-  "M2-3": false, // Annotations table
-  "M2-4": false, // Line items table
-  "M2-5": false, // Photos table
-  "M2-6": false, // Assignments table
+  "M2-1": true, // Levels table
+  "M2-2": true, // Rooms table
+  "M2-3": true, // Annotations table
+  "M2-4": true, // Line items table
+  "M2-5": true, // Photos table
+  "M2-6": true, // Assignments table
 
   // Sprint M3: Rooms & Sketch Editor
   "M3-1": false, // Rooms tab on estimate detail
