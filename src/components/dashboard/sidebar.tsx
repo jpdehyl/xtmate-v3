@@ -1,0 +1,281 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  Home,
+  BarChart3,
+  Command,
+  FileText,
+  Plus,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  HelpCircle,
+  User,
+} from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { SignedIn, UserButton, useUser } from '@clerk/nextjs';
+
+interface SidebarProps {
+  showCommandCenter?: boolean;
+}
+
+export function Sidebar({ showCommandCenter = true }: SidebarProps) {
+  const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Handle hydration
+  useEffect(() => {
+    setMounted(true);
+    const saved = localStorage.getItem('xtmate_sidebar_collapsed');
+    if (saved !== null) {
+      setCollapsed(saved === 'true');
+    }
+  }, []);
+
+  const toggleCollapsed = () => {
+    const newState = !collapsed;
+    setCollapsed(newState);
+    localStorage.setItem('xtmate_sidebar_collapsed', String(newState));
+  };
+
+  // Main navigation items
+  const mainNavItems = [
+    {
+      href: '/dashboard',
+      label: 'Dashboard',
+      icon: Home,
+      show: true
+    },
+    {
+      href: '/dashboard/estimates',
+      label: 'Estimates',
+      icon: FileText,
+      show: true
+    },
+    {
+      href: '/dashboard/command-center',
+      label: 'Command Center',
+      icon: Command,
+      show: showCommandCenter
+    },
+    {
+      href: '/dashboard/portfolio',
+      label: 'Portfolio',
+      icon: BarChart3,
+      show: true
+    },
+  ];
+
+  // Secondary navigation items
+  const secondaryNavItems = [
+    { href: '/dashboard/settings', label: 'Settings', icon: Settings, show: true },
+    { href: '/dashboard/help', label: 'Help & Support', icon: HelpCircle, show: true },
+  ];
+
+  const isActive = (href: string) => {
+    if (href === '/dashboard') return pathname === '/dashboard';
+    return pathname.startsWith(href);
+  };
+
+  const visibleMainItems = mainNavItems.filter(item => item.show);
+  const visibleSecondaryItems = secondaryNavItems.filter(item => item.show);
+
+  return (
+    <aside
+      className={cn(
+        'fixed left-0 top-0 bottom-0 z-40',
+        'flex flex-col',
+        'bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800',
+        'transition-all duration-300 ease-out',
+        collapsed ? 'w-[72px]' : 'w-[260px]'
+      )}
+    >
+      {/* Logo Section */}
+      <div className={cn(
+        'flex items-center h-16 px-4 border-b border-gray-200 dark:border-gray-800',
+        collapsed ? 'justify-center' : 'justify-between'
+      )}>
+        <Link href="/dashboard" className="flex items-center gap-3">
+          {/* XtMate Icon */}
+          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+            <span className="text-white font-bold text-lg">Xt</span>
+          </div>
+          {!collapsed && (
+            <div className="overflow-hidden">
+              <div className="flex items-baseline gap-1">
+                <span className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Xt</span>
+                <span className="text-lg font-bold text-primary-600 tracking-tight">Mate</span>
+              </div>
+              <span className="text-[9px] font-medium text-gray-500 tracking-[0.15em] uppercase">
+                Estimation
+              </span>
+            </div>
+          )}
+        </Link>
+
+        {!collapsed && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleCollapsed}
+            className="h-8 w-8 text-gray-500 hover:text-gray-900 dark:hover:text-white"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
+
+      {/* New Estimate Button */}
+      <div className={cn('p-4', collapsed && 'px-3')}>
+        <Button
+          asChild
+          className={cn(
+            'w-full bg-primary-600 hover:bg-primary-700 text-white shadow-md',
+            'transition-all duration-200',
+            collapsed ? 'px-0 justify-center' : ''
+          )}
+        >
+          <Link href="/dashboard/estimates/new">
+            <Plus className="w-4 h-4" />
+            {!collapsed && <span className="ml-2">New Estimate</span>}
+          </Link>
+        </Button>
+      </div>
+
+      {/* Main Navigation */}
+      <nav className="flex-1 overflow-y-auto py-2 px-3">
+        <div className="space-y-1">
+          {visibleMainItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'group flex items-center gap-3 px-3 py-2.5 rounded-xl',
+                  'transition-all duration-200',
+                  active
+                    ? 'bg-primary-600 text-white shadow-md shadow-primary-600/25'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
+                  collapsed && 'justify-center px-0'
+                )}
+              >
+                <item.icon className={cn(
+                  'w-5 h-5 flex-shrink-0',
+                  active ? 'text-white' : 'text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white'
+                )} />
+                {!collapsed && (
+                  <span className={cn(
+                    'text-sm font-medium',
+                    active ? 'text-white' : ''
+                  )}>
+                    {item.label}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Divider */}
+        <div className={cn(
+          'my-4 border-t border-gray-200 dark:border-gray-800',
+          collapsed && 'mx-2'
+        )} />
+
+        {/* Secondary Navigation */}
+        <div className="space-y-1">
+          {visibleSecondaryItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'group flex items-center gap-3 px-3 py-2.5 rounded-xl',
+                  'transition-all duration-200',
+                  active
+                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
+                  collapsed && 'justify-center px-0'
+                )}
+              >
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                {!collapsed && (
+                  <span className="text-sm font-medium">
+                    {item.label}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Collapse Toggle (when collapsed) */}
+      {collapsed && (
+        <div className="px-3 py-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleCollapsed}
+            className="w-full h-10 text-gray-500 hover:text-gray-900 dark:hover:text-white"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* User Section */}
+      <div className={cn(
+        'border-t border-gray-200 dark:border-gray-800 p-4',
+        collapsed && 'px-3'
+      )}>
+        <div className={cn(
+          'flex items-center gap-3',
+          collapsed && 'justify-center'
+        )}>
+          {mounted ? (
+            <SignedIn>
+              <UserButton
+                afterSignOutUrl="/sign-in"
+                appearance={{
+                  elements: {
+                    avatarBox: 'w-9 h-9 ring-2 ring-primary-600/20'
+                  }
+                }}
+              />
+              {!collapsed && <UserInfo />}
+            </SignedIn>
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+              <User className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            </div>
+          )}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function UserInfo() {
+  const { user } = useUser();
+
+  if (!user) return null;
+
+  return (
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+        {user.firstName} {user.lastName}
+      </p>
+      <p className="text-xs text-gray-500 truncate">
+        {user.primaryEmailAddress?.emailAddress}
+      </p>
+    </div>
+  );
+}

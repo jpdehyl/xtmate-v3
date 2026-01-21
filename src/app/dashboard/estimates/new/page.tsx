@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { DashboardLayout } from "@/components/dashboard";
 
 export default function NewEstimatePage() {
   const router = useRouter();
@@ -45,23 +46,16 @@ export default function NewEstimatePage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-gray-200 dark:border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16">
-            <Link
-              href="/dashboard"
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
-            >
-              &larr; Back to Dashboard
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout>
+      <div className="max-w-2xl">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold">New Estimate</h2>
+          <Link
+            href="/dashboard"
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 text-sm"
+          >
+            &larr; Back to Dashboard
+          </Link>
+          <h2 className="text-2xl font-bold mt-4">New Estimate</h2>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Create a new project estimate
           </p>
@@ -74,42 +68,44 @@ export default function NewEstimatePage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Estimate Name *
-            </label>
-            <input
-              type="text"
-              name="name"
-              id="name"
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-900 dark:text-gray-100"
-              placeholder="e.g., Smith Residence Restoration"
-            />
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 space-y-6">
+            <div>
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Estimate Name *
+              </label>
+              <input
+                type="text"
+                name="name"
+                id="name"
+                required
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-gray-100"
+                placeholder="e.g., Smith Residence Restoration"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="jobType"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Job Type *
+              </label>
+              <select
+                name="jobType"
+                id="jobType"
+                required
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-gray-100"
+              >
+                <option value="private">Private</option>
+                <option value="insurance">Insurance</option>
+              </select>
+            </div>
           </div>
 
-          <div>
-            <label
-              htmlFor="jobType"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Job Type *
-            </label>
-            <select
-              name="jobType"
-              id="jobType"
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-900 dark:text-gray-100"
-            >
-              <option value="private">Private</option>
-              <option value="insurance">Insurance</option>
-            </select>
-          </div>
-
-          <fieldset className="border border-gray-200 dark:border-gray-800 rounded-lg p-4">
+          <fieldset className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
             <legend className="text-sm font-medium text-gray-700 dark:text-gray-300 px-2">
               Property Address
             </legend>
@@ -125,7 +121,7 @@ export default function NewEstimatePage() {
                   type="text"
                   name="propertyAddress"
                   id="propertyAddress"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-900 dark:text-gray-100"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-gray-100"
                   placeholder="123 Main St"
                 />
               </div>
@@ -142,7 +138,7 @@ export default function NewEstimatePage() {
                     type="text"
                     name="propertyCity"
                     id="propertyCity"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-900 dark:text-gray-100"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-gray-100"
                   />
                 </div>
 
@@ -158,7 +154,7 @@ export default function NewEstimatePage() {
                     name="propertyState"
                     id="propertyState"
                     maxLength={2}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-900 dark:text-gray-100 uppercase"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-gray-100 uppercase"
                     placeholder="TX"
                   />
                 </div>
@@ -175,7 +171,7 @@ export default function NewEstimatePage() {
                     name="propertyZip"
                     id="propertyZip"
                     maxLength={10}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-900 dark:text-gray-100"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-gray-100"
                     placeholder="12345"
                   />
                 </div>
@@ -199,7 +195,7 @@ export default function NewEstimatePage() {
             </button>
           </div>
         </form>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

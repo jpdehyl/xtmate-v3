@@ -1,10 +1,14 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { Header } from "@/components/header";
-import { EstimatesList } from "@/components/estimates-list";
 import { db } from "@/lib/db";
 import { estimates } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
+import {
+  DashboardLayout,
+  WelcomeBanner,
+  PerformanceMetrics,
+  RecentEstimates,
+  ProjectsMap,
+} from "@/components/dashboard";
 
 export const dynamic = "force-dynamic";
 
@@ -26,28 +30,26 @@ export default async function DashboardPage() {
     .where(eq(estimates.userId, userId))
     .orderBy(desc(estimates.updatedAt));
 
+  // Count active (in_progress) estimates
+  const activeCount = userEstimates.filter(
+    (e) => e.status === "in_progress"
+  ).length;
+
   return (
-    <div className="min-h-screen">
-      <Header />
+    <DashboardLayout>
+      <div className="space-y-6">
+        {/* Welcome Banner */}
+        <WelcomeBanner activeClaimsCount={activeCount} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
-          <div>
-            <h2 className="text-2xl font-bold">Estimates</h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Manage your project estimates
-            </p>
-          </div>
-          <Link
-            href="/dashboard/estimates/new"
-            className="inline-flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
-          >
-            + New Estimate
-          </Link>
+        {/* Performance Metrics with Charts */}
+        <PerformanceMetrics estimates={userEstimates} />
+
+        {/* Two Column Layout: Recent Estimates + Map */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RecentEstimates estimates={userEstimates} />
+          <ProjectsMap projects={userEstimates} />
         </div>
-
-        <EstimatesList initialEstimates={userEstimates} userId={userId} />
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
