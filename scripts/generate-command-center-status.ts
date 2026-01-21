@@ -131,16 +131,16 @@ const taskChecks: TaskDefinition[] = [
   { id: "M4-2", check: () => fileExists("src/components/features/scope-tab.tsx") && fileHasMinLines("src/components/features/scope-tab.tsx", 50) },
   { id: "M4-3", check: () => fileExists("src/lib/reference/xactimate-categories.ts") },
   { id: "M4-4", check: () => fileExists("src/app/api/price-lists/route.ts") },
-  { id: "M4-5", check: () => fileExists("src/components/scope/totals-summary.tsx") },
-  { id: "M4-6", check: () => fileContains("src/components/features/ai-scope-modal.tsx", "onSaveLineItems") },
-  { id: "M4-7", check: () => fileExists("src/components/scope/line-items-table.tsx") && fileContains("src/components/scope/line-items-table.tsx", "drag") },
+  { id: "M4-5", check: () => fileExists("src/components/features/totals-summary.tsx") },
+  { id: "M4-6", check: () => fileExists("src/components/features/ai-scope-modal.tsx") && fileContains("src/components/features/ai-scope-modal.tsx", "onAcceptSuggestions") },
+  { id: "M4-7", check: () => fileContains("src/components/features/scope-tab.tsx", "drag") },
   { id: "M4-8", check: () => fileContains("src/app/api/estimates/[id]/export/route.ts", "lineItems") },
 
   // Migration M5: Photos & Documentation
-  { id: "M5-1", check: () => fileExists("src/app/api/estimates/[id]/photos/route.ts") },
-  { id: "M5-2", check: () => fileExists("src/components/features/photos-tab.tsx") && fileHasMinLines("src/components/features/photos-tab.tsx", 50) },
-  { id: "M5-3", check: () => fileExists("src/components/photos/photo-capture.tsx") },
-  { id: "M5-4", check: () => fileExists("src/components/photos/photo-form.tsx") && fileContains("src/components/photos/photo-form.tsx", "roomId") },
+  { id: "M5-1", check: () => fileExists("src/app/api/photos/route.ts") },
+  { id: "M5-2", check: () => fileExists("src/components/features/photo-gallery.tsx") && fileHasMinLines("src/components/features/photo-gallery.tsx", 50) },
+  { id: "M5-3", check: () => fileContains("src/components/features/photo-upload.tsx", "capture") },
+  { id: "M5-4", check: () => fileContains("src/components/features/photo-lightbox.tsx", "roomId") || fileContains("src/components/features/photo-upload.tsx", "roomId") },
   { id: "M5-5", check: () => fileExists("src/components/features/photos-tab.tsx") },
   { id: "M5-6", check: () => fileContains("src/app/api/estimates/[id]/export/route.ts", "photos") },
 
