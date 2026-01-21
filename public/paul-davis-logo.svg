@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50" fill="none">
+  <defs>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#cdb283"/>
+      <stop offset="50%" style="stop-color:#b4975a"/>
+      <stop offset="100%" style="stop-color:#866b3d"/>
+    </linearGradient>
+  </defs>
+  <!-- Paul Davis Text -->
+  <text x="0" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="700" fill="#1a1a1a">
+    <tspan>PAUL</tspan>
+    <tspan fill="url(#goldGradient)">DAVIS</tspan>
+  </text>
+  <!-- Restoration subtitle -->
+  <text x="0" y="46" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="500" fill="#666" letter-spacing="2">
+    RESTORATION
+  </text>
+</svg>

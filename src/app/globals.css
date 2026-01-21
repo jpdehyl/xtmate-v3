@@ -2,21 +2,280 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Paul Davis Brand Colors */
+    /* Gold: #b4975a (HSL: 41 38% 53%) */
+    /* Light Gold: #fecda5 (HSL: 32 98% 82%) */
+    /* Black: #000000 / Dark: #1a1a1a */
+
+    --background: 40 20% 98%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 41 38% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 15% 94%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 40 15% 94%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 32 98% 82%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 15% 88%;
+    --input: 40 15% 88%;
+    --ring: 41 38% 53%;
+    --radius: 0.5rem;
+
+    /* Paul Davis specific */
+    --pd-gold: 41 38% 53%;
+    --pd-gold-light: 32 98% 82%;
+    --pd-black: 0 0% 0%;
+    --pd-dark: 0 0% 10%;
+  }
+
+  .dark {
+    --background: 0 0% 7%;
+    --foreground: 40 20% 95%;
+    --card: 0 0% 10%;
+    --card-foreground: 40 20% 95%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 40 20% 95%;
+    --primary: 41 45% 58%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 40 20% 95%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 40 10% 60%;
+    --accent: 32 70% 70%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 41 45% 58%;
+
+    /* Paul Davis specific (dark mode) */
+    --pd-gold: 41 45% 58%;
+    --pd-gold-light: 32 70% 70%;
+    --pd-black: 0 0% 100%;
+    --pd-dark: 40 20% 95%;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom utility classes for XtMate - Paul Davis Branded */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Status badges - Paul Davis themed */
+  .status-draft {
+    @apply bg-muted text-muted-foreground;
+  }
+  .status-in-progress {
+    @apply bg-pd-gold-100 text-pd-gold-700 border border-pd-gold-200;
+  }
+  .status-review {
+    @apply bg-amber-50 text-amber-700 border border-amber-200;
+  }
+  .status-approved {
+    @apply bg-emerald-50 text-emerald-700 border border-emerald-200;
+  }
+  .status-exported {
+    @apply bg-slate-100 text-slate-600 border border-slate-200;
+  }
+
+  /* Dark mode status badges */
+  .dark .status-draft {
+    @apply bg-muted/50 text-muted-foreground;
+  }
+  .dark .status-in-progress {
+    @apply bg-pd-gold-900/30 text-pd-gold-300 border-pd-gold-700/50;
+  }
+  .dark .status-review {
+    @apply bg-amber-900/30 text-amber-300 border-amber-700/50;
+  }
+  .dark .status-approved {
+    @apply bg-emerald-900/30 text-emerald-300 border-emerald-700/50;
+  }
+  .dark .status-exported {
+    @apply bg-slate-800 text-slate-300 border-slate-700;
+  }
+
+  /* Damage type colors - enhanced for Paul Davis */
+  .damage-water {
+    @apply bg-blue-500;
+  }
+  .damage-fire {
+    @apply bg-red-500;
+  }
+  .damage-smoke {
+    @apply bg-slate-500;
+  }
+  .damage-mold {
+    @apply bg-emerald-500;
+  }
+  .damage-impact {
+    @apply bg-pd-gold;
+  }
+  .damage-wind {
+    @apply bg-cyan-500;
+  }
+
+  /* Paul Davis specific utilities */
+  .pd-gradient {
+    @apply bg-gradient-to-r from-pd-gold-400 via-pd-gold to-pd-gold-600;
+  }
+
+  .pd-card {
+    @apply bg-card border border-border rounded-xl shadow-card
+           hover:shadow-card-hover hover:-translate-y-0.5
+           transition-all duration-200 ease-out;
+  }
+
+  .pd-card-interactive {
+    @apply bg-card border border-border rounded-xl shadow-card
+           hover:shadow-card-hover hover:-translate-y-0.5
+           active:shadow-card-active active:translate-y-0
+           transition-all duration-200 ease-out cursor-pointer;
+  }
+
+  .pd-card-static {
+    @apply bg-card border border-border rounded-xl shadow-card;
+  }
+
+  .pd-button-primary {
+    @apply bg-pd-gold hover:bg-pd-gold-600 text-white shadow-sm
+           hover:shadow-md active:shadow-sm
+           transition-all duration-200 ease-out;
+  }
+
+  .pd-button-outline {
+    @apply border-pd-gold text-pd-gold-700 hover:bg-pd-gold/10
+           transition-all duration-200 ease-out;
+  }
+
+  /* Transition utilities */
+  .transition-lift {
+    @apply transition-all duration-200 ease-out;
+  }
+
+  /* Skeleton shimmer effect */
+  .skeleton-shimmer {
+    @apply bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer;
+  }
+
+  /* Focus ring utility */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pd-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* Stat card icon backgrounds (legacy - kept for compatibility) */
+  .stat-icon-blue {
+    @apply bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400;
+  }
+  .stat-icon-gold {
+    @apply bg-pd-gold-50 text-pd-gold-600 dark:bg-pd-gold-900/30 dark:text-pd-gold-400;
+  }
+  .stat-icon-emerald {
+    @apply bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400;
+  }
+  .stat-icon-purple {
+    @apply bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400;
+  }
+
+  /* Premium gradient icon backgrounds */
+  .icon-gradient-blue {
+    @apply bg-gradient-to-br from-blue-500 to-blue-600;
+  }
+  .icon-gradient-gold {
+    @apply bg-gradient-to-br from-amber-500 to-orange-500;
+  }
+  .icon-gradient-emerald {
+    @apply bg-gradient-to-br from-emerald-500 to-teal-500;
+  }
+  .icon-gradient-purple {
+    @apply bg-gradient-to-br from-purple-500 to-violet-500;
+  }
+  .icon-gradient-rose {
+    @apply bg-gradient-to-br from-rose-500 to-pink-500;
+  }
+
+  /* Damage type gradient icons */
+  .icon-water {
+    @apply bg-gradient-to-br from-blue-500 to-cyan-500;
+  }
+  .icon-fire {
+    @apply bg-gradient-to-br from-orange-500 to-red-500;
+  }
+  .icon-smoke {
+    @apply bg-gradient-to-br from-slate-500 to-slate-600;
+  }
+  .icon-mold {
+    @apply bg-gradient-to-br from-emerald-500 to-green-600;
+  }
+  .icon-wind {
+    @apply bg-gradient-to-br from-cyan-400 to-blue-500;
+  }
+  .icon-impact {
+    @apply bg-gradient-to-br from-amber-500 to-yellow-500;
+  }
+
+  /* Trend indicator colors */
+  .trend-up {
+    @apply text-emerald-600 dark:text-emerald-400;
+  }
+  .trend-down {
+    @apply text-red-600 dark:text-red-400;
+  }
+  .trend-neutral {
+    @apply text-muted-foreground;
+  }
+
+  /* Premium card styles */
+  .card-elevated {
+    @apply bg-card border border-border/50 rounded-xl shadow-sm
+           hover:shadow-md hover:border-border
+           transition-all duration-200 ease-out;
+  }
+
+  .card-interactive {
+    @apply bg-card border border-border/50 rounded-xl shadow-sm
+           hover:shadow-md hover:border-border hover:-translate-y-0.5
+           transition-all duration-200 ease-out cursor-pointer;
+  }
+
+  /* List item hover accent */
+  .list-item-hover {
+    @apply relative overflow-hidden
+           before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0
+           before:bg-pd-gold before:transition-all before:duration-200
+           hover:before:w-1;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10;
+  }
+
+  /* Glow effects */
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(180, 151, 90, 0.3);
+  }
+  .glow-blue {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
 }
