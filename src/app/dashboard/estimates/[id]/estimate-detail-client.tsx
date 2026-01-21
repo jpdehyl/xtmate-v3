@@ -13,7 +13,13 @@ import {
 } from "@/lib/offline/storage";
 import { AIScopeModal } from "@/components/features/ai-scope-modal";
 import { EnhanceDescriptionModal } from "@/components/features/enhance-description-modal";
+import { RoomsTab } from "@/components/features/rooms-tab";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { SketchEditor } from "@/components/sketch-editor";
 import type { ScopeSuggestion } from "@/app/api/ai/suggest-scope/route";
+import type { Room } from "@/lib/db/schema";
+
+type TabValue = "details" | "rooms" | "scope" | "photos" | "sla";
 
 interface EstimateDetailClientProps {
   initialEstimate: Estimate;
@@ -34,6 +40,8 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
   const [showScopeModal, setShowScopeModal] = useState(false);
   const [showEnhanceModal, setShowEnhanceModal] = useState(false);
   const [acceptedSuggestions, setAcceptedSuggestions] = useState<ScopeSuggestion[]>([]);
+  const [activeTab, setActiveTab] = useState<TabValue>("details");
+  const [showSketchEditor, setShowSketchEditor] = useState(false);
 
   const saveEstimate = useCallback(
     async (updates: Partial<Estimate>) => {
@@ -177,6 +185,20 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
     await saveEstimate({ name: enhancedName });
   }
 
+  async function handleSaveRooms(rooms: Partial<Room>[]) {
+    for (const roomData of rooms) {
+      try {
+        await fetch(`/api/estimates/${estimate.id}/rooms`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(roomData),
+        });
+      } catch (err) {
+        console.error("Failed to save room:", err);
+      }
+    }
+  }
+
   return (
     <div className="min-h-screen">
       <header className="border-b border-gray-200 dark:border-gray-800">
@@ -291,8 +313,18 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
           </div>
         )}
 
-        <div className="space-y-8">
-          <section>
+        <Tabs defaultValue="details" value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
+          <TabsList className="mb-6 w-full sm:w-auto flex overflow-x-auto">
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="rooms">Rooms</TabsTrigger>
+            <TabsTrigger value="scope">Scope</TabsTrigger>
+            <TabsTrigger value="photos">Photos</TabsTrigger>
+            <TabsTrigger value="sla">SLA</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="details">
+            <div className="space-y-8">
+              <section>
             <h2 className="text-lg font-semibold mb-4">Basic Information</h2>
             <div className="grid gap-6 md:grid-cols-2">
               <div>
@@ -509,116 +541,187 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
             </section>
           )}
 
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">AI Scope Suggestions</h2>
-              <button
-                type="button"
-                onClick={() => setShowScopeModal(true)}
-                disabled={!isOnline}
-                title={!isOnline ? "AI features unavailable offline" : "Get AI scope suggestions"}
-                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                  />
-                </svg>
-                Suggest Scope
-              </button>
+              <section className="border-t border-gray-200 dark:border-gray-800 pt-6">
+                <p className="text-sm text-gray-500">
+                  Created:{" "}
+                  {new Date(estimate.createdAt).toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Last updated:{" "}
+                  {new Date(estimate.updatedAt).toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </section>
             </div>
+          </TabsContent>
 
-            {acceptedSuggestions.length === 0 ? (
-              <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
-                <svg
-                  className="w-10 h-10 mx-auto text-gray-400 mb-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+          <TabsContent value="rooms">
+            <RoomsTab
+              estimateId={estimate.id}
+              isOnline={isOnline}
+              onOpenSketchEditor={() => setShowSketchEditor(true)}
+            />
+          </TabsContent>
+
+          <TabsContent value="scope">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">Scope Items</h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Line items and pricing for this estimate
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowScopeModal(true)}
+                  disabled={!isOnline}
+                  title={!isOnline ? "AI features unavailable offline" : "Get AI scope suggestions"}
+                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                  />
-                </svg>
-                <p className="text-gray-600 dark:text-gray-400">
-                  No scope items yet. Click &quot;Suggest Scope&quot; to get AI-powered recommendations.
-                </p>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                    />
+                  </svg>
+                  AI Suggest
+                </button>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {acceptedSuggestions.map((suggestion) => (
-                  <div
-                    key={suggestion.id}
-                    className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-medium px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
-                            {suggestion.category}
-                          </span>
-                        </div>
-                        <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                          {suggestion.item}
-                        </h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          {suggestion.description}
-                        </p>
-                        {(suggestion.estimatedQuantity || suggestion.unit) && (
-                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                            Est. Quantity: {suggestion.estimatedQuantity || "TBD"}{" "}
-                            {suggestion.unit && `(${suggestion.unit})`}
-                          </p>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => handleRemoveSuggestion(suggestion.id)}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
-                        title="Remove suggestion"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                <p className="text-sm text-gray-500 italic">
-                  {acceptedSuggestions.length} suggested scope item{acceptedSuggestions.length !== 1 ? "s" : ""} added
-                </p>
-              </div>
-            )}
-          </section>
 
-          <section className="border-t border-gray-200 dark:border-gray-800 pt-6">
-            <p className="text-sm text-gray-500">
-              Created:{" "}
-              {new Date(estimate.createdAt).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              })}
-            </p>
-            <p className="text-sm text-gray-500">
-              Last updated:{" "}
-              {new Date(estimate.updatedAt).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              })}
-            </p>
-          </section>
-        </div>
+              {acceptedSuggestions.length === 0 ? (
+                <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
+                  <svg
+                    className="w-12 h-12 mx-auto text-gray-400 mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
+                  </svg>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                    No scope items yet
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Click &quot;AI Suggest&quot; to get AI-powered scope recommendations, or add items manually.
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-500">
+                    Full line item management coming in Sprint M4.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {acceptedSuggestions.map((suggestion) => (
+                    <div
+                      key={suggestion.id}
+                      className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-medium px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
+                              {suggestion.category}
+                            </span>
+                          </div>
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                            {suggestion.item}
+                          </h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            {suggestion.description}
+                          </p>
+                          {(suggestion.estimatedQuantity || suggestion.unit) && (
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                              Est. Quantity: {suggestion.estimatedQuantity || "TBD"}{" "}
+                              {suggestion.unit && `(${suggestion.unit})`}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleRemoveSuggestion(suggestion.id)}
+                          className="text-gray-400 hover:text-red-500 transition-colors"
+                          title="Remove suggestion"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-sm text-gray-500 italic">
+                    {acceptedSuggestions.length} suggested scope item{acceptedSuggestions.length !== 1 ? "s" : ""} added
+                  </p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="photos">
+            <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
+              <svg
+                className="w-12 h-12 mx-auto text-gray-400 mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                Photos
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Photo management coming in Sprint M5.
+              </p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="sla">
+            <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
+              <svg
+                className="w-12 h-12 mx-auto text-gray-400 mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                SLA & Workflow
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                SLA tracking and workflow management coming in Sprint M6.
+              </p>
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
 
       {showDeleteConfirm && (
@@ -670,6 +773,14 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
         propertyState={estimate.propertyState}
         onAccept={handleEnhanceAccept}
       />
+
+      {showSketchEditor && (
+        <SketchEditor
+          estimateId={estimate.id}
+          onClose={() => setShowSketchEditor(false)}
+          onSaveRooms={handleSaveRooms}
+        />
+      )}
     </div>
   );
 }

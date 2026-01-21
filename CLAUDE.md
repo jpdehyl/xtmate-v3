@@ -268,9 +268,37 @@ Added 6 new tables for full restoration app functionality:
 
 **To apply to database**: `npx drizzle-kit push` (requires DATABASE_URL)
 
+#### Sprint M3: Rooms & Sketch Editor ✅ COMPLETE
+Full sketch editor built from scratch with Konva.js:
+
+**Core Components** (in `src/components/sketch-editor/`):
+- `SketchEditor.tsx` - Main editor with full-screen modal
+- `SketchCanvas.tsx` - React Konva canvas with pan/zoom/touch
+- `Toolbar.tsx` - Tool selection with keyboard shortcuts (V, W, D, O, F, S, M, P, G)
+- `LevelTabs.tsx` - Multi-floor level management (B, 1, 2, 3, A)
+
+**Layer Components** (in `src/components/sketch-editor/layers/`):
+- `GridLayer.tsx`, `WallsLayer.tsx`, `DoorsLayer.tsx`, `WindowsLayer.tsx`, `FixturesLayer.tsx`, `StaircasesLayer.tsx`
+
+**Geometry Utilities** (in `src/lib/geometry/`):
+- `types.ts` - TypeScript interfaces
+- `snapping.ts` - Wall snapping (6 types)
+- `room-detection.ts` - Detect enclosed rooms from walls
+- `staircase.ts` - Stair calculation
+
+**API Routes**:
+- `GET/POST /api/estimates/[id]/levels`
+- `GET/PATCH/DELETE /api/estimates/[id]/levels/[levelId]`
+- `GET/POST /api/estimates/[id]/rooms`
+- `GET/PATCH/DELETE /api/estimates/[id]/rooms/[roomId]`
+
+**UI Updates**:
+- Tab navigation on estimate detail (Details, Rooms, Scope, Photos, SLA)
+- RoomsTab component with room cards
+- `src/components/ui/tabs.tsx` - Reusable tabs component
+
 ### Future Migration Sprints
 - **M1**: Dashboard & Navigation (sidebar, charts, map)
-- **M3**: Rooms & Sketch Editor (Konva.js)
 - **M4**: Line Items & Pricing
 - **M5**: Photos & Documentation
 - **M6**: SLA & Workflow
