@@ -318,7 +318,7 @@ async function generatePDF(
       checkPageBreak(10);
 
       const categoryInfo = getCategoryByCode(item.category || "");
-      const categoryDisplay = categoryInfo ? item.category : (item.category || "");
+      const categoryDisplay = item.category || "";
       const description = (item.description || "").substring(0, 50);
 
       doc.text(categoryDisplay, 22, y);
