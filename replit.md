@@ -53,4 +53,11 @@ npm run db:studio    # Open Drizzle Studio
 - `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` - Maps (optional)
 
 ## Recent Changes
+- January 21, 2026: Code quality improvements
+  - Added rate limiting to all API endpoints (estimates GET/POST/PATCH/DELETE, portfolio) with Retry-After headers
+  - Created structured logging utility (`src/lib/logger.ts`) with levels (debug/info/warn/error) and context
+  - Fixed insurance job validation - claimNumber now required when jobType=insurance
+  - Portfolio API now calculates real values from line items instead of hardcoded placeholders
+  - Added SLA business hours calculations with work-day awareness
+  - Expanded test coverage to 86 passing tests across 5 test files
 - January 21, 2026: Initial Replit environment setup
