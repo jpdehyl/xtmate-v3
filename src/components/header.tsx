@@ -29,9 +29,25 @@ export function Header({
               &larr; {backLinkText}
             </Link>
           ) : (
-            <Link href="/dashboard" className="text-xl font-semibold">
-              XTmate
-            </Link>
+            <div className="flex items-center gap-6">
+              <Link href="/dashboard" className="text-xl font-semibold">
+                XTmate
+              </Link>
+              <nav className="hidden sm:flex items-center gap-4">
+                <Link
+                  href="/dashboard"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                >
+                  Estimates
+                </Link>
+                <Link
+                  href="/dashboard/command-center"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                >
+                  Command Center
+                </Link>
+              </nav>
+            </div>
           )}
           <div className="flex items-center gap-3">
             <OfflineIndicator />
