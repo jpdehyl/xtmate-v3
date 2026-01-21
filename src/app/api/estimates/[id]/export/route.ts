@@ -6,7 +6,6 @@ import { eq, and, asc } from "drizzle-orm";
 import { jsPDF } from "jspdf";
 import ExcelJS from "exceljs";
 import { calculateEstimateTotals } from "@/lib/calculations/estimate-totals";
-import { getCategoryByCode } from "@/lib/reference/xactimate-categories";
 import type { Photo, Room, LineItem } from "@/lib/db/schema";
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -317,8 +316,7 @@ async function generatePDF(
     for (const item of itemsList) {
       checkPageBreak(10);
 
-      const categoryInfo = getCategoryByCode(item.category || "");
-      const categoryDisplay = categoryInfo ? item.category : (item.category || "");
+      const categoryDisplay = item.category || "";
       const description = (item.description || "").substring(0, 50);
 
       doc.text(categoryDisplay, 22, y);
