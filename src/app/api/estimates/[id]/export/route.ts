@@ -145,8 +145,8 @@ async function generatePDF(
     }
   };
 
-  // Header with branding
-  doc.setFillColor(37, 99, 235); // Blue-600
+  // Header with branding - Paul Davis Gold
+  doc.setFillColor(180, 151, 90); // Paul Davis Gold #b4975a
   doc.rect(0, 0, pageWidth, 40, "F");
 
   doc.setTextColor(255, 255, 255);
@@ -505,7 +505,7 @@ async function generateExcel(
   headerCell.fill = {
     type: "pattern",
     pattern: "solid",
-    fgColor: { argb: "FF2563EB" },
+    fgColor: { argb: "FFB4975A" }, // Paul Davis Gold
   };
   headerCell.alignment = { horizontal: "center", vertical: "middle" };
   summarySheet.getRow(1).height = 35;
@@ -596,7 +596,7 @@ async function generateExcel(
 
   const grandTotalRow = summarySheet.addRow(["Grand Total", formatCurrency(totals.grandTotal)]);
   grandTotalRow.getCell(1).font = { bold: true, size: 12 };
-  grandTotalRow.getCell(2).font = { bold: true, size: 12, color: { argb: "FF2563EB" } };
+  grandTotalRow.getCell(2).font = { bold: true, size: 12, color: { argb: "FFB4975A" } }; // Paul Davis Gold
 
   // Section: Rooms (if any)
   if (roomsList.length > 0) {
@@ -677,13 +677,13 @@ async function generateExcel(
       { header: "Verified", key: "verified", width: 10 },
     ];
 
-    // Style header row
+    // Style header row - Paul Davis Gold
     const headerRow = itemsSheet.getRow(1);
     headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
     headerRow.fill = {
       type: "pattern",
       pattern: "solid",
-      fgColor: { argb: "FF2563EB" },
+      fgColor: { argb: "FFB4975A" }, // Paul Davis Gold
     };
     headerRow.height = 25;
 
@@ -756,7 +756,7 @@ async function generateExcel(
       verified: "",
     });
     grandRow.getCell(6).font = { bold: true, size: 12 };
-    grandRow.getCell(7).font = { bold: true, size: 12, color: { argb: "FF2563EB" } };
+    grandRow.getCell(7).font = { bold: true, size: 12, color: { argb: "FFB4975A" } }; // Paul Davis Gold
 
     // Format number columns
     itemsSheet.getColumn("unitPrice").numFmt = '"$"#,##0.00';

@@ -254,6 +254,7 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
                 onClick={() => handleExport("pdf")}
                 disabled={isExporting !== null || !isOnline}
                 title={!isOnline ? "Export unavailable offline" : "Export as PDF"}
+                aria-label={isExporting === "pdf" ? "Exporting PDF" : "Export as PDF"}
                 className="px-3 py-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
               >
                 <svg
@@ -261,6 +262,7 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -277,6 +279,7 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
                 onClick={() => handleExport("excel")}
                 disabled={isExporting !== null || !isOnline}
                 title={!isOnline ? "Export unavailable offline" : "Export as Excel"}
+                aria-label={isExporting === "excel" ? "Exporting Excel" : "Export as Excel"}
                 className="px-3 py-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
               >
                 <svg
@@ -284,6 +287,7 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -300,6 +304,7 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
                 onClick={handleDuplicate}
                 disabled={isDuplicating || !isOnline}
                 title={!isOnline ? "Duplicate unavailable offline" : "Duplicate estimate"}
+                aria-label={isDuplicating ? "Duplicating estimate" : "Duplicate estimate"}
                 className="px-3 py-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
               >
                 <svg
@@ -307,6 +312,7 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -378,9 +384,10 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
                     onClick={() => setShowEnhanceModal(true)}
                     disabled={!isOnline}
                     title={!isOnline ? "AI features unavailable offline" : "Enhance with AI"}
+                    aria-label="Enhance estimate name with AI"
                     className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                     <span className="hidden sm:inline">Enhance</span>
