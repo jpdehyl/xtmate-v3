@@ -15,6 +15,7 @@ const updateEstimateSchema = z.object({
   propertyZip: z.string().optional(),
   claimNumber: z.string().optional(),
   policyNumber: z.string().optional(),
+  carrierId: z.string().uuid().nullable().optional(),
 });
 
 type RouteParams = { params: Promise<{ id: string }> };

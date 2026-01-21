@@ -16,6 +16,8 @@ import { EnhanceDescriptionModal } from "@/components/features/enhance-descripti
 import { RoomsTab } from "@/components/features/rooms-tab";
 import { ScopeTab } from "@/components/features/scope-tab";
 import { PhotosTab } from "@/components/features/photos-tab";
+import { SlaTab } from "@/components/features/sla-tab";
+import { CarrierSelector } from "@/components/features/carrier-selector";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { SketchEditor } from "@/components/sketch-editor";
 import type { ScopeSuggestion } from "@/app/api/ai/suggest-scope/route";
@@ -565,6 +567,26 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-900 dark:text-gray-100"
                   />
                 </div>
+
+                <div className="md:col-span-2">
+                  <label
+                    htmlFor="carrier"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Insurance Carrier
+                  </label>
+                  <CarrierSelector
+                    value={estimate.carrierId}
+                    onChange={(carrierId) => {
+                      setEstimate({ ...estimate, carrierId });
+                      saveEstimate({ carrierId });
+                    }}
+                    disabled={!isOnline}
+                  />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Select a carrier to enable carrier-specific SLA rules
+                  </p>
+                </div>
               </div>
             </section>
           )}
@@ -616,27 +638,11 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
           </TabsContent>
 
           <TabsContent value="sla">
-            <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
-              <svg
-                className="w-12 h-12 mx-auto text-gray-400 mb-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                SLA & Workflow
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                SLA tracking and workflow management coming in Sprint M6.
-              </p>
-            </div>
+            <SlaTab
+              estimateId={estimate.id}
+              isOnline={isOnline}
+              carrierId={estimate.carrierId}
+            />
           </TabsContent>
         </Tabs>
       </main>

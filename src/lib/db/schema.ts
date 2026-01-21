@@ -140,6 +140,9 @@ export const estimates = pgTable("estimates", {
   claimNumber: text("claim_number"),
   policyNumber: text("policy_number"),
 
+  // M6: Carrier for SLA tracking (insurance jobs)
+  carrierId: uuid("carrier_id"),
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -336,3 +339,84 @@ export type NewPriceList = typeof priceLists.$inferInsert;
 
 export type PriceListItem = typeof priceListItems.$inferSelect;
 export type NewPriceListItem = typeof priceListItems.$inferInsert;
+
+// ============================================================================
+// M6: SLA & Workflow
+// ============================================================================
+
+// M6-1: Carriers table (insurance companies)
+export const carriers = pgTable('carriers', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  code: text('code').notNull().unique(), // "SF", "ALL", "FAR"
+  name: text('name').notNull(), // "State Farm", "Allstate"
+  contactEmail: text('contact_email'),
+  contactPhone: text('contact_phone'),
+  logoUrl: text('logo_url'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// M6-1: SLA Milestones enum
+export const slaMilestoneEnum = pgEnum('sla_milestone', [
+  'assigned',           // Job received
+  'contacted',          // Insured contacted
+  'site_visit',         // On-site inspection
+  'estimate_uploaded',  // Estimate submitted
+  'revision_requested', // Changes needed
+  'approved',           // Approved by adjuster
+  'closed',             // Job complete
+]);
+
+// M6-1: Carrier SLA Rules table
+export const carrierSlaRules = pgTable('carrier_sla_rules', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  carrierId: uuid('carrier_id').references(() => carriers.id, { onDelete: 'cascade' }),
+  milestone: slaMilestoneEnum('milestone').notNull(),
+  targetHours: integer('target_hours').notNull(),
+  isBusinessHours: boolean('is_business_hours').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// M6-2: SLA Events table (actual milestone completions)
+export const slaEvents = pgTable('sla_events', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  estimateId: uuid('estimate_id').references(() => estimates.id, { onDelete: 'cascade' }),
+  milestone: slaMilestoneEnum('milestone').notNull(),
+  targetAt: timestamp('target_at'),
+  completedAt: timestamp('completed_at'),
+  isOverdue: boolean('is_overdue').default(false),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Export types for M6 tables
+export type Carrier = typeof carriers.$inferSelect;
+export type NewCarrier = typeof carriers.$inferInsert;
+
+export type CarrierSlaRule = typeof carrierSlaRules.$inferSelect;
+export type NewCarrierSlaRule = typeof carrierSlaRules.$inferInsert;
+
+export type SlaEvent = typeof slaEvents.$inferSelect;
+export type NewSlaEvent = typeof slaEvents.$inferInsert;
+
+// SLA milestone labels for display
+export const SLA_MILESTONE_LABELS: Record<string, string> = {
+  assigned: 'Job Assigned',
+  contacted: 'Insured Contacted',
+  site_visit: 'Site Visit',
+  estimate_uploaded: 'Estimate Uploaded',
+  revision_requested: 'Revision Requested',
+  approved: 'Approved',
+  closed: 'Job Closed',
+};
+
+// Default SLA target hours (used when no carrier-specific rules exist)
+export const DEFAULT_SLA_TARGETS: Record<string, number> = {
+  assigned: 0,
+  contacted: 4,
+  site_visit: 24,
+  estimate_uploaded: 48,
+  revision_requested: 0, // Triggered by external event
+  approved: 0, // Triggered by external event
+  closed: 0, // Triggered by external event
+};
