@@ -80,6 +80,15 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   // No external font dependencies - using local fonts only
   // This prevents build failures from Google Fonts CDN
+  experimental: {
+    // Optimize barrel file imports for faster builds and smaller bundles
+    // lucide-react has 1,500+ icons, this prevents loading all of them
+    optimizePackageImports: [
+      'lucide-react',
+      'recharts',
+      '@react-google-maps/api',
+    ],
+  },
 };
 
 export default withPWA(nextConfig);

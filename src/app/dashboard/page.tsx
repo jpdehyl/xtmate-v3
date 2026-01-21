@@ -1,16 +1,13 @@
 import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
-import { estimates } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
 import {
-  DashboardLayout,
-  WelcomeBanner,
-  PerformanceMetrics,
-  RecentEstimates,
-  ProjectsMap,
-} from "@/components/dashboard";
+  getEstimatesByUserId,
+  getActiveEstimatesCount,
+} from "@/lib/db/queries";
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
+import { DashboardContent } from "./dashboard-content";
 
-export const dynamic = "force-dynamic";
+// Force dynamic rendering for this route
+export const revalidate = 0;
 
 export default async function DashboardPage() {
   if (!process.env.CLERK_SECRET_KEY) {
@@ -24,32 +21,48 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  const userEstimates = await db
-    .select()
-    .from(estimates)
-    .where(eq(estimates.userId, userId))
-    .orderBy(desc(estimates.updatedAt));
+  // Fetch data using cached queries
+  const userEstimates = await getEstimatesByUserId(userId);
+  const activeCount = await getActiveEstimatesCount(userId);
 
-  // Count active (in_progress) estimates
-  const activeCount = userEstimates.filter(
-    (e) => e.status === "in_progress"
-  ).length;
+  // Minimize serialization - only pass needed fields to each component
+  const metricsData = userEstimates.map((e) => ({
+    id: e.id,
+    status: e.status,
+    total: null as number | null, // Not in schema yet, but typed correctly
+    createdAt: e.createdAt,
+    jobType: e.jobType,
+  }));
+
+  const recentData = userEstimates.slice(0, 5).map((e) => ({
+    id: e.id,
+    name: e.name,
+    propertyAddress: e.propertyAddress,
+    propertyCity: e.propertyCity,
+    propertyState: e.propertyState,
+    status: e.status,
+    updatedAt: e.updatedAt,
+    jobType: e.jobType,
+  }));
+
+  const mapData = userEstimates.map((e) => ({
+    id: e.id,
+    name: e.name,
+    propertyAddress: e.propertyAddress,
+    propertyCity: e.propertyCity,
+    propertyState: e.propertyState,
+    status: e.status,
+    jobType: e.jobType,
+  }));
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Welcome Banner */}
-        <WelcomeBanner activeClaimsCount={activeCount} />
-
-        {/* Performance Metrics with Charts */}
-        <PerformanceMetrics estimates={userEstimates} />
-
-        {/* Two Column Layout: Recent Estimates + Map */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <RecentEstimates estimates={userEstimates} />
-          <ProjectsMap projects={userEstimates} />
-        </div>
-      </div>
+      <DashboardContent
+        activeCount={activeCount}
+        metricsData={metricsData}
+        recentData={recentData}
+        mapData={mapData}
+      />
     </DashboardLayout>
   );
 }

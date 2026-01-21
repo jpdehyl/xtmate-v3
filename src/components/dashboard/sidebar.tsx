@@ -23,18 +23,22 @@ interface SidebarProps {
   showCommandCenter?: boolean;
 }
 
+// Lazy initialization helper - reads from localStorage only once on mount
+function getInitialCollapsed(): boolean {
+  if (typeof window === 'undefined') return false;
+  const saved = localStorage.getItem('xtmate_sidebar_collapsed');
+  return saved === 'true';
+}
+
 export function Sidebar({ showCommandCenter = true }: SidebarProps) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+  // Lazy state initialization - avoids reading localStorage on every render
+  const [collapsed, setCollapsed] = useState(getInitialCollapsed);
   const [mounted, setMounted] = useState(false);
 
-  // Handle hydration
+  // Handle hydration - only for mounted state now
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem('xtmate_sidebar_collapsed');
-    if (saved !== null) {
-      setCollapsed(saved === 'true');
-    }
   }, []);
 
   const toggleCollapsed = () => {
