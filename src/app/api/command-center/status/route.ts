@@ -12,6 +12,14 @@ interface TaskCheck {
   category?: string;
 }
 
+interface Workstream {
+  id: string;
+  name: string;
+  description: string;
+  color: string;
+  tasks: TaskCheck[];
+}
+
 // On Vercel, source files aren't accessible via fs at runtime
 // We need to check multiple possible paths or use known deployment state
 const ROOT = process.cwd();
@@ -48,7 +56,7 @@ const KNOWN_COMPLETED: Record<string, boolean> = {
   "S5-1": false, // PWA manifest.json - missing icons
   "S5-2": true, // Service worker setup
   "S5-3": true, // Offline status indicator
-  "S5-4": true, // IndexedDB for offline cache (in src/lib/offline/storage.ts)
+  "S5-4": true, // IndexedDB for offline cache
   // Stage 6: Polish - MOSTLY COMPLETE
   "S6-1": true, // Dashboard search functionality
   "S6-2": true, // Estimate duplicate API
@@ -58,6 +66,82 @@ const KNOWN_COMPLETED: Record<string, boolean> = {
   "CC-1": true, // Command Center page
   "CC-2": true, // Status API endpoint
   "CC-3": true, // Prompts API endpoint
+
+  // ============================================================================
+  // V2 MIGRATION SPRINTS - All start as NOT STARTED
+  // ============================================================================
+
+  // Sprint M1: Dashboard & Navigation
+  "M1-1": false, // Sidebar navigation
+  "M1-2": false, // Welcome banner
+  "M1-3": false, // Stat cards row
+  "M1-4": false, // Monthly claims chart
+  "M1-5": false, // Loss types donut chart
+  "M1-6": false, // Claims table with tabs
+  "M1-7": false, // Projects map
+  "M1-8": false, // Dashboard layout integration
+
+  // Sprint M2: Database Schema Expansion
+  "M2-1": false, // Levels table
+  "M2-2": false, // Rooms table
+  "M2-3": false, // Annotations table
+  "M2-4": false, // Line items table
+  "M2-5": false, // Photos table
+  "M2-6": false, // Assignments table
+
+  // Sprint M3: Rooms & Sketch Editor
+  "M3-1": false, // Rooms tab on estimate detail
+  "M3-2": false, // Sketch canvas (Konva.js)
+  "M3-3": false, // Wall drawing tool
+  "M3-4": false, // Door tool
+  "M3-5": false, // Window tool
+  "M3-6": false, // Fixture tool
+  "M3-7": false, // Staircase tool
+  "M3-8": false, // Room detection
+  "M3-9": false, // Toolbar component
+  "M3-10": false, // Level tabs
+
+  // Sprint M4: Line Items & Pricing
+  "M4-1": false, // Line items API
+  "M4-2": false, // Scope tab UI
+  "M4-3": false, // Xactimate categories
+  "M4-4": false, // Price list import
+  "M4-5": false, // Totals calculation
+  "M4-6": false, // AI scope integration
+  "M4-7": false, // Line item reordering
+  "M4-8": false, // Export with line items
+
+  // Sprint M5: Photos & Documentation
+  "M5-1": false, // Photo upload API
+  "M5-2": false, // Photo gallery component
+  "M5-3": false, // Photo capture (mobile)
+  "M5-4": false, // Photo linking
+  "M5-5": false, // Photos tab on estimate
+  "M5-6": false, // Export with photos
+
+  // Sprint M6: SLA & Workflow
+  "M6-1": false, // Carrier configuration
+  "M6-2": false, // SLA events tracking
+  "M6-3": false, // SLA tab on estimate
+  "M6-4": false, // Status workflow
+  "M6-5": false, // SLA dashboard widget
+  "M6-6": false, // SLA badges
+
+  // Sprint M7: Portfolio & Analytics
+  "M7-1": false, // Portfolio page
+  "M7-2": false, // Analytics page
+  "M7-3": false, // Team metrics
+  "M7-4": false, // Carrier breakdown
+  "M7-5": false, // Activity feed
+  "M7-6": false, // Export analytics
+
+  // Sprint M8: Vendor Portal
+  "M8-1": false, // Vendor data model
+  "M8-2": false, // Vendor portal routes
+  "M8-3": false, // Token-based auth
+  "M8-4": false, // Quote request flow
+  "M8-5": false, // Vendor quote submission
+  "M8-6": false, // Quote comparison
 };
 
 function fileExists(relativePath: string): boolean {
@@ -101,7 +185,7 @@ function checkTask(taskId: string, fileCheck: () => boolean): boolean {
 }
 
 // ============================================================================
-// STAGE 1 - Foundation
+// STAGE 1 - Foundation (COMPLETE)
 // ============================================================================
 const stage1: TaskCheck[] = [
   {
@@ -151,7 +235,7 @@ const stage1: TaskCheck[] = [
 ];
 
 // ============================================================================
-// STAGE 2 - Estimates CRUD
+// STAGE 2 - Estimates CRUD (COMPLETE)
 // ============================================================================
 const stage2: TaskCheck[] = [
   {
@@ -207,7 +291,7 @@ const stage2: TaskCheck[] = [
 ];
 
 // ============================================================================
-// STAGE 3 - ESX Export (PDF/Excel)
+// STAGE 3 - ESX Export (COMPLETE)
 // ============================================================================
 const stage3: TaskCheck[] = [
   {
@@ -244,7 +328,7 @@ const stage3: TaskCheck[] = [
 ];
 
 // ============================================================================
-// STAGE 4 - AI Scope (Planned)
+// STAGE 4 - AI Scope (COMPLETE)
 // ============================================================================
 const stage4: TaskCheck[] = [
   {
@@ -279,7 +363,7 @@ const stage4: TaskCheck[] = [
 ];
 
 // ============================================================================
-// STAGE 5 - Mobile Sync (Planned)
+// STAGE 5 - Mobile Sync (PARTIAL)
 // ============================================================================
 const stage5: TaskCheck[] = [
   {
@@ -315,7 +399,7 @@ const stage5: TaskCheck[] = [
 ];
 
 // ============================================================================
-// STAGE 6 - Polish (Planned)
+// STAGE 6 - Polish (MOSTLY COMPLETE)
 // ============================================================================
 const stage6: TaskCheck[] = [
   {
@@ -353,7 +437,7 @@ const stage6: TaskCheck[] = [
 ];
 
 // ============================================================================
-// COMMAND CENTER - Meta tasks
+// COMMAND CENTER (COMPLETE)
 // ============================================================================
 const commandCenter: TaskCheck[] = [
   {
@@ -379,6 +463,536 @@ const commandCenter: TaskCheck[] = [
   },
 ];
 
+// ============================================================================
+// V2 MIGRATION SPRINT M1: Dashboard & Navigation
+// ============================================================================
+const migrationM1: TaskCheck[] = [
+  {
+    id: "M1-1",
+    name: "Sidebar navigation",
+    category: "Web UI",
+    files: ["src/components/dashboard/sidebar.tsx"],
+    check: () => checkTask("M1-1", () =>
+      fileExists("src/components/dashboard/sidebar.tsx") &&
+      fileContains("src/components/dashboard/sidebar.tsx", "Dashboard") &&
+      fileContains("src/components/dashboard/sidebar.tsx", "Portfolio")),
+  },
+  {
+    id: "M1-2",
+    name: "Welcome banner",
+    category: "Web UI",
+    files: ["src/components/dashboard/welcome-banner.tsx"],
+    check: () => checkTask("M1-2", () =>
+      fileExists("src/components/dashboard/welcome-banner.tsx") &&
+      (fileContains("src/components/dashboard/welcome-banner.tsx", "morning") ||
+       fileContains("src/components/dashboard/welcome-banner.tsx", "afternoon"))),
+  },
+  {
+    id: "M1-3",
+    name: "Stat cards row",
+    category: "Web UI",
+    files: ["src/components/dashboard/stat-card.tsx"],
+    check: () => checkTask("M1-3", () =>
+      fileExists("src/components/dashboard/stat-card.tsx") &&
+      fileContains("src/components/dashboard/stat-card.tsx", "title") &&
+      fileContains("src/components/dashboard/stat-card.tsx", "value")),
+  },
+  {
+    id: "M1-4",
+    name: "Monthly claims chart",
+    category: "Web UI",
+    files: ["src/components/dashboard/monthly-chart.tsx"],
+    check: () => checkTask("M1-4", () =>
+      fileContains("package.json", "recharts") &&
+      (fileExists("src/components/dashboard/monthly-chart.tsx") ||
+       fileContains("src/app/dashboard/page.tsx", "BarChart"))),
+  },
+  {
+    id: "M1-5",
+    name: "Loss types donut chart",
+    category: "Web UI",
+    files: ["src/components/dashboard/loss-types-chart.tsx"],
+    check: () => checkTask("M1-5", () =>
+      fileExists("src/components/dashboard/loss-types-chart.tsx") ||
+      fileContains("src/app/dashboard/page.tsx", "PieChart")),
+  },
+  {
+    id: "M1-6",
+    name: "Claims table with tabs",
+    category: "Web UI",
+    files: ["src/components/dashboard/estimate-table.tsx"],
+    check: () => checkTask("M1-6", () =>
+      fileExists("src/components/dashboard/estimate-table.tsx") &&
+      fileContains("src/components/dashboard/estimate-table.tsx", "tab")),
+  },
+  {
+    id: "M1-7",
+    name: "Projects map",
+    category: "Web UI",
+    files: ["src/components/dashboard/projects-map.tsx"],
+    check: () => checkTask("M1-7", () =>
+      fileExists("src/components/dashboard/projects-map.tsx") &&
+      (fileContains("src/components/dashboard/projects-map.tsx", "google") ||
+       fileContains("src/components/dashboard/projects-map.tsx", "Map"))),
+  },
+  {
+    id: "M1-8",
+    name: "Dashboard layout integration",
+    category: "Web UI",
+    files: ["src/app/dashboard/page.tsx"],
+    check: () => checkTask("M1-8", () =>
+      fileContains("src/app/dashboard/page.tsx", "Sidebar") &&
+      fileContains("src/app/dashboard/page.tsx", "WelcomeBanner")),
+  },
+];
+
+// ============================================================================
+// V2 MIGRATION SPRINT M2: Database Schema Expansion
+// ============================================================================
+const migrationM2: TaskCheck[] = [
+  {
+    id: "M2-1",
+    name: "Levels table",
+    category: "Database",
+    files: ["src/lib/db/schema.ts"],
+    check: () => checkTask("M2-1", () =>
+      fileContains("src/lib/db/schema.ts", "levels") &&
+      fileContains("src/lib/db/schema.ts", "pgTable")),
+  },
+  {
+    id: "M2-2",
+    name: "Rooms table",
+    category: "Database",
+    files: ["src/lib/db/schema.ts"],
+    check: () => checkTask("M2-2", () =>
+      fileContains("src/lib/db/schema.ts", "rooms") &&
+      fileContains("src/lib/db/schema.ts", "squareFeet")),
+  },
+  {
+    id: "M2-3",
+    name: "Annotations table",
+    category: "Database",
+    files: ["src/lib/db/schema.ts"],
+    check: () => checkTask("M2-3", () =>
+      fileContains("src/lib/db/schema.ts", "annotations") &&
+      fileContains("src/lib/db/schema.ts", "damageType")),
+  },
+  {
+    id: "M2-4",
+    name: "Line items table",
+    category: "Database",
+    files: ["src/lib/db/schema.ts"],
+    check: () => checkTask("M2-4", () =>
+      (fileContains("src/lib/db/schema.ts", "lineItems") ||
+       fileContains("src/lib/db/schema.ts", "line_items")) &&
+      fileContains("src/lib/db/schema.ts", "selector")),
+  },
+  {
+    id: "M2-5",
+    name: "Photos table",
+    category: "Database",
+    files: ["src/lib/db/schema.ts"],
+    check: () => checkTask("M2-5", () =>
+      fileContains("src/lib/db/schema.ts", "photos") &&
+      fileContains("src/lib/db/schema.ts", "photoType")),
+  },
+  {
+    id: "M2-6",
+    name: "Assignments table",
+    category: "Database",
+    files: ["src/lib/db/schema.ts"],
+    check: () => checkTask("M2-6", () =>
+      fileContains("src/lib/db/schema.ts", "assignments") &&
+      fileContains("src/lib/db/schema.ts", "type")),
+  },
+];
+
+// ============================================================================
+// V2 MIGRATION SPRINT M3: Rooms & Sketch Editor
+// ============================================================================
+const migrationM3: TaskCheck[] = [
+  {
+    id: "M3-1",
+    name: "Rooms tab on estimate detail",
+    category: "Web UI",
+    files: ["src/app/dashboard/estimates/[id]/page.tsx"],
+    check: () => checkTask("M3-1", () =>
+      fileContains("src/app/dashboard/estimates/[id]/page.tsx", "Rooms")),
+  },
+  {
+    id: "M3-2",
+    name: "Sketch canvas (Konva.js)",
+    category: "Web UI",
+    files: ["src/components/sketch-editor/SketchCanvas.tsx"],
+    check: () => checkTask("M3-2", () =>
+      fileExists("src/components/sketch-editor/SketchCanvas.tsx") &&
+      fileContains("src/components/sketch-editor/SketchCanvas.tsx", "react-konva")),
+  },
+  {
+    id: "M3-3",
+    name: "Wall drawing tool",
+    category: "Web UI",
+    files: ["src/components/sketch-editor/layers/WallsLayer.tsx"],
+    check: () => checkTask("M3-3", () =>
+      fileExists("src/components/sketch-editor/layers/WallsLayer.tsx")),
+  },
+  {
+    id: "M3-4",
+    name: "Door tool",
+    category: "Web UI",
+    files: ["src/components/sketch-editor/layers/DoorsLayer.tsx"],
+    check: () => checkTask("M3-4", () =>
+      fileExists("src/components/sketch-editor/layers/DoorsLayer.tsx")),
+  },
+  {
+    id: "M3-5",
+    name: "Window tool",
+    category: "Web UI",
+    files: ["src/components/sketch-editor/layers/WindowsLayer.tsx"],
+    check: () => checkTask("M3-5", () =>
+      fileExists("src/components/sketch-editor/layers/WindowsLayer.tsx")),
+  },
+  {
+    id: "M3-6",
+    name: "Fixture tool",
+    category: "Web UI",
+    files: ["src/components/sketch-editor/layers/FixturesLayer.tsx"],
+    check: () => checkTask("M3-6", () =>
+      fileExists("src/components/sketch-editor/layers/FixturesLayer.tsx")),
+  },
+  {
+    id: "M3-7",
+    name: "Staircase tool",
+    category: "Web UI",
+    files: ["src/components/sketch-editor/layers/StaircasesLayer.tsx"],
+    check: () => checkTask("M3-7", () =>
+      fileExists("src/components/sketch-editor/layers/StaircasesLayer.tsx")),
+  },
+  {
+    id: "M3-8",
+    name: "Room detection",
+    category: "Web UI",
+    files: ["src/lib/geometry/room-detection.ts"],
+    check: () => checkTask("M3-8", () =>
+      fileExists("src/lib/geometry/room-detection.ts") &&
+      fileContains("src/lib/geometry/room-detection.ts", "detectRooms")),
+  },
+  {
+    id: "M3-9",
+    name: "Toolbar component",
+    category: "Web UI",
+    files: ["src/components/sketch-editor/Toolbar.tsx"],
+    check: () => checkTask("M3-9", () =>
+      fileExists("src/components/sketch-editor/Toolbar.tsx")),
+  },
+  {
+    id: "M3-10",
+    name: "Level tabs",
+    category: "Web UI",
+    files: ["src/components/sketch-editor/LevelTabs.tsx"],
+    check: () => checkTask("M3-10", () =>
+      fileExists("src/components/sketch-editor/LevelTabs.tsx")),
+  },
+];
+
+// ============================================================================
+// V2 MIGRATION SPRINT M4: Line Items & Pricing
+// ============================================================================
+const migrationM4: TaskCheck[] = [
+  {
+    id: "M4-1",
+    name: "Line items API",
+    category: "API",
+    files: ["src/app/api/line-items/route.ts"],
+    check: () => checkTask("M4-1", () =>
+      fileExists("src/app/api/line-items/route.ts") &&
+      fileContains("src/app/api/line-items/route.ts", "GET")),
+  },
+  {
+    id: "M4-2",
+    name: "Scope tab UI",
+    category: "Web UI",
+    files: ["src/app/dashboard/estimates/[id]/page.tsx"],
+    check: () => checkTask("M4-2", () =>
+      fileContains("src/app/dashboard/estimates/[id]/page.tsx", "Scope")),
+  },
+  {
+    id: "M4-3",
+    name: "Xactimate categories",
+    category: "Reference",
+    files: ["src/lib/reference/xactimate-categories.ts"],
+    check: () => checkTask("M4-3", () =>
+      fileExists("src/lib/reference/xactimate-categories.ts")),
+  },
+  {
+    id: "M4-4",
+    name: "Price list import",
+    category: "API",
+    files: ["src/app/api/price-lists/route.ts"],
+    check: () => checkTask("M4-4", () =>
+      fileExists("src/app/api/price-lists/route.ts")),
+  },
+  {
+    id: "M4-5",
+    name: "Totals calculation",
+    category: "Web UI",
+    files: ["src/app/dashboard/estimates/[id]/page.tsx"],
+    check: () => checkTask("M4-5", () =>
+      fileContains("src/app/dashboard/estimates/[id]/page.tsx", "total")),
+  },
+  {
+    id: "M4-6",
+    name: "AI scope integration",
+    category: "Web UI",
+    files: ["src/components/features/ai-scope-modal.tsx"],
+    check: () => checkTask("M4-6", () =>
+      fileContains("src/components/features/ai-scope-modal.tsx", "lineItems") ||
+      fileContains("src/components/features/ai-scope-modal.tsx", "save")),
+  },
+  {
+    id: "M4-7",
+    name: "Line item reordering",
+    category: "Web UI",
+    files: ["src/components/scope/line-items-table.tsx"],
+    check: () => checkTask("M4-7", () =>
+      fileExists("src/components/scope/line-items-table.tsx") &&
+      fileContains("src/components/scope/line-items-table.tsx", "drag")),
+  },
+  {
+    id: "M4-8",
+    name: "Export with line items",
+    category: "Export",
+    files: ["src/app/api/estimates/[id]/export/route.ts"],
+    check: () => checkTask("M4-8", () =>
+      fileContains("src/app/api/estimates/[id]/export/route.ts", "lineItems")),
+  },
+];
+
+// ============================================================================
+// V2 MIGRATION SPRINT M5: Photos & Documentation
+// ============================================================================
+const migrationM5: TaskCheck[] = [
+  {
+    id: "M5-1",
+    name: "Photo upload API",
+    category: "API",
+    files: ["src/app/api/photos/upload/route.ts"],
+    check: () => checkTask("M5-1", () =>
+      fileExists("src/app/api/photos/upload/route.ts") ||
+      fileExists("src/app/api/photos/route.ts")),
+  },
+  {
+    id: "M5-2",
+    name: "Photo gallery component",
+    category: "Web UI",
+    files: ["src/components/photos/photo-gallery.tsx"],
+    check: () => checkTask("M5-2", () =>
+      fileExists("src/components/photos/photo-gallery.tsx") ||
+      fileExists("src/components/property-viewer/PhotoGallery.tsx")),
+  },
+  {
+    id: "M5-3",
+    name: "Photo capture (mobile)",
+    category: "Web UI",
+    files: ["src/components/photos/photo-capture.tsx"],
+    check: () => checkTask("M5-3", () =>
+      fileExists("src/components/photos/photo-capture.tsx")),
+  },
+  {
+    id: "M5-4",
+    name: "Photo linking",
+    category: "Web UI",
+    files: ["src/components/photos/photo-form.tsx"],
+    check: () => checkTask("M5-4", () =>
+      fileExists("src/components/photos/photo-form.tsx") &&
+      fileContains("src/components/photos/photo-form.tsx", "roomId")),
+  },
+  {
+    id: "M5-5",
+    name: "Photos tab on estimate",
+    category: "Web UI",
+    files: ["src/app/dashboard/estimates/[id]/page.tsx"],
+    check: () => checkTask("M5-5", () =>
+      fileContains("src/app/dashboard/estimates/[id]/page.tsx", "Photos")),
+  },
+  {
+    id: "M5-6",
+    name: "Export with photos",
+    category: "Export",
+    files: ["src/app/api/estimates/[id]/export/route.ts"],
+    check: () => checkTask("M5-6", () =>
+      fileContains("src/app/api/estimates/[id]/export/route.ts", "photos")),
+  },
+];
+
+// ============================================================================
+// V2 MIGRATION SPRINT M6: SLA & Workflow
+// ============================================================================
+const migrationM6: TaskCheck[] = [
+  {
+    id: "M6-1",
+    name: "Carrier configuration",
+    category: "Database",
+    files: ["src/lib/db/schema.ts"],
+    check: () => checkTask("M6-1", () =>
+      fileContains("src/lib/db/schema.ts", "carriers")),
+  },
+  {
+    id: "M6-2",
+    name: "SLA events tracking",
+    category: "Database",
+    files: ["src/lib/db/schema.ts"],
+    check: () => checkTask("M6-2", () =>
+      fileContains("src/lib/db/schema.ts", "slaEvents") ||
+      fileContains("src/lib/db/schema.ts", "sla_events")),
+  },
+  {
+    id: "M6-3",
+    name: "SLA tab on estimate",
+    category: "Web UI",
+    files: ["src/app/dashboard/estimates/[id]/page.tsx"],
+    check: () => checkTask("M6-3", () =>
+      fileContains("src/app/dashboard/estimates/[id]/page.tsx", "SLA")),
+  },
+  {
+    id: "M6-4",
+    name: "Status workflow",
+    category: "API",
+    files: ["src/app/api/estimates/[id]/status/route.ts"],
+    check: () => checkTask("M6-4", () =>
+      fileExists("src/app/api/estimates/[id]/status/route.ts")),
+  },
+  {
+    id: "M6-5",
+    name: "SLA dashboard widget",
+    category: "Web UI",
+    files: ["src/components/dashboard/sla-widget.tsx"],
+    check: () => checkTask("M6-5", () =>
+      fileExists("src/components/dashboard/sla-widget.tsx")),
+  },
+  {
+    id: "M6-6",
+    name: "SLA badges",
+    category: "Web UI",
+    files: ["src/components/sla/sla-badge.tsx"],
+    check: () => checkTask("M6-6", () =>
+      fileExists("src/components/sla/sla-badge.tsx") ||
+      fileExists("src/components/ui/sla-badge.tsx")),
+  },
+];
+
+// ============================================================================
+// V2 MIGRATION SPRINT M7: Portfolio & Analytics
+// ============================================================================
+const migrationM7: TaskCheck[] = [
+  {
+    id: "M7-1",
+    name: "Portfolio page",
+    category: "Web UI",
+    files: ["src/app/dashboard/portfolio/page.tsx"],
+    check: () => checkTask("M7-1", () =>
+      fileExists("src/app/dashboard/portfolio/page.tsx") ||
+      fileExists("src/app/(dashboard)/portfolio/page.tsx")),
+  },
+  {
+    id: "M7-2",
+    name: "Analytics page",
+    category: "Web UI",
+    files: ["src/app/dashboard/analytics/page.tsx"],
+    check: () => checkTask("M7-2", () =>
+      fileExists("src/app/dashboard/analytics/page.tsx") ||
+      fileExists("src/app/(dashboard)/analytics/page.tsx")),
+  },
+  {
+    id: "M7-3",
+    name: "Team metrics",
+    category: "Web UI",
+    files: ["src/components/analytics/team-metrics.tsx"],
+    check: () => checkTask("M7-3", () =>
+      fileExists("src/components/analytics/team-metrics.tsx")),
+  },
+  {
+    id: "M7-4",
+    name: "Carrier breakdown",
+    category: "Web UI",
+    files: ["src/components/portfolio/carrier-breakdown.tsx"],
+    check: () => checkTask("M7-4", () =>
+      fileExists("src/components/portfolio/carrier-breakdown.tsx") ||
+      fileExists("src/components/portfolio/CarrierBreakdown.tsx")),
+  },
+  {
+    id: "M7-5",
+    name: "Activity feed",
+    category: "Web UI",
+    files: ["src/components/portfolio/activity-feed.tsx"],
+    check: () => checkTask("M7-5", () =>
+      fileExists("src/components/portfolio/activity-feed.tsx") ||
+      fileExists("src/components/portfolio/ActivityFeed.tsx")),
+  },
+  {
+    id: "M7-6",
+    name: "Export analytics",
+    category: "Export",
+    files: ["src/app/api/analytics/export/route.ts"],
+    check: () => checkTask("M7-6", () =>
+      fileExists("src/app/api/analytics/export/route.ts")),
+  },
+];
+
+// ============================================================================
+// V2 MIGRATION SPRINT M8: Vendor Portal
+// ============================================================================
+const migrationM8: TaskCheck[] = [
+  {
+    id: "M8-1",
+    name: "Vendor data model",
+    category: "Database",
+    files: ["src/lib/db/schema.ts"],
+    check: () => checkTask("M8-1", () =>
+      fileContains("src/lib/db/schema.ts", "vendors")),
+  },
+  {
+    id: "M8-2",
+    name: "Vendor portal routes",
+    category: "Web UI",
+    files: ["src/app/vendor/page.tsx"],
+    check: () => checkTask("M8-2", () =>
+      fileExists("src/app/vendor/page.tsx")),
+  },
+  {
+    id: "M8-3",
+    name: "Token-based auth",
+    category: "Auth",
+    files: ["src/lib/auth/vendor.ts"],
+    check: () => checkTask("M8-3", () =>
+      fileExists("src/lib/auth/vendor.ts")),
+  },
+  {
+    id: "M8-4",
+    name: "Quote request flow",
+    category: "API",
+    files: ["src/app/api/quote-requests/route.ts"],
+    check: () => checkTask("M8-4", () =>
+      fileExists("src/app/api/quote-requests/route.ts")),
+  },
+  {
+    id: "M8-5",
+    name: "Vendor quote submission",
+    category: "Web UI",
+    files: ["src/app/vendor/quotes/[id]/page.tsx"],
+    check: () => checkTask("M8-5", () =>
+      fileExists("src/app/vendor/quotes/[id]/page.tsx")),
+  },
+  {
+    id: "M8-6",
+    name: "Quote comparison",
+    category: "Web UI",
+    files: ["src/components/quotes/quote-comparison.tsx"],
+    check: () => checkTask("M8-6", () =>
+      fileExists("src/components/quotes/quote-comparison.tsx")),
+  },
+];
+
 function evaluateWorkstream(tasks: TaskCheck[]) {
   return tasks.map((task) => ({
     id: task.id,
@@ -391,6 +1005,7 @@ function evaluateWorkstream(tasks: TaskCheck[]) {
 
 export async function GET() {
   const workstreams = [
+    // Original V3 Stages
     {
       id: "S1",
       name: "Stage 1: Foundation",
@@ -440,6 +1055,63 @@ export async function GET() {
       color: "indigo",
       tasks: evaluateWorkstream(commandCenter),
     },
+    // V2 Migration Sprints
+    {
+      id: "M1",
+      name: "Migration M1: Dashboard & Navigation",
+      description: "Sidebar, welcome banner, stat cards, charts, map",
+      color: "rose",
+      tasks: evaluateWorkstream(migrationM1),
+    },
+    {
+      id: "M2",
+      name: "Migration M2: Database Schema",
+      description: "Rooms, annotations, line items, photos, assignments tables",
+      color: "amber",
+      tasks: evaluateWorkstream(migrationM2),
+    },
+    {
+      id: "M3",
+      name: "Migration M3: Rooms & Sketch Editor",
+      description: "Konva.js canvas, walls, doors, windows, fixtures",
+      color: "emerald",
+      tasks: evaluateWorkstream(migrationM3),
+    },
+    {
+      id: "M4",
+      name: "Migration M4: Line Items & Pricing",
+      description: "Scope management, Xactimate codes, pricing",
+      color: "sky",
+      tasks: evaluateWorkstream(migrationM4),
+    },
+    {
+      id: "M5",
+      name: "Migration M5: Photos & Documentation",
+      description: "Photo upload, gallery, capture, linking",
+      color: "violet",
+      tasks: evaluateWorkstream(migrationM5),
+    },
+    {
+      id: "M6",
+      name: "Migration M6: SLA & Workflow",
+      description: "Carrier SLAs, milestone tracking, status workflow",
+      color: "fuchsia",
+      tasks: evaluateWorkstream(migrationM6),
+    },
+    {
+      id: "M7",
+      name: "Migration M7: Portfolio & Analytics",
+      description: "Portfolio dashboard, analytics, team metrics",
+      color: "lime",
+      tasks: evaluateWorkstream(migrationM7),
+    },
+    {
+      id: "M8",
+      name: "Migration M8: Vendor Portal",
+      description: "Vendor management, quotes, comparison",
+      color: "teal",
+      tasks: evaluateWorkstream(migrationM8),
+    },
   ];
 
   // Calculate totals
@@ -469,6 +1141,7 @@ export async function GET() {
     { name: "Export", ...categoryStats("Export"), color: "cyan" },
     { name: "AI", ...categoryStats("AI"), color: "indigo" },
     { name: "PWA", ...categoryStats("PWA"), color: "orange" },
+    { name: "Reference", ...categoryStats("Reference"), color: "yellow" },
   ].filter((c) => c.total > 0);
 
   // Determine verdict

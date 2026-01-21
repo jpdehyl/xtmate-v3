@@ -953,9 +953,898 @@ After completing your code quality review:
   },
 ];
 
+// ============================================================================
+// V2 MIGRATION PROMPTS - Sprints M1-M8
+// ============================================================================
+const migrationPrompts: AgentPrompt[] = [
+  {
+    id: "migration-m1-dashboard",
+    name: "Migration M1: Dashboard & Navigation",
+    category: "implementation",
+    description: "Sidebar, welcome banner, stat cards, charts, projects map",
+    icon: "LayoutDashboard",
+    taskIds: ["M1-1", "M1-2", "M1-3", "M1-4", "M1-5", "M1-6", "M1-7", "M1-8"],
+    prompt: `${STANDARD_HEADER}
+## Task: Implement Migration Sprint M1 - Dashboard & Navigation
+
+**Sprint**: M1 - Dashboard & Navigation (NOT STARTED)
+**Task IDs**: M1-1 through M1-8
+**PRD**: docs/PRD-V2-MIGRATION.md
+
+This sprint ports the V2 dashboard experience to V3.
+
+### Source Files (Copy from V2)
+
+V2 Location: \`~/xtmate-v2/src/components/dashboard/\`
+
+\`\`\`
+sidebar.tsx          → src/components/dashboard/sidebar.tsx
+welcome-banner.tsx   → src/components/dashboard/welcome-banner.tsx
+stat-card.tsx        → src/components/dashboard/stat-card.tsx
+estimate-table.tsx   → src/components/dashboard/estimate-table.tsx
+projects-map.tsx     → src/components/dashboard/projects-map.tsx
+performance-metrics.tsx → src/components/dashboard/performance-metrics.tsx
+\`\`\`
+
+### Dependencies to Install
+
+\`\`\`bash
+npm install recharts @react-google-maps/api
+\`\`\`
+
+### Task Breakdown
+
+**M1-1: Sidebar Navigation**
+- Copy sidebar.tsx from V2
+- Update imports for V3 paths
+- Ensure routes: Dashboard, Estimates, Command Center, Portfolio, QA Review, Analytics, Team, Settings
+- Add collapse toggle for mobile
+
+**M1-2: Welcome Banner**
+- Personalized greeting (Good morning/afternoon/evening)
+- User's name from Clerk
+- Today's date
+- Active claims count
+- "View Active Claims" button
+
+**M1-3: Stat Cards Row**
+- In Progress count
+- Complete count
+- This Month count
+- Total Value (currency formatted)
+
+**M1-4: Monthly Claims Chart**
+- Recharts BarChart
+- Last 6 months of data
+- Blue gradient bars
+
+**M1-5: Loss Types Donut Chart**
+- Recharts PieChart
+- Fire, Water, Other segments
+- Legend with labels
+
+**M1-6: Claims Table with Tabs**
+- Tabs: All, Draft, Working, Synced, Revision
+- Columns: Claim/Project, Insured, Profile, Status, Total, Modified, User
+- Row click → navigate to estimate
+
+**M1-7: Projects Map**
+- Google Maps component
+- Markers for each estimate with lat/lng
+- Color by status (In Progress = blue, Approved = green)
+
+**M1-8: Dashboard Layout Integration**
+- Assemble all components in dashboard/page.tsx
+- Responsive grid layout
+- Sidebar on left (collapsible on mobile)
+
+### Environment Variables Needed
+
+\`\`\`env
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_key
+\`\`\`
+
+### Acceptance Criteria
+
+- [ ] Sidebar shows all navigation items with icons
+- [ ] Welcome banner shows user's name and date
+- [ ] Stat cards display correct counts
+- [ ] Charts render with real data
+- [ ] Map shows estimate locations
+- [ ] Table filters by status tabs
+- [ ] Mobile responsive layout
+${VALIDATION_FOOTER}`,
+  },
+  {
+    id: "migration-m2-schema",
+    name: "Migration M2: Database Schema",
+    category: "implementation",
+    description: "Add rooms, annotations, line items, photos, assignments tables",
+    icon: "Database",
+    taskIds: ["M2-1", "M2-2", "M2-3", "M2-4", "M2-5", "M2-6"],
+    prompt: `${STANDARD_HEADER}
+## Task: Implement Migration Sprint M2 - Database Schema Expansion
+
+**Sprint**: M2 - Database Schema (NOT STARTED)
+**Task IDs**: M2-1 through M2-6
+**PRD**: docs/PRD-V2-MIGRATION.md
+
+This sprint adds the core tables needed for full restoration app functionality.
+
+### Schema Additions
+
+Add these to \`src/lib/db/schema.ts\`:
+
+\`\`\`typescript
+import { pgTable, text, timestamp, uuid, pgEnum, real, integer, boolean, jsonb } from "drizzle-orm/pg-core";
+
+// M2-1: Levels table (floor levels)
+export const levels = pgTable('levels', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  estimateId: uuid('estimate_id').references(() => estimates.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(), // "1", "2", "B", "A"
+  label: text('label'), // "First Floor", "Basement"
+  order: integer('order').default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// M2-2: Rooms table
+export const rooms = pgTable('rooms', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  estimateId: uuid('estimate_id').references(() => estimates.id, { onDelete: 'cascade' }),
+  levelId: uuid('level_id').references(() => levels.id),
+  name: text('name').notNull(),
+  category: text('category'), // kitchen, bathroom, bedroom, living, dining, etc.
+  lengthIn: real('length_in'),
+  widthIn: real('width_in'),
+  heightIn: real('height_in').default(96), // 8ft default
+  squareFeet: real('square_feet'),
+  cubicFeet: real('cubic_feet'),
+  perimeterLf: real('perimeter_lf'),
+  wallSf: real('wall_sf'),
+  ceilingSf: real('ceiling_sf'),
+  floorMaterial: text('floor_material'),
+  wallMaterial: text('wall_material'),
+  ceilingMaterial: text('ceiling_material'),
+  geometry: jsonb('geometry'), // For sketch editor
+  order: integer('order').default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// M2-3: Annotations table (damage markers)
+export const annotations = pgTable('annotations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  roomId: uuid('room_id').references(() => rooms.id, { onDelete: 'cascade' }),
+  damageType: text('damage_type'), // water, fire, smoke, mold, impact, wind
+  severity: text('severity'), // light, moderate, heavy, severe
+  category: text('category'), // cat1, cat2, cat3 (water contamination)
+  positionX: real('position_x'),
+  positionY: real('position_y'),
+  positionZ: real('position_z'),
+  affectedSurfaces: jsonb('affected_surfaces'), // ['floor', 'wall', 'ceiling']
+  affectedHeightIn: real('affected_height_in'),
+  affectedAreaSf: real('affected_area_sf'),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// M2-4: Line Items table
+export const lineItems = pgTable('line_items', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  estimateId: uuid('estimate_id').references(() => estimates.id, { onDelete: 'cascade' }),
+  roomId: uuid('room_id').references(() => rooms.id),
+  annotationId: uuid('annotation_id').references(() => annotations.id),
+  category: text('category'), // WTR, DRY, DEM, DRW, FLR, PNT, CLN
+  selector: text('selector'), // Xactimate code
+  description: text('description'),
+  quantity: real('quantity'),
+  unit: text('unit'), // SF, LF, EA, SY, HR
+  unitPrice: real('unit_price'),
+  total: real('total'),
+  source: text('source').default('manual'), // manual, ai_generated, template
+  aiConfidence: real('ai_confidence'),
+  verified: boolean('verified').default(false),
+  order: integer('order').default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// M2-5: Photos table
+export const photoTypeEnum = pgEnum('photo_type', ['BEFORE', 'DURING', 'AFTER', 'DAMAGE', 'EQUIPMENT', 'OVERVIEW']);
+
+export const photos = pgTable('photos', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  estimateId: uuid('estimate_id').references(() => estimates.id, { onDelete: 'cascade' }),
+  roomId: uuid('room_id').references(() => rooms.id),
+  annotationId: uuid('annotation_id').references(() => annotations.id),
+  url: text('url').notNull(),
+  thumbnailUrl: text('thumbnail_url'),
+  filename: text('filename'),
+  mimeType: text('mime_type'),
+  sizeBytes: integer('size_bytes'),
+  photoType: photoTypeEnum('photo_type'),
+  caption: text('caption'),
+  takenAt: timestamp('taken_at'),
+  latitude: real('latitude'),
+  longitude: real('longitude'),
+  order: integer('order').default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// M2-6: Assignments table
+export const assignmentTypeEnum = pgEnum('assignment_type', ['E', 'A', 'R', 'P', 'C', 'Z']);
+export const assignmentStatusEnum = pgEnum('assignment_status', ['pending', 'in_progress', 'submitted', 'approved', 'completed']);
+
+export const assignments = pgTable('assignments', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  estimateId: uuid('estimate_id').references(() => estimates.id, { onDelete: 'cascade' }),
+  type: assignmentTypeEnum('type').notNull(),
+  status: assignmentStatusEnum('status').default('pending'),
+  subtotal: real('subtotal').default(0),
+  overhead: real('overhead').default(0),
+  profit: real('profit').default(0),
+  tax: real('tax').default(0),
+  total: real('total').default(0),
+  order: integer('order').default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// Export types
+export type Level = typeof levels.$inferSelect;
+export type Room = typeof rooms.$inferSelect;
+export type Annotation = typeof annotations.$inferSelect;
+export type LineItem = typeof lineItems.$inferSelect;
+export type Photo = typeof photos.$inferSelect;
+export type Assignment = typeof assignments.$inferSelect;
+\`\`\`
+
+### After Adding Schema
+
+Run migrations:
+\`\`\`bash
+npx drizzle-kit push:pg
+\`\`\`
+
+### Acceptance Criteria
+
+- [ ] All 6 tables created in database
+- [ ] Foreign key relationships work
+- [ ] Types exported for use in API routes
+- [ ] drizzle-kit push succeeds
+${VALIDATION_FOOTER}`,
+  },
+  {
+    id: "migration-m3-sketch",
+    name: "Migration M3: Rooms & Sketch Editor",
+    category: "implementation",
+    description: "Konva.js canvas with walls, doors, windows, fixtures",
+    icon: "PenTool",
+    taskIds: ["M3-1", "M3-2", "M3-3", "M3-4", "M3-5", "M3-6", "M3-7", "M3-8", "M3-9", "M3-10"],
+    prompt: `${STANDARD_HEADER}
+## Task: Implement Migration Sprint M3 - Rooms & Sketch Editor
+
+**Sprint**: M3 - Rooms & Sketch Editor (NOT STARTED)
+**Task IDs**: M3-1 through M3-10
+**PRD**: docs/PRD-V2-MIGRATION.md
+
+This sprint ports the complete sketch editor from V2.
+
+### Prerequisites
+- Sprint M2 (Database Schema) must be complete
+
+### Dependencies to Install
+
+\`\`\`bash
+npm install konva react-konva
+\`\`\`
+
+### Source Files (Copy from V2)
+
+\`\`\`
+V2: ~/xtmate-v2/src/components/sketch-editor/
+→ V3: src/components/sketch-editor/
+
+Files to copy:
+├── SketchCanvas.tsx       # Main canvas (M3-2)
+├── Toolbar.tsx            # Tool selection (M3-9)
+├── LevelTabs.tsx          # Floor levels (M3-10)
+├── RoomPropertiesPanel.tsx
+├── ToolOptionsPanel.tsx
+└── layers/
+    ├── GridLayer.tsx
+    ├── WallsLayer.tsx     # (M3-3)
+    ├── DoorsLayer.tsx     # (M3-4)
+    ├── WindowsLayer.tsx   # (M3-5)
+    ├── FixturesLayer.tsx  # (M3-6)
+    ├── StaircasesLayer.tsx # (M3-7)
+    ├── RoomsLayer.tsx
+    └── RoomLabelsLayer.tsx
+
+V2: ~/xtmate-v2/src/lib/geometry/
+→ V3: src/lib/geometry/
+
+Files to copy:
+├── room-detection.ts      # (M3-8)
+├── snapping.ts
+├── staircase.ts
+└── types.ts
+\`\`\`
+
+### Task Breakdown
+
+**M3-1: Rooms Tab on Estimate Detail**
+- Add tab navigation to estimate detail page
+- Tabs: Details, Rooms, Scope, Photos, SLA
+- Rooms tab shows room list and "Open Sketch Editor" button
+
+**M3-2: Sketch Canvas**
+- React Konva Stage and Layer setup
+- Pan and zoom controls
+- Grid background
+- Touch support for mobile
+
+**M3-3: Wall Drawing Tool**
+- Click to start wall, click to end
+- Wall snapping (endpoint, midpoint, perpendicular, etc.)
+- Double-click to finish polyline
+
+**M3-4-M3-7: Symbol Tools**
+- Door tool with types (single, double, pocket, bi-fold, sliding)
+- Window tool with types (hung, casement, sliding, picture)
+- Fixture tool (kitchen, bathroom, laundry fixtures)
+- Staircase tool (straight, L-shaped, U-shaped)
+
+**M3-8: Room Detection**
+- Detect enclosed rooms from walls
+- Calculate area automatically
+- Prompt for room name and category
+
+**M3-9: Toolbar**
+- Tool selection buttons with icons
+- Keyboard shortcuts (V, W, O, etc.)
+- Active tool highlight
+
+**M3-10: Level Tabs**
+- Multi-floor support (B, 1, 2, 3, A)
+- Add/remove levels
+- Per-level sketch data
+
+### Keyboard Shortcuts
+
+| Key | Tool |
+|-----|------|
+| V | Select |
+| W | Wall |
+| O | Opening/Door |
+| M | Measure |
+| G | Toggle Grid |
+| Delete | Delete selected |
+| Escape | Cancel |
+
+### Acceptance Criteria
+
+- [ ] Rooms tab visible on estimate detail
+- [ ] Sketch editor opens with Konva canvas
+- [ ] Can draw walls with snapping
+- [ ] Can place doors and windows
+- [ ] Room detection calculates area
+- [ ] Multi-level support works
+- [ ] Keyboard shortcuts work
+- [ ] Touch gestures work on mobile
+${VALIDATION_FOOTER}`,
+  },
+  {
+    id: "migration-m4-pricing",
+    name: "Migration M4: Line Items & Pricing",
+    category: "implementation",
+    description: "Scope management with Xactimate codes and pricing",
+    icon: "DollarSign",
+    taskIds: ["M4-1", "M4-2", "M4-3", "M4-4", "M4-5", "M4-6", "M4-7", "M4-8"],
+    prompt: `${STANDARD_HEADER}
+## Task: Implement Migration Sprint M4 - Line Items & Pricing
+
+**Sprint**: M4 - Line Items & Pricing (NOT STARTED)
+**Task IDs**: M4-1 through M4-8
+**PRD**: docs/PRD-V2-MIGRATION.md
+
+### Prerequisites
+- Sprint M2 (Database Schema) must be complete
+
+### API Routes to Create
+
+**M4-1: Line Items API**
+
+\`\`\`typescript
+// src/app/api/line-items/route.ts
+GET /api/line-items?estimateId=X    // List items for estimate
+POST /api/line-items                 // Create item
+
+// src/app/api/line-items/[id]/route.ts
+GET /api/line-items/[id]            // Get single item
+PATCH /api/line-items/[id]          // Update item
+DELETE /api/line-items/[id]         // Delete item
+
+// src/app/api/line-items/bulk/route.ts
+POST /api/line-items/bulk           // Bulk create (for AI suggestions)
+\`\`\`
+
+**M4-4: Price Lists API**
+
+\`\`\`typescript
+// src/app/api/price-lists/route.ts
+GET /api/price-lists                // List user's price lists
+POST /api/price-lists               // Create price list
+
+// src/app/api/price-lists/import/route.ts
+POST /api/price-lists/import        // Import CSV/XLSX
+\`\`\`
+
+### Reference Data (M4-3)
+
+Copy from V2:
+\`\`\`
+~/xtmate-v2/src/lib/reference/xactimate-categories.ts
+→ src/lib/reference/xactimate-categories.ts
+\`\`\`
+
+This file contains all Xactimate category codes:
+- ACM (Acoustical), APP (Appliances), AWN (Awnings)
+- CAB (Cabinets), CLN (Cleaning), CNT (Contents)
+- DEM (Demolition), DRY (Drying), DRW (Drywall)
+- ELE (Electrical), FLR (Flooring), etc.
+
+### UI Components Needed
+
+**M4-2: Scope Tab UI**
+- Line items table with columns:
+  - Category | Code | Description | Qty | Unit | Price | Total
+- Inline editing (click to edit)
+- Add item button
+- Delete with confirmation
+
+**M4-5: Totals Calculation**
+\`\`\`typescript
+// Calculate on client or server
+const subtotal = lineItems.reduce((sum, item) => sum + item.total, 0);
+const overhead = subtotal * (overheadPercent / 100);
+const profit = subtotal * (profitPercent / 100);
+const tax = (subtotal + overhead + profit) * (taxPercent / 100);
+const grandTotal = subtotal + overhead + profit + tax;
+\`\`\`
+
+**M4-6: AI Scope Integration**
+- Update AI scope modal to save accepted items to database
+- POST to /api/line-items/bulk with accepted suggestions
+
+**M4-7: Line Item Reordering**
+- Drag handle on rows
+- Update order field on drop
+- PATCH /api/line-items/reorder
+
+**M4-8: Export with Line Items**
+- Update PDF export to include line items table
+- Update Excel export to include line items sheet
+
+### Acceptance Criteria
+
+- [ ] Can create/edit/delete line items
+- [ ] Items grouped by category
+- [ ] Totals calculate correctly
+- [ ] AI suggestions save to database
+- [ ] Can drag to reorder
+- [ ] PDF/Excel exports include line items
+- [ ] Price list import works (CSV)
+${VALIDATION_FOOTER}`,
+  },
+  {
+    id: "migration-m5-photos",
+    name: "Migration M5: Photos & Documentation",
+    category: "implementation",
+    description: "Photo upload, gallery, capture, and linking",
+    icon: "Image",
+    taskIds: ["M5-1", "M5-2", "M5-3", "M5-4", "M5-5", "M5-6"],
+    prompt: `${STANDARD_HEADER}
+## Task: Implement Migration Sprint M5 - Photos & Documentation
+
+**Sprint**: M5 - Photos & Documentation (NOT STARTED)
+**Task IDs**: M5-1 through M5-6
+**PRD**: docs/PRD-V2-MIGRATION.md
+
+### Prerequisites
+- Sprint M2 (Database Schema) must be complete
+
+### Storage Setup
+
+For Vercel deployment, use Vercel Blob or similar:
+
+\`\`\`bash
+npm install @vercel/blob
+\`\`\`
+
+### API Routes
+
+**M5-1: Photo Upload API**
+
+\`\`\`typescript
+// src/app/api/photos/route.ts
+GET /api/photos?estimateId=X        // List photos
+POST /api/photos                    // Upload photo (multipart/form-data)
+DELETE /api/photos/[id]             // Delete photo
+\`\`\`
+
+### UI Components
+
+**M5-2: Photo Gallery**
+- Grid of thumbnails
+- Filter by photo type (Before, During, After, Damage, Equipment, Overview)
+- Click to open lightbox
+
+**M5-3: Photo Capture (Mobile)**
+- Camera input on mobile devices
+- Type selection before capture
+- Auto GPS tagging
+
+**M5-4: Photo Linking**
+- Associate photo with room
+- Associate photo with damage annotation
+- Show photo count on room cards
+
+**M5-5: Photos Tab**
+- Add Photos tab to estimate detail
+- Upload button
+- Gallery view
+- Delete with confirmation
+
+**M5-6: Export with Photos**
+- Include thumbnails in PDF
+- Include photos in ESX ZIP (if implementing)
+
+### Photo Types
+
+\`\`\`typescript
+type PhotoType =
+  | 'BEFORE'    // Pre-damage state
+  | 'DURING'    // During restoration
+  | 'AFTER'     // Post-restoration
+  | 'DAMAGE'    // Specific damage documentation
+  | 'EQUIPMENT' // Equipment deployed
+  | 'OVERVIEW'; // General property shots
+\`\`\`
+
+### Acceptance Criteria
+
+- [ ] Can upload photos from device
+- [ ] Photos display in gallery grid
+- [ ] Can filter by photo type
+- [ ] Lightbox opens on click
+- [ ] Can link photo to room
+- [ ] Photos tab shows on estimate
+- [ ] Photos appear in PDF export
+${VALIDATION_FOOTER}`,
+  },
+  {
+    id: "migration-m6-sla",
+    name: "Migration M6: SLA & Workflow",
+    category: "implementation",
+    description: "Carrier SLAs, milestone tracking, status workflow",
+    icon: "Clock",
+    taskIds: ["M6-1", "M6-2", "M6-3", "M6-4", "M6-5", "M6-6"],
+    prompt: `${STANDARD_HEADER}
+## Task: Implement Migration Sprint M6 - SLA & Workflow
+
+**Sprint**: M6 - SLA & Workflow (NOT STARTED)
+**Task IDs**: M6-1 through M6-6
+**PRD**: docs/PRD-V2-MIGRATION.md
+
+### Database Schema Additions (M6-1, M6-2)
+
+\`\`\`typescript
+// Add to src/lib/db/schema.ts
+
+// Carriers (insurance companies)
+export const carriers = pgTable('carriers', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  code: text('code').notNull().unique(), // "SF", "ALL", "FAR"
+  name: text('name').notNull(), // "State Farm", "Allstate"
+  contactEmail: text('contact_email'),
+  contactPhone: text('contact_phone'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// SLA Rules per carrier
+export const carrierSlaRules = pgTable('carrier_sla_rules', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  carrierId: uuid('carrier_id').references(() => carriers.id),
+  milestone: text('milestone').notNull(), // 'contacted', 'site_visit', 'estimate_uploaded'
+  targetHours: integer('target_hours').notNull(),
+  isBusinessHours: boolean('is_business_hours').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// SLA Events (actual milestone completions)
+export const slaEvents = pgTable('sla_events', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  estimateId: uuid('estimate_id').references(() => estimates.id, { onDelete: 'cascade' }),
+  milestone: text('milestone').notNull(),
+  targetAt: timestamp('target_at'),
+  completedAt: timestamp('completed_at'),
+  isOverdue: boolean('is_overdue').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Also add carrierId to estimates table
+// ALTER estimates ADD COLUMN carrier_id UUID REFERENCES carriers(id)
+\`\`\`
+
+### SLA Milestones
+
+\`\`\`typescript
+const SLA_MILESTONES = [
+  'assigned',           // Job received
+  'contacted',          // Insured contacted
+  'site_visit',         // On-site inspection
+  'estimate_uploaded',  // Estimate submitted
+  'revision_requested', // Changes needed
+  'approved',           // Approved by adjuster
+  'closed',             // Job complete
+];
+\`\`\`
+
+### UI Components
+
+**M6-3: SLA Tab on Estimate**
+- Timeline view of milestones
+- Target time vs actual time
+- At-risk/overdue indicators
+- Complete milestone button
+
+**M6-4: Status Workflow**
+- Status transitions with validation
+- Automatic SLA event creation on status change
+
+**M6-5: SLA Dashboard Widget**
+- At-risk count
+- Overdue count
+- SLA compliance percentage
+- Quick links to at-risk estimates
+
+**M6-6: SLA Badges**
+- Green: On-time
+- Yellow: At-risk (within 4 hours of target)
+- Red: Overdue
+- Show on estimate list and detail
+
+### Acceptance Criteria
+
+- [ ] Carriers table with major insurance companies
+- [ ] SLA rules configurable per carrier
+- [ ] SLA events tracked for each estimate
+- [ ] Timeline shows milestone progress
+- [ ] Badges show SLA status
+- [ ] Dashboard widget shows at-risk count
+${VALIDATION_FOOTER}`,
+  },
+  {
+    id: "migration-m7-analytics",
+    name: "Migration M7: Portfolio & Analytics",
+    category: "implementation",
+    description: "Portfolio dashboard, analytics, team metrics",
+    icon: "BarChart3",
+    taskIds: ["M7-1", "M7-2", "M7-3", "M7-4", "M7-5", "M7-6"],
+    prompt: `${STANDARD_HEADER}
+## Task: Implement Migration Sprint M7 - Portfolio & Analytics
+
+**Sprint**: M7 - Portfolio & Analytics (NOT STARTED)
+**Task IDs**: M7-1 through M7-6
+**PRD**: docs/PRD-V2-MIGRATION.md
+
+### Pages to Create
+
+**M7-1: Portfolio Page**
+\`\`\`
+src/app/dashboard/portfolio/page.tsx
+\`\`\`
+- Summary metrics (total claims, value, completion rate)
+- At-risk estimates list
+- Activity feed
+- Carrier breakdown chart
+
+**M7-2: Analytics Page**
+\`\`\`
+src/app/dashboard/analytics/page.tsx
+\`\`\`
+- Date range picker
+- Revenue over time (line chart)
+- Claims by status (bar chart)
+- Average claim value
+- Completion time trends
+
+### Components to Create
+
+**M7-3: Team Metrics**
+- Claims per team member
+- Revenue per team member
+- Average completion time
+- Table with sortable columns
+
+**M7-4: Carrier Breakdown**
+- Pie/donut chart of claims by carrier
+- Table with carrier stats
+- Click to filter by carrier
+
+**M7-5: Activity Feed**
+- Recent activity log
+- User avatars
+- Action descriptions ("Juan created estimate", "Maria uploaded photos")
+- Relative timestamps ("2 hours ago")
+
+**M7-6: Export Analytics**
+- PDF report with charts
+- Date range in report
+- Summary statistics
+
+### Source Files (Copy from V2)
+
+\`\`\`
+~/xtmate-v2/src/components/portfolio/
+├── ActivityFeed.tsx
+├── AtRiskList.tsx
+├── CarrierBreakdown.tsx
+└── DonutChart.tsx
+
+~/xtmate-v2/src/components/analytics/
+├── BarChart.tsx
+├── LineChart.tsx
+├── DateRangePicker.tsx
+└── MetricCard.tsx
+\`\`\`
+
+### Acceptance Criteria
+
+- [ ] Portfolio page shows summary metrics
+- [ ] Activity feed shows recent actions
+- [ ] Carrier breakdown chart displays
+- [ ] Analytics page has date range picker
+- [ ] Charts render with real data
+- [ ] Team metrics show per-user stats
+- [ ] PDF export includes analytics
+${VALIDATION_FOOTER}`,
+  },
+  {
+    id: "migration-m8-vendor",
+    name: "Migration M8: Vendor Portal",
+    category: "implementation",
+    description: "Vendor management, quote requests, comparison",
+    icon: "Building",
+    taskIds: ["M8-1", "M8-2", "M8-3", "M8-4", "M8-5", "M8-6"],
+    prompt: `${STANDARD_HEADER}
+## Task: Implement Migration Sprint M8 - Vendor Portal
+
+**Sprint**: M8 - Vendor Portal (NOT STARTED)
+**Task IDs**: M8-1 through M8-6
+**PRD**: docs/PRD-V2-MIGRATION.md
+
+### Database Schema (M8-1)
+
+\`\`\`typescript
+// Add to src/lib/db/schema.ts
+
+// Vendors (subcontractors)
+export const vendors = pgTable('vendors', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: text('user_id').notNull(), // Owner's Clerk ID
+  name: text('name').notNull(),
+  email: text('email').notNull(),
+  phone: text('phone'),
+  specialty: text('specialty'), // plumbing, electrical, flooring, etc.
+  accessToken: text('access_token').unique(), // For portal login
+  tokenExpiresAt: timestamp('token_expires_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Quote Requests
+export const quoteRequests = pgTable('quote_requests', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  estimateId: uuid('estimate_id').references(() => estimates.id),
+  vendorId: uuid('vendor_id').references(() => vendors.id),
+  status: text('status').default('pending'), // pending, viewed, quoted, accepted, rejected
+  message: text('message'),
+  expiresAt: timestamp('expires_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Quote Request Items (line items included in request)
+export const quoteRequestItems = pgTable('quote_request_items', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  quoteRequestId: uuid('quote_request_id').references(() => quoteRequests.id, { onDelete: 'cascade' }),
+  lineItemId: uuid('line_item_id').references(() => lineItems.id),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Vendor Quotes (responses)
+export const vendorQuotes = pgTable('vendor_quotes', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  quoteRequestId: uuid('quote_request_id').references(() => quoteRequests.id),
+  totalAmount: real('total_amount'),
+  notes: text('notes'),
+  validUntil: timestamp('valid_until'),
+  submittedAt: timestamp('submitted_at').defaultNow(),
+});
+\`\`\`
+
+### Vendor Portal Routes (M8-2)
+
+\`\`\`
+src/app/vendor/
+├── page.tsx              # Vendor dashboard (list of quote requests)
+├── login/page.tsx        # Token-based login
+└── quotes/[id]/page.tsx  # Quote detail and submission form
+\`\`\`
+
+### Token-Based Auth (M8-3)
+
+Vendors don't use Clerk - they access via unique token:
+
+\`\`\`typescript
+// src/lib/auth/vendor.ts
+export function generateVendorToken(): string {
+  return crypto.randomUUID().replace(/-/g, '');
+}
+
+export async function validateVendorToken(token: string): Promise<Vendor | null> {
+  const vendor = await db.query.vendors.findFirst({
+    where: (v, { eq, gt }) =>
+      and(eq(v.accessToken, token), gt(v.tokenExpiresAt, new Date()))
+  });
+  return vendor || null;
+}
+\`\`\`
+
+### Quote Request Flow (M8-4)
+
+1. Estimator selects line items to quote
+2. Selects vendor(s) to send to
+3. System generates quote request with access token
+4. Email sent to vendor with link
+5. Vendor logs in via token
+6. Vendor sees scope details and submits pricing
+
+### Vendor Quote Submission (M8-5)
+
+Vendor portal shows:
+- Scope of work (line items)
+- Room dimensions
+- Photos (read-only)
+- Price entry form
+- Submit button
+
+### Quote Comparison (M8-6)
+
+When multiple quotes received:
+- Side-by-side comparison table
+- Highlight lowest/highest prices
+- Accept/reject buttons
+- Selected quote updates line item prices
+
+### Acceptance Criteria
+
+- [ ] Vendors table stores contractor info
+- [ ] Token-based auth works (not Clerk)
+- [ ] Quote requests link to line items
+- [ ] Vendor portal shows scope details
+- [ ] Vendors can submit pricing
+- [ ] Comparison view shows all quotes
+- [ ] Can accept quote to update pricing
+${VALIDATION_FOOTER}`,
+  },
+];
+
 // Combine all prompts
 const allPrompts: AgentPrompt[] = [
   ...implementationPrompts,
+  ...migrationPrompts,
   ...agentPrompts,
   ...reviewPrompts,
 ];
@@ -965,6 +1854,7 @@ export async function GET() {
     prompts: allPrompts,
     categories: {
       implementation: implementationPrompts,
+      migration: migrationPrompts,
       agents: agentPrompts,
       review: reviewPrompts,
     },
@@ -973,6 +1863,7 @@ export async function GET() {
       methodology: "RALPH",
       documentationFile: "CLAUDE.md",
       prdFile: "docs/PRD.md",
+      migrationPrdFile: "docs/PRD-V2-MIGRATION.md",
     },
   });
 }
