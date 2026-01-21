@@ -115,7 +115,7 @@ const taskChecks: TaskDefinition[] = [
   { id: "M2-6", check: () => fileContains("src/lib/db/schema.ts", "assignments") && fileContains("src/lib/db/schema.ts", "type") },
 
   // Migration M3: Rooms & Sketch Editor
-  { id: "M3-1", check: () => fileContains("src/app/dashboard/estimates/[id]/estimate-detail-client.tsx", "Rooms") || fileContains("src/components/features/rooms-tab.tsx", "RoomsTab") },
+  { id: "M3-1", check: () => fileExists("src/components/features/rooms-tab.tsx") && fileHasMinLines("src/components/features/rooms-tab.tsx", 50) },
   { id: "M3-2", check: () => fileExists("src/components/sketch-editor/SketchCanvas.tsx") && fileContains("src/components/sketch-editor/SketchCanvas.tsx", "react-konva") },
   { id: "M3-3", check: () => fileExists("src/components/sketch-editor/layers/WallsLayer.tsx") },
   { id: "M3-4", check: () => fileExists("src/components/sketch-editor/layers/DoorsLayer.tsx") },
@@ -128,26 +128,26 @@ const taskChecks: TaskDefinition[] = [
 
   // Migration M4: Line Items & Pricing
   { id: "M4-1", check: () => fileExists("src/app/api/estimates/[id]/line-items/route.ts") || fileExists("src/app/api/line-items/route.ts") },
-  { id: "M4-2", check: () => fileContains("src/app/dashboard/estimates/[id]/estimate-detail-client.tsx", "Scope") || fileExists("src/components/features/scope-tab.tsx") },
+  { id: "M4-2", check: () => fileExists("src/components/features/scope-tab.tsx") && fileHasMinLines("src/components/features/scope-tab.tsx", 50) },
   { id: "M4-3", check: () => fileExists("src/lib/reference/xactimate-categories.ts") },
   { id: "M4-4", check: () => fileExists("src/app/api/price-lists/route.ts") },
-  { id: "M4-5", check: () => fileContains("src/app/dashboard/estimates/[id]/estimate-detail-client.tsx", "total") || fileExists("src/components/scope/totals-summary.tsx") },
-  { id: "M4-6", check: () => fileContains("src/components/features/ai-scope-modal.tsx", "lineItems") || fileContains("src/components/features/ai-scope-modal.tsx", "save") },
+  { id: "M4-5", check: () => fileExists("src/components/scope/totals-summary.tsx") },
+  { id: "M4-6", check: () => fileContains("src/components/features/ai-scope-modal.tsx", "onSaveLineItems") },
   { id: "M4-7", check: () => fileExists("src/components/scope/line-items-table.tsx") && fileContains("src/components/scope/line-items-table.tsx", "drag") },
   { id: "M4-8", check: () => fileContains("src/app/api/estimates/[id]/export/route.ts", "lineItems") },
 
   // Migration M5: Photos & Documentation
-  { id: "M5-1", check: () => fileExists("src/app/api/photos/upload/route.ts") || fileExists("src/app/api/estimates/[id]/photos/route.ts") },
-  { id: "M5-2", check: () => fileExists("src/components/photos/photo-gallery.tsx") || fileExists("src/components/features/photos-tab.tsx") },
+  { id: "M5-1", check: () => fileExists("src/app/api/estimates/[id]/photos/route.ts") },
+  { id: "M5-2", check: () => fileExists("src/components/features/photos-tab.tsx") && fileHasMinLines("src/components/features/photos-tab.tsx", 50) },
   { id: "M5-3", check: () => fileExists("src/components/photos/photo-capture.tsx") },
   { id: "M5-4", check: () => fileExists("src/components/photos/photo-form.tsx") && fileContains("src/components/photos/photo-form.tsx", "roomId") },
-  { id: "M5-5", check: () => fileContains("src/app/dashboard/estimates/[id]/estimate-detail-client.tsx", "Photos") },
+  { id: "M5-5", check: () => fileExists("src/components/features/photos-tab.tsx") },
   { id: "M5-6", check: () => fileContains("src/app/api/estimates/[id]/export/route.ts", "photos") },
 
   // Migration M6: SLA & Workflow
   { id: "M6-1", check: () => fileContains("src/lib/db/schema.ts", "carriers") },
   { id: "M6-2", check: () => fileContains("src/lib/db/schema.ts", "slaEvents") || fileContains("src/lib/db/schema.ts", "sla_events") },
-  { id: "M6-3", check: () => fileContains("src/app/dashboard/estimates/[id]/estimate-detail-client.tsx", "SLA") || fileExists("src/components/features/sla-tab.tsx") },
+  { id: "M6-3", check: () => fileExists("src/components/features/sla-tab.tsx") && fileHasMinLines("src/components/features/sla-tab.tsx", 50) },
   { id: "M6-4", check: () => fileExists("src/app/api/estimates/[id]/status/route.ts") },
   { id: "M6-5", check: () => fileExists("src/components/dashboard/sla-widget.tsx") },
   { id: "M6-6", check: () => fileExists("src/components/sla/sla-badge.tsx") || fileExists("src/components/ui/sla-badge.tsx") },
