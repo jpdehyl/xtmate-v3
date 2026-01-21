@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0284c7",
+  themeColor: "#b4975a", // Paul Davis gold
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

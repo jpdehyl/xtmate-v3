@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
+import { PermissionsProvider } from "@/hooks/usePermissions";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -16,11 +17,8 @@ export function Providers({ children }: ProvidersProps) {
   }
 
   return (
-    <ClerkProvider
-      publishableKey={publishableKey}
-      afterSignOutUrl="/"
-    >
-      {children}
+    <ClerkProvider publishableKey={publishableKey} afterSignOutUrl="/">
+      <PermissionsProvider>{children}</PermissionsProvider>
     </ClerkProvider>
   );
 }
