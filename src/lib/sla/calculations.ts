@@ -1,5 +1,6 @@
 import { SlaStatus, SlaEventWithStatus, DEFAULT_SLA_TARGETS, SlaMilestone } from './types';
 import type { SlaEvent, CarrierSlaRule } from '@/lib/db/schema';
+import { addBusinessHours, getBusinessHoursBetween } from './business-hours';
 
 const AT_RISK_THRESHOLD_HOURS = 4; // Mark as at-risk when within 4 hours of target
 
@@ -91,12 +92,14 @@ export function calculateTargetTime(
     return null;
   }
 
+  const useBusinessHours = rule?.isBusinessHours ?? true;
+
+  if (useBusinessHours) {
+    return addBusinessHours(baseTime, targetHours);
+  }
+
   const targetTime = new Date(baseTime);
-
-  // For simplicity, we're adding calendar hours
-  // In production, you might want to implement business hours calculation
   targetTime.setTime(targetTime.getTime() + targetHours * 60 * 60 * 1000);
-
   return targetTime;
 }
 
