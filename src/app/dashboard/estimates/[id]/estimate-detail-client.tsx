@@ -14,6 +14,7 @@ import {
 import { AIScopeModal } from "@/components/features/ai-scope-modal";
 import { EnhanceDescriptionModal } from "@/components/features/enhance-description-modal";
 import { RoomsTab } from "@/components/features/rooms-tab";
+import { ScopeTab } from "@/components/features/scope-tab";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { SketchEditor } from "@/components/sketch-editor";
 import type { ScopeSuggestion } from "@/app/api/ai/suggest-scope/route";
@@ -39,9 +40,9 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [showScopeModal, setShowScopeModal] = useState(false);
   const [showEnhanceModal, setShowEnhanceModal] = useState(false);
-  const [acceptedSuggestions, setAcceptedSuggestions] = useState<ScopeSuggestion[]>([]);
   const [activeTab, setActiveTab] = useState<TabValue>("details");
   const [showSketchEditor, setShowSketchEditor] = useState(false);
+  const [scopeTabKey, setScopeTabKey] = useState(0); // Used to refresh ScopeTab after AI suggestions
 
   const saveEstimate = useCallback(
     async (updates: Partial<Estimate>) => {
@@ -172,12 +173,38 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
     }
   }
 
-  function handleAcceptSuggestions(suggestions: ScopeSuggestion[]) {
-    setAcceptedSuggestions((prev) => [...prev, ...suggestions]);
-  }
+  async function handleAcceptSuggestions(suggestions: ScopeSuggestion[]) {
+    // Save accepted suggestions to database via bulk API
+    try {
+      const items = suggestions.map((suggestion) => ({
+        category: suggestion.category,
+        description: suggestion.item + (suggestion.description ? ` - ${suggestion.description}` : ""),
+        quantity: suggestion.estimatedQuantity ? parseFloat(suggestion.estimatedQuantity) || undefined : undefined,
+        unit: suggestion.unit,
+        source: "ai_generated" as const,
+        aiConfidence: 0.8, // Default confidence for AI suggestions
+      }));
 
-  function handleRemoveSuggestion(suggestionId: string) {
-    setAcceptedSuggestions((prev) => prev.filter((s) => s.id !== suggestionId));
+      const response = await fetch("/api/line-items/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          estimateId: estimate.id,
+          items,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save suggestions");
+      }
+
+      // Refresh the ScopeTab by updating the key
+      setScopeTabKey((prev) => prev + 1);
+      // Switch to Scope tab to show the new items
+      setActiveTab("scope");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save AI suggestions");
+    }
   }
 
   async function handleEnhanceAccept(enhancedName: string) {
@@ -575,103 +602,12 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
           </TabsContent>
 
           <TabsContent value="scope">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold">Scope Items</h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Line items and pricing for this estimate
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowScopeModal(true)}
-                  disabled={!isOnline}
-                  title={!isOnline ? "AI features unavailable offline" : "Get AI scope suggestions"}
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                    />
-                  </svg>
-                  AI Suggest
-                </button>
-              </div>
-
-              {acceptedSuggestions.length === 0 ? (
-                <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
-                  <svg
-                    className="w-12 h-12 mx-auto text-gray-400 mb-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                    />
-                  </svg>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                    No scope items yet
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Click &quot;AI Suggest&quot; to get AI-powered scope recommendations, or add items manually.
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-500">
-                    Full line item management coming in Sprint M4.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {acceptedSuggestions.map((suggestion) => (
-                    <div
-                      key={suggestion.id}
-                      className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-medium px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
-                              {suggestion.category}
-                            </span>
-                          </div>
-                          <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                            {suggestion.item}
-                          </h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            {suggestion.description}
-                          </p>
-                          {(suggestion.estimatedQuantity || suggestion.unit) && (
-                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                              Est. Quantity: {suggestion.estimatedQuantity || "TBD"}{" "}
-                              {suggestion.unit && `(${suggestion.unit})`}
-                            </p>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => handleRemoveSuggestion(suggestion.id)}
-                          className="text-gray-400 hover:text-red-500 transition-colors"
-                          title="Remove suggestion"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  <p className="text-sm text-gray-500 italic">
-                    {acceptedSuggestions.length} suggested scope item{acceptedSuggestions.length !== 1 ? "s" : ""} added
-                  </p>
-                </div>
-              )}
-            </div>
+            <ScopeTab
+              key={scopeTabKey}
+              estimateId={estimate.id}
+              isOnline={isOnline}
+              onOpenAIScope={() => setShowScopeModal(true)}
+            />
           </TabsContent>
 
           <TabsContent value="photos">
