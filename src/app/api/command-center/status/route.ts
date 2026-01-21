@@ -52,16 +52,16 @@ const KNOWN_COMPLETED: Record<string, boolean> = {
   "S4-2": true, // AI suggest scope API
   "S4-3": true, // AI enhance description API
   "S4-4": true, // Suggest Scope button in UI
-  // Stage 5: Mobile Sync - PARTIAL
-  "S5-1": false, // PWA manifest.json - missing icons
+  // Stage 5: Mobile Sync - COMPLETE
+  "S5-1": true, // PWA manifest.json
   "S5-2": true, // Service worker setup
   "S5-3": true, // Offline status indicator
   "S5-4": true, // IndexedDB for offline cache
-  // Stage 6: Polish - MOSTLY COMPLETE
+  // Stage 6: Polish - COMPLETE
   "S6-1": true, // Dashboard search functionality
   "S6-2": true, // Estimate duplicate API
   "S6-3": true, // Skeleton loaders
-  "S6-4": false, // Toast notifications - not installed yet
+  "S6-4": true, // Toast notifications (sonner)
   // Command Center - COMPLETE
   "CC-1": true, // Command Center page
   "CC-2": true, // Status API endpoint
