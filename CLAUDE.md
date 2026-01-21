@@ -489,15 +489,23 @@ Full vendor portal with token-based authentication and quote management:
 - Automatic lowest quote highlighting
 
 ### Future Migration Sprints
-- **M1**: Dashboard & Navigation (sidebar, charts, map)
+- **M1**: Dashboard & Navigation (sidebar, charts, map) - P2 Priority
+- **M8**: Vendor Portal - P3 Priority (defer until customer demand)
 
 ### Future Stages (Post-MVP)
-- Stage 7: Templates System
-- Stage 8: Room Management
-- Stage 9: Templates System
-- Stage 10: Vendor Portal
-- Stage 11: Real-time Collaboration
-- Stage 12: Advanced Analytics
+
+**Priority Order** (based on Business Analysis - January 2026):
+
+| Stage | Feature | Priority | ROI |
+|-------|---------|----------|-----|
+| **Stage 7** | Templates System | **P1** | 9/10 - Saves 50-70% estimate time |
+| Stage 8 | Room Management Enhancements | P3 | Medium |
+| Stage 9 | ESX Import/Export | P2 | High - Migration path from Xactimate |
+| Stage 10 | Vendor Portal | P3 | Defer |
+| Stage 11 | Real-time Collaboration | P4 | Future |
+| Stage 12 | Advanced Analytics | P4 | Future |
+
+See `docs/BUSINESS-ANALYSIS.md` for full ROI analysis and recommendations.
 
 ---
 
