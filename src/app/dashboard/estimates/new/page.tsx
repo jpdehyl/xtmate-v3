@@ -1,49 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState } from "react";
 import Link from "next/link";
-import { DashboardLayout } from "@/components/dashboard";
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
+import { createEstimate, type CreateEstimateState } from "../actions";
+
+const initialState: CreateEstimateState = {};
 
 export default function NewEstimatePage() {
-  const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      name: formData.get("name") as string,
-      jobType: formData.get("jobType") as string,
-      propertyAddress: formData.get("propertyAddress") as string,
-      propertyCity: formData.get("propertyCity") as string,
-      propertyState: formData.get("propertyState") as string,
-      propertyZip: formData.get("propertyZip") as string,
-    };
-
-    try {
-      const response = await fetch("/api/estimates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.error || "Failed to create estimate");
-      }
-
-      const estimate = await response.json();
-      router.push(`/dashboard/estimates/${estimate.id}`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-      setIsSubmitting(false);
-    }
-  }
+  const [state, formAction, isPending] = useActionState(createEstimate, initialState);
 
   return (
     <DashboardLayout>
@@ -61,13 +26,13 @@ export default function NewEstimatePage() {
           </p>
         </div>
 
-        {error && (
+        {state.error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400">
-            {error}
+            {state.error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form action={formAction} className="space-y-6">
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 space-y-6">
             <div>
               <label
@@ -84,6 +49,11 @@ export default function NewEstimatePage() {
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-gray-100"
                 placeholder="e.g., Smith Residence Restoration"
               />
+              {state.fieldErrors?.name && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {state.fieldErrors.name[0]}
+                </p>
+              )}
             </div>
 
             <div>
@@ -188,10 +158,10 @@ export default function NewEstimatePage() {
             </Link>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isPending}
               className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Creating..." : "Create Estimate"}
+              {isPending ? "Creating..." : "Create Estimate"}
             </button>
           </div>
         </form>
