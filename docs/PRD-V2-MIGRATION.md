@@ -33,7 +33,7 @@ V3 with all V2 features, deployed to Vercel, with cleaner code patterns.
 |--------|-------|-------|--------|
 | **M1** | Dashboard & Navigation | 8 | 🔴 NOT STARTED |
 | **M2** | Database Schema Expansion | 6 | ✅ COMPLETE |
-| **M3** | Rooms & Sketch Editor | 10 | 🔴 NOT STARTED |
+| **M3** | Rooms & Sketch Editor | 10 | ✅ COMPLETE |
 | **M4** | Line Items & Pricing | 8 | 🔴 NOT STARTED |
 | **M5** | Photos & Documentation | 6 | 🔴 NOT STARTED |
 | **M6** | SLA & Workflow | 6 | 🔴 NOT STARTED |
@@ -384,123 +384,126 @@ Run `npx drizzle-kit push` with DATABASE_URL set to apply schema to database.
 
 ---
 
-## Sprint M3: Rooms & Sketch Editor 🔴 NOT STARTED
+## Sprint M3: Rooms & Sketch Editor ✅ COMPLETE
 
 **Goal**: Port the full sketch editor from V2 with all drawing tools.
 
-### Components to Port
+**Completed**: January 2026
 
-#### US-M3-1: Rooms Tab on Estimate Detail
-- [ ] Tab navigation: Details, Rooms, Scope, Photos, SLA
-- [ ] Rooms list showing all rooms for estimate
-- [ ] Room cards with dimensions
-- [ ] Add Room button
-- [ ] Edit/Delete room actions
+### What's Implemented
 
-**Progress Check**: estimates/[id]/page.tsx contains tab for "Rooms"
+The complete sketch editor has been built from scratch with all required functionality:
 
----
+**Core Components** (in `src/components/sketch-editor/`):
+- `SketchEditor.tsx` - Main editor component with full-screen modal
+- `SketchCanvas.tsx` - React Konva canvas with pan/zoom/touch support
+- `Toolbar.tsx` - Tool selection with keyboard shortcuts
+- `LevelTabs.tsx` - Multi-floor level management
 
-#### US-M3-2: Sketch Canvas (Konva.js)
-- [ ] React Konva canvas setup
-- [ ] Grid layer with snapping
-- [ ] Pan and zoom controls
-- [ ] Touch support for mobile
+**Layer Components** (in `src/components/sketch-editor/layers/`):
+- `GridLayer.tsx` - Grid background with major/minor lines
+- `WallsLayer.tsx` - Wall drawing with length labels
+- `DoorsLayer.tsx` - 5 door types (single, double, pocket, bi-fold, sliding)
+- `WindowsLayer.tsx` - 4 window types (hung, casement, sliding, picture)
+- `FixturesLayer.tsx` - Kitchen, bathroom, and laundry fixtures
+- `StaircasesLayer.tsx` - Straight, L-shaped, and U-shaped stairs
 
-**Source Files (V2)**:
-- `src/components/sketch-editor/SketchCanvas.tsx`
+**Geometry Utilities** (in `src/lib/geometry/`):
+- `types.ts` - TypeScript interfaces for all geometry objects
+- `snapping.ts` - Wall snapping (endpoint, midpoint, perpendicular, grid)
+- `room-detection.ts` - Detect enclosed rooms from walls
+- `staircase.ts` - Stair calculation utilities
 
-**Progress Check**: SketchCanvas.tsx exists AND imports "react-konva"
+**API Routes**:
+- `GET/POST /api/estimates/[id]/levels` - Level management
+- `GET/PATCH/DELETE /api/estimates/[id]/levels/[levelId]` - Single level operations
+- `GET/POST /api/estimates/[id]/rooms` - Room management
+- `GET/PATCH/DELETE /api/estimates/[id]/rooms/[roomId]` - Single room operations
 
----
+**UI Integration**:
+- Tab navigation on estimate detail page (Details, Rooms, Scope, Photos, SLA)
+- RoomsTab component with room cards and add/edit/delete functionality
+- Sketch editor opens in full-screen modal from Rooms tab
 
-#### US-M3-3: Wall Drawing Tool
-- [ ] Click to start wall
-- [ ] Click to end wall
-- [ ] Wall snapping (6 types)
-- [ ] Wall thickness display
-- [ ] Double-click to finish
+### Components Completed
 
-**Source Files (V2)**:
-- `src/components/sketch-editor/layers/WallsLayer.tsx`
-- `src/lib/geometry/snapping.ts`
-
-**Progress Check**: WallsLayer.tsx exists with "onWallClick" handler
-
----
-
-#### US-M3-4: Door Tool
-- [ ] Place door on wall
-- [ ] Door types: single, double, pocket, bi-fold, sliding
-- [ ] Swing direction
-- [ ] Door symbol rendering
-
-**Progress Check**: DoorsLayer.tsx exists with door types
+#### US-M3-1: Rooms Tab on Estimate Detail ✅
+- [x] Tab navigation: Details, Rooms, Scope, Photos, SLA
+- [x] Rooms list showing all rooms for estimate
+- [x] Room cards with dimensions
+- [x] Add Room button
+- [x] Edit/Delete room actions
 
 ---
 
-#### US-M3-5: Window Tool
-- [ ] Place window on wall
-- [ ] Window types: hung, casement, sliding, picture
-- [ ] Window symbol rendering
-
-**Progress Check**: WindowsLayer.tsx exists
-
----
-
-#### US-M3-6: Fixture Tool
-- [ ] Kitchen fixtures: sink, stove, fridge, dishwasher
-- [ ] Bathroom fixtures: toilet, tub, shower, vanity
-- [ ] Laundry fixtures: washer, dryer
-
-**Progress Check**: FixturesLayer.tsx exists with fixture types
+#### US-M3-2: Sketch Canvas (Konva.js) ✅
+- [x] React Konva canvas setup
+- [x] Grid layer with snapping
+- [x] Pan and zoom controls
+- [x] Touch support for mobile
 
 ---
 
-#### US-M3-7: Staircase Tool
-- [ ] Straight stairs
-- [ ] L-shaped stairs
-- [ ] U-shaped stairs
-- [ ] Auto tread calculation
-
-**Source Files (V2)**:
-- `src/lib/geometry/staircase.ts`
-- `src/components/sketch-editor/layers/StaircasesLayer.tsx`
-
-**Progress Check**: StaircasesLayer.tsx exists
+#### US-M3-3: Wall Drawing Tool ✅
+- [x] Click to start wall
+- [x] Click to end wall
+- [x] Wall snapping (6 types)
+- [x] Wall thickness display
+- [x] Double-click to finish
 
 ---
 
-#### US-M3-8: Room Detection
-- [ ] Detect enclosed rooms from walls
-- [ ] Calculate room area
-- [ ] Room naming
-- [ ] Room category assignment
-
-**Source Files (V2)**:
-- `src/lib/geometry/room-detection.ts`
-
-**Progress Check**: room-detection.ts exists with "detectRooms" function
+#### US-M3-4: Door Tool ✅
+- [x] Place door on wall
+- [x] Door types: single, double, pocket, bi-fold, sliding
+- [x] Swing direction
+- [x] Door symbol rendering
 
 ---
 
-#### US-M3-9: Toolbar Component
-- [ ] Tool selection buttons
-- [ ] Active tool highlight
-- [ ] Keyboard shortcuts
-- [ ] Tool options panel
-
-**Progress Check**: Toolbar.tsx exists with tool selection
+#### US-M3-5: Window Tool ✅
+- [x] Place window on wall
+- [x] Window types: hung, casement, sliding, picture
+- [x] Window symbol rendering
 
 ---
 
-#### US-M3-10: Level Tabs
-- [ ] Multi-level support (B, 1, 2, 3, A)
-- [ ] Add/remove levels
-- [ ] Level switching
-- [ ] Per-level sketch data
+#### US-M3-6: Fixture Tool ✅
+- [x] Kitchen fixtures: sink, stove, fridge, dishwasher
+- [x] Bathroom fixtures: toilet, tub, shower, vanity
+- [x] Laundry fixtures: washer, dryer
 
-**Progress Check**: LevelTabs.tsx exists
+---
+
+#### US-M3-7: Staircase Tool ✅
+- [x] Straight stairs
+- [x] L-shaped stairs
+- [x] U-shaped stairs
+- [x] Auto tread calculation
+
+---
+
+#### US-M3-8: Room Detection ✅
+- [x] Detect enclosed rooms from walls
+- [x] Calculate room area
+- [x] Room naming
+- [x] Room category assignment
+
+---
+
+#### US-M3-9: Toolbar Component ✅
+- [x] Tool selection buttons
+- [x] Active tool highlight
+- [x] Keyboard shortcuts
+- [x] Tool options panel
+
+---
+
+#### US-M3-10: Level Tabs ✅
+- [x] Multi-level support (B, 1, 2, 3, A)
+- [x] Add/remove levels
+- [x] Level switching
+- [x] Per-level sketch data
 
 ---
 
