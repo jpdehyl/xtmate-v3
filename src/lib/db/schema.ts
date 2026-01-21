@@ -281,6 +281,37 @@ export const assignments = pgTable('assignments', {
   updatedAt: timestamp('updated_at').defaultNow(),
 });
 
+// M4-4: Price Lists table
+export const priceLists = pgTable('price_lists', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: text('user_id').notNull(),
+  organizationId: uuid('organization_id').references(() => organizations.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  description: text('description'),
+  region: text('region'), // Geographic region for pricing
+  effectiveDate: timestamp('effective_date'),
+  expirationDate: timestamp('expiration_date'),
+  isActive: boolean('is_active').default(true),
+  itemCount: integer('item_count').default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// M4-4: Price List Items table
+export const priceListItems = pgTable('price_list_items', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  priceListId: uuid('price_list_id').references(() => priceLists.id, { onDelete: 'cascade' }).notNull(),
+  category: text('category'),
+  selector: text('selector'), // Xactimate code
+  description: text('description'),
+  unit: text('unit'),
+  unitPrice: real('unit_price'),
+  laborPrice: real('labor_price'),
+  materialPrice: real('material_price'),
+  equipmentPrice: real('equipment_price'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
 // Export types for all new tables
 export type Level = typeof levels.$inferSelect;
 export type NewLevel = typeof levels.$inferInsert;
@@ -299,3 +330,9 @@ export type NewPhoto = typeof photos.$inferInsert;
 
 export type Assignment = typeof assignments.$inferSelect;
 export type NewAssignment = typeof assignments.$inferInsert;
+
+export type PriceList = typeof priceLists.$inferSelect;
+export type NewPriceList = typeof priceLists.$inferInsert;
+
+export type PriceListItem = typeof priceListItems.$inferSelect;
+export type NewPriceListItem = typeof priceListItems.$inferInsert;

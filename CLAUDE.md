@@ -34,7 +34,7 @@ XTmate is an estimation tool for construction/landscaping projects. V3 is a comp
 | Build failures (Google Fonts) | Local fonts |
 | 60+ fields on estimates | Split into focused tables |
 
-### Database Schema (7 tables implemented, target 15)
+### Database Schema (9 tables implemented, target 15)
 Core tables (implemented):
 - `estimates` - Core estimate records with property info
 - `levels` - Floor levels (B, 1, 2, 3, A) with labels
@@ -43,6 +43,8 @@ Core tables (implemented):
 - `line_items` - Scope items with Xactimate codes and pricing
 - `photos` - Documentation photos with GPS and timestamps
 - `assignments` - E/A/R/P/C/Z assignment types with totals
+- `price_lists` - User price lists with regions and effective dates
+- `price_list_items` - Individual price list entries
 
 Enums:
 - `estimate_status` - draft, in_progress, completed
@@ -59,7 +61,6 @@ Planned tables:
 - `sla_events` - SLA milestone tracking
 - `vendors` - Vendor/subcontractor management
 - `quotes` - Vendor quotes
-- `price_lists` - Price list imports
 
 ## Directory Structure
 ```
@@ -299,6 +300,37 @@ Full sketch editor built from scratch with Konva.js:
 - RoomsTab component with room cards
 - `src/components/ui/tabs.tsx` - Reusable tabs component
 
+#### Sprint M4: Line Items & Pricing ✅ COMPLETE
+Full line item management with Xactimate compatibility:
+
+**API Routes** (in `src/app/api/line-items/`):
+- `route.ts` - GET (list) and POST (create) line items
+- `[id]/route.ts` - GET, PATCH, DELETE for single items
+- `bulk/route.ts` - POST for bulk creation (AI suggestions)
+- `reorder/route.ts` - PATCH for drag-and-drop reordering
+
+**Price Lists API** (in `src/app/api/price-lists/`):
+- `route.ts` - GET (list) and POST (create) price lists
+- `import/route.ts` - POST for CSV/XLSX import with auto column detection
+
+**Reference Data**:
+- `src/lib/reference/xactimate-categories.ts` - 40+ Xactimate categories with unit types
+
+**Calculations**:
+- `src/lib/calculations/estimate-totals.ts` - Subtotal, overhead, profit, tax calculations
+
+**UI Components**:
+- `src/components/features/scope-tab.tsx` - Full line items table with inline editing, drag-and-drop
+- `src/components/features/totals-summary.tsx` - Editable totals display with overhead/profit/tax
+
+**Database Tables**:
+- `price_lists` - User price lists with regions and effective dates
+- `price_list_items` - Individual price list entries
+
+**Export Updates**:
+- PDF export includes line items table with totals
+- Excel export includes separate "Line Items" worksheet
+
 #### Sprint M5: Photos & Documentation ✅ COMPLETE
 Full photo management system with upload, gallery, and export integration:
 
@@ -326,13 +358,12 @@ Full photo management system with upload, gallery, and export integration:
 
 ### Future Migration Sprints
 - **M1**: Dashboard & Navigation (sidebar, charts, map)
-- **M4**: Line Items & Pricing
 - **M6**: SLA & Workflow
 - **M7**: Portfolio & Analytics
 - **M8**: Vendor Portal
 
 ### Future Stages (Post-MVP)
-- Stage 7: Line Items & Pricing
+- Stage 7: Templates System
 - Stage 8: Room Management
 - Stage 9: Templates System
 - Stage 10: Vendor Portal

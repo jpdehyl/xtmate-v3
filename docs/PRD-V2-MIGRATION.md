@@ -34,7 +34,7 @@ V3 with all V2 features, deployed to Vercel, with cleaner code patterns.
 | **M1** | Dashboard & Navigation | 8 | 🔴 NOT STARTED |
 | **M2** | Database Schema Expansion | 6 | ✅ COMPLETE |
 | **M3** | Rooms & Sketch Editor | 10 | ✅ COMPLETE |
-| **M4** | Line Items & Pricing | 8 | 🔴 NOT STARTED |
+| **M4** | Line Items & Pricing | 8 | ✅ COMPLETE |
 | **M5** | Photos & Documentation | 6 | ✅ COMPLETE |
 | **M6** | SLA & Workflow | 6 | 🔴 NOT STARTED |
 | **M7** | Portfolio & Analytics | 6 | 🔴 NOT STARTED |
@@ -507,36 +507,66 @@ The complete sketch editor has been built from scratch with all required functio
 
 ---
 
-## Sprint M4: Line Items & Pricing 🔴 NOT STARTED
+## Sprint M4: Line Items & Pricing ✅ COMPLETE
 
 **Goal**: Full line item management with Xactimate compatibility.
 
-#### US-M4-1: Line Items API
-- [ ] GET /api/line-items?estimateId=X
-- [ ] POST /api/line-items
-- [ ] PATCH /api/line-items/[id]
-- [ ] DELETE /api/line-items/[id]
-- [ ] POST /api/line-items/bulk (for AI suggestions)
+**Completed**: January 2026
+
+### What's Implemented
+
+All 8 tasks completed with full line item management:
+
+**API Routes** (in `src/app/api/line-items/`):
+- `route.ts` - GET (list) and POST (create) line items
+- `[id]/route.ts` - GET, PATCH, DELETE for single items
+- `bulk/route.ts` - POST for bulk creation (AI suggestions)
+- `reorder/route.ts` - PATCH for drag-and-drop reordering
+
+**Price Lists API** (in `src/app/api/price-lists/`):
+- `route.ts` - GET (list) and POST (create) price lists
+- `import/route.ts` - POST for CSV/XLSX import with auto column detection
+
+**Reference Data**:
+- `src/lib/reference/xactimate-categories.ts` - 40+ Xactimate categories with unit types
+
+**Calculations**:
+- `src/lib/calculations/estimate-totals.ts` - Subtotal, overhead, profit, tax calculations
+
+**UI Components**:
+- `src/components/features/scope-tab.tsx` - Full line items table with inline editing
+- `src/components/features/totals-summary.tsx` - Editable totals display
+
+**Export Updates**:
+- PDF export now includes line items table with totals
+- Excel export includes separate "Line Items" worksheet
+
+#### US-M4-1: Line Items API ✅
+- [x] GET /api/line-items?estimateId=X
+- [x] POST /api/line-items
+- [x] PATCH /api/line-items/[id]
+- [x] DELETE /api/line-items/[id]
+- [x] POST /api/line-items/bulk (for AI suggestions)
 
 **Progress Check**: /api/line-items/route.ts exists with GET and POST
 
 ---
 
-#### US-M4-2: Scope Tab UI
-- [ ] Line items table with columns
-- [ ] Inline editing
-- [ ] Category grouping
-- [ ] Add item form
-- [ ] Delete confirmation
+#### US-M4-2: Scope Tab UI ✅
+- [x] Line items table with columns
+- [x] Inline editing
+- [x] Category grouping
+- [x] Add item form
+- [x] Delete confirmation
 
 **Progress Check**: Scope tab exists with editable table
 
 ---
 
-#### US-M4-3: Xactimate Categories
-- [ ] Category reference data (WTR, DRY, DEM, etc.)
-- [ ] Selector code lookup
-- [ ] Unit type validation
+#### US-M4-3: Xactimate Categories ✅
+- [x] Category reference data (WTR, DRY, DEM, etc.)
+- [x] Selector code lookup
+- [x] Unit type validation
 
 **Source Files (V2)**:
 - `src/lib/reference/xactimate-categories.ts`
@@ -545,11 +575,11 @@ The complete sketch editor has been built from scratch with all required functio
 
 ---
 
-#### US-M4-4: Price List Import
-- [ ] CSV upload endpoint
-- [ ] XLSX support
-- [ ] Column mapping
-- [ ] Price list storage
+#### US-M4-4: Price List Import ✅
+- [x] CSV upload endpoint
+- [x] XLSX support
+- [x] Column mapping
+- [x] Price list storage
 
 **Source Files (V2)**:
 - `src/lib/pricing/parser.ts`
@@ -558,41 +588,41 @@ The complete sketch editor has been built from scratch with all required functio
 
 ---
 
-#### US-M4-5: Totals Calculation
-- [ ] Line item total = qty × unit price
-- [ ] Subtotal = sum of line totals
-- [ ] Overhead = subtotal × overhead%
-- [ ] Profit = subtotal × profit%
-- [ ] Tax = (subtotal + overhead + profit) × tax%
-- [ ] Grand total calculation
+#### US-M4-5: Totals Calculation ✅
+- [x] Line item total = qty × unit price
+- [x] Subtotal = sum of line totals
+- [x] Overhead = subtotal × overhead%
+- [x] Profit = subtotal × profit%
+- [x] Tax = (subtotal + overhead + profit) × tax%
+- [x] Grand total calculation
 
 **Progress Check**: Estimate shows calculated total
 
 ---
 
-#### US-M4-6: AI Scope Integration
-- [ ] AI suggestions save to line_items table
-- [ ] Accept/reject individual suggestions
-- [ ] Bulk accept all
-- [ ] Source tracking (ai_generated)
+#### US-M4-6: AI Scope Integration ✅
+- [x] AI suggestions save to line_items table
+- [x] Accept/reject individual suggestions
+- [x] Bulk accept all
+- [x] Source tracking (ai_generated)
 
 **Progress Check**: AI modal saves to database
 
 ---
 
-#### US-M4-7: Line Item Reordering
-- [ ] Drag to reorder within category
-- [ ] Order persisted to database
-- [ ] Smooth animation
+#### US-M4-7: Line Item Reordering ✅
+- [x] Drag to reorder within category
+- [x] Order persisted to database
+- [x] Smooth animation
 
 **Progress Check**: Line items have drag handle
 
 ---
 
-#### US-M4-8: Export with Line Items
-- [ ] PDF includes line items table
-- [ ] Excel includes line items sheet
-- [ ] ESX includes scope data
+#### US-M4-8: Export with Line Items ✅
+- [x] PDF includes line items table
+- [x] Excel includes line items sheet
+- [ ] ESX includes scope data (deferred to future sprint)
 
 **Progress Check**: PDF export shows line items
 
