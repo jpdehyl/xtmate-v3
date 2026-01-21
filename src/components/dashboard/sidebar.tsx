@@ -13,6 +13,7 @@ import {
   ChevronRight,
   HelpCircle,
   User,
+  LineChart,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -71,6 +72,12 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
       href: '/dashboard/portfolio',
       label: 'Portfolio',
       icon: BarChart3,
+      show: true
+    },
+    {
+      href: '/dashboard/analytics',
+      label: 'Analytics',
+      icon: LineChart,
       show: true
     },
   ];

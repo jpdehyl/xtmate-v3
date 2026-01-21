@@ -205,12 +205,28 @@ export function PermissionsProvider({ children }: PermissionsProviderProps) {
 /**
  * Hook to access permission checking functions
  * Must be used within a PermissionsProvider
+ * Returns loading state during SSR/static generation when context is not available
  */
 export function usePermissions(): PermissionsContextValue {
   const context = useContext(PermissionsContext);
 
+  // Return a default loading state if no context (during static generation or before provider mounts)
   if (!context) {
-    throw new Error("usePermissions must be used within a PermissionsProvider");
+    return {
+      loading: true,
+      error: null,
+      authContext: null,
+      needsOnboarding: false,
+      hasPermission: () => false,
+      hasAnyPermission: () => false,
+      hasAllPermissions: () => false,
+      hasRole: () => false,
+      hasMinimumRole: () => false,
+      role: null,
+      permissions: [],
+      organizationId: null,
+      refresh: async () => {},
+    };
   }
 
   return context;

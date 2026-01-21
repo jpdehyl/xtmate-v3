@@ -37,7 +37,7 @@ V3 with all V2 features, deployed to Vercel, with cleaner code patterns.
 | **M4** | Line Items & Pricing | 8 | ✅ COMPLETE |
 | **M5** | Photos & Documentation | 6 | ✅ COMPLETE |
 | **M6** | SLA & Workflow | 6 | ✅ COMPLETE |
-| **M7** | Portfolio & Analytics | 6 | 🔴 NOT STARTED |
+| **M7** | Portfolio & Analytics | 6 | ✅ COMPLETE |
 | **M8** | Vendor Portal | 6 | 🔴 NOT STARTED |
 
 ---
@@ -804,74 +804,105 @@ Full SLA tracking system with carrier configuration and milestone management:
 
 ---
 
-## Sprint M7: Portfolio & Analytics 🔴 NOT STARTED
+## Sprint M7: Portfolio & Analytics ✅ COMPLETE
 
 **Goal**: Portfolio dashboard and analytics views.
 
-#### US-M7-1: Portfolio Page
-- [ ] /portfolio route
-- [ ] Summary metrics
-- [ ] Activity feed
-- [ ] At-risk list
+**Completed**: January 2026
 
-**Source Files (V2)**:
-- `src/app/(dashboard)/portfolio/page.tsx`
+### What's Implemented
 
-**Progress Check**: /portfolio page exists
+Full portfolio and analytics dashboards with charts and data visualization:
 
----
+**Portfolio Page** (`/dashboard/portfolio`):
+- Summary metrics (total claims, completed, in progress, total value, avg completion, at-risk count)
+- Activity feed showing recent estimate activities
+- At-risk list with SLA status indicators
+- Carrier breakdown donut chart
 
-#### US-M7-2: Analytics Page
-- [ ] /analytics route
-- [ ] Date range picker
-- [ ] Revenue chart
-- [ ] Trends visualization
+**Analytics Page** (`/dashboard/analytics`):
+- Date range picker with presets (7d, 30d, 90d, 1y, YTD, All time)
+- Revenue over time area chart with trends
+- Claims by status pie chart
+- Monthly claims volume bar chart
+- Team performance metrics table with sortable columns
+- Export to PDF and Excel
 
-**Source Files (V2)**:
-- `src/app/(dashboard)/analytics/page.tsx`
+**Components** (in `src/components/portfolio/` and `src/components/analytics/`):
+- `activity-feed.tsx` - Activity log with user avatars, timestamps, action types
+- `carrier-breakdown.tsx` - Donut chart with carrier stats table
+- `at-risk-list.tsx` - SLA at-risk/overdue estimates with urgency sorting
+- `date-range-picker.tsx` - Date range selection with presets
+- `revenue-chart.tsx` - Area chart with trend calculation
+- `team-metrics.tsx` - Sortable metrics table per team member
+- `export-analytics.tsx` - PDF/Excel export with jsPDF and ExcelJS
 
-**Progress Check**: /analytics page exists
+**API Routes**:
+- `GET /api/portfolio` - Portfolio stats, activities, carriers, at-risk estimates
+- `GET /api/analytics` - Analytics stats, charts data, team metrics (date range filtered)
 
----
+**Navigation**:
+- Portfolio link in sidebar (already existed)
+- Analytics link added to sidebar with LineChart icon
 
-#### US-M7-3: Team Metrics
-- [ ] Per-user stats
-- [ ] Claims completed
-- [ ] Average time
-- [ ] Revenue breakdown
+#### US-M7-1: Portfolio Page ✅
+- [x] /portfolio route
+- [x] Summary metrics (6 stat cards)
+- [x] Activity feed (recent 10 activities)
+- [x] At-risk list with SLA status
 
-**Progress Check**: Team metrics component exists
-
----
-
-#### US-M7-4: Carrier Breakdown
-- [ ] Claims by carrier
-- [ ] Pie/donut chart
-- [ ] Carrier badges
-
-**Progress Check**: Carrier breakdown chart exists
-
----
-
-#### US-M7-5: Activity Feed
-- [ ] Recent activity log
-- [ ] User avatars
-- [ ] Action descriptions
-- [ ] Timestamps
-
-**Source Files (V2)**:
-- `src/components/portfolio/ActivityFeed.tsx`
-
-**Progress Check**: ActivityFeed component exists
+**Progress Check**: ✅ /portfolio page exists
 
 ---
 
-#### US-M7-6: Export Analytics
-- [ ] PDF report generation
-- [ ] Date range export
-- [ ] Metrics summary
+#### US-M7-2: Analytics Page ✅
+- [x] /analytics route
+- [x] Date range picker with presets
+- [x] Revenue chart (area chart with trend)
+- [x] Trends visualization (bar chart, pie chart)
 
-**Progress Check**: Analytics export button exists
+**Progress Check**: ✅ /analytics page exists
+
+---
+
+#### US-M7-3: Team Metrics ✅
+- [x] Per-user stats
+- [x] Claims completed count
+- [x] Average time (completion hours)
+- [x] Revenue breakdown per member
+- [x] Sortable columns
+
+**Progress Check**: ✅ Team metrics component exists
+
+---
+
+#### US-M7-4: Carrier Breakdown ✅
+- [x] Claims by carrier
+- [x] Pie/donut chart with colors
+- [x] Carrier stats table with click handler
+
+**Progress Check**: ✅ Carrier breakdown chart exists
+
+---
+
+#### US-M7-5: Activity Feed ✅
+- [x] Recent activity log
+- [x] User avatars/initials
+- [x] Action descriptions (created, updated, status changed)
+- [x] Relative timestamps ("2h ago")
+- [x] Activity type icons and colors
+
+**Progress Check**: ✅ ActivityFeed component exists
+
+---
+
+#### US-M7-6: Export Analytics ✅
+- [x] PDF report generation with jsPDF
+- [x] Excel export with ExcelJS
+- [x] Date range in report header
+- [x] Metrics summary section
+
+**Progress Check**: ✅ Analytics export button exists
 
 ---
 
