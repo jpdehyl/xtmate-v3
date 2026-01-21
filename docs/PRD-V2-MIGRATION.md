@@ -38,7 +38,7 @@ V3 with all V2 features, deployed to Vercel, with cleaner code patterns.
 | **M5** | Photos & Documentation | 6 | ✅ COMPLETE |
 | **M6** | SLA & Workflow | 6 | ✅ COMPLETE |
 | **M7** | Portfolio & Analytics | 6 | ✅ COMPLETE |
-| **M8** | Vendor Portal | 6 | 🔴 NOT STARTED |
+| **M8** | Vendor Portal | 6 | ✅ COMPLETE |
 
 ---
 
@@ -906,62 +906,110 @@ Full portfolio and analytics dashboards with charts and data visualization:
 
 ---
 
-## Sprint M8: Vendor Portal 🔴 NOT STARTED
+## Sprint M8: Vendor Portal ✅ COMPLETE
 
 **Goal**: Vendor/subcontractor portal for quotes.
 
-#### US-M8-1: Vendor Data Model
-- [ ] Vendors table
-- [ ] Quote requests table
-- [ ] Vendor quotes table
+**Completed**: January 2026
 
-**Progress Check**: vendors table exists
+### What's Implemented
+
+Full vendor portal with token-based authentication and quote management:
+
+**Database Tables** (in `src/lib/db/schema.ts`):
+- `vendors` - Subcontractor information with token-based access
+- `quoteRequests` - Quote requests linking estimates to vendors
+- `quoteRequestItems` - Line items included in each quote request
+- `vendorQuotes` - Vendor responses with pricing
+- `vendorQuoteItems` - Individual line item pricing from vendors
+- `quoteRequestStatusEnum` - Status tracking (pending, viewed, quoted, accepted, rejected, expired)
+
+**Vendor Authentication** (in `src/lib/auth/vendor.ts`):
+- Token generation and validation
+- Cookie-based session management
+- Vendor invite message generation with login URLs
+
+**Vendor Portal Routes**:
+- `/vendor` - Vendor dashboard with quote requests list
+- `/vendor/login` - Token-based login page
+- `/vendor/quotes/[id]` - Quote detail and submission form
+
+**API Routes**:
+- `GET/POST /api/vendors` - List and create vendors
+- `GET/PATCH/DELETE /api/vendors/[id]` - Single vendor operations
+- `POST/DELETE /api/vendors/[id]/token` - Generate/revoke vendor tokens
+- `GET/POST /api/quote-requests` - List and create quote requests
+- `GET/PATCH/DELETE /api/quote-requests/[id]` - Single quote request operations
+- `POST /api/vendor/auth/login` - Vendor login with token
+- `POST /api/vendor/auth/logout` - Vendor logout
+- `GET/POST /api/vendor/quotes` - Vendor quote submission
+
+**UI Components**:
+- `VendorsTab` - Vendors tab on estimate detail page
+- Vendor creation form
+- Quote request creation with line item selection
+- Quote comparison table with accept/reject actions
+
+#### US-M8-1: Vendor Data Model ✅
+- [x] Vendors table with specialty tracking
+- [x] Quote requests table with expiration
+- [x] Vendor quotes table with labor/material breakdown
+- [x] Quote request items linking to line items
+- [x] Vendor quote items for per-item pricing
+
+**Progress Check**: ✅ vendors table exists
 
 ---
 
-#### US-M8-2: Vendor Portal Routes
-- [ ] /vendor (dashboard)
-- [ ] /vendor/login
-- [ ] /vendor/quotes/[id]
+#### US-M8-2: Vendor Portal Routes ✅
+- [x] /vendor (dashboard with stats and quote requests list)
+- [x] /vendor/login (token-based authentication)
+- [x] /vendor/quotes/[id] (quote detail and submission)
 
-**Progress Check**: /vendor routes exist
-
----
-
-#### US-M8-3: Token-Based Auth
-- [ ] Vendor invite with token
-- [ ] Token validation
-- [ ] Session management
-
-**Progress Check**: Vendor auth middleware exists
+**Progress Check**: ✅ /vendor routes exist
 
 ---
 
-#### US-M8-4: Quote Request Flow
-- [ ] Create quote request
-- [ ] Select line items
-- [ ] Send to vendor (email)
+#### US-M8-3: Token-Based Auth ✅
+- [x] Vendor invite with secure token generation
+- [x] Token validation with expiration check
+- [x] Cookie-based session management
+- [x] Token refresh capability
 
-**Progress Check**: Quote request API exists
-
----
-
-#### US-M8-5: Vendor Quote Submission
-- [ ] View scope details
-- [ ] Enter pricing
-- [ ] Submit quote
-- [ ] Track status
-
-**Progress Check**: Vendor quote form exists
+**Progress Check**: ✅ Vendor auth library exists
 
 ---
 
-#### US-M8-6: Quote Comparison
-- [ ] View multiple quotes
-- [ ] Side-by-side comparison
-- [ ] Accept/reject quotes
+#### US-M8-4: Quote Request Flow ✅
+- [x] Create quote request from estimate
+- [x] Select specific line items to include
+- [x] Generate invite URL with token
+- [x] Track request status (pending, viewed, quoted)
+- [x] Set expiration date
 
-**Progress Check**: Quote comparison view exists
+**Progress Check**: ✅ Quote request API exists
+
+---
+
+#### US-M8-5: Vendor Quote Submission ✅
+- [x] View scope details (line items, rooms, photos)
+- [x] Enter per-item unit pricing
+- [x] Add labor and material costs
+- [x] Submit quote with notes
+- [x] Track submission status
+
+**Progress Check**: ✅ Vendor quote form exists
+
+---
+
+#### US-M8-6: Quote Comparison ✅
+- [x] View multiple quotes side-by-side
+- [x] Comparison table with totals
+- [x] Highlight lowest quote
+- [x] Accept/reject quote actions
+- [x] Status updates on accept/reject
+
+**Progress Check**: ✅ Quote comparison view exists
 
 ---
 

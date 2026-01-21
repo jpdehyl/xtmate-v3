@@ -420,3 +420,117 @@ export const DEFAULT_SLA_TARGETS: Record<string, number> = {
   approved: 0, // Triggered by external event
   closed: 0, // Triggered by external event
 };
+
+// ============================================================================
+// M8: Vendor Portal
+// ============================================================================
+
+// M8-1: Quote Request Status enum
+export const quoteRequestStatusEnum = pgEnum('quote_request_status', [
+  'pending',   // Request sent, awaiting vendor view
+  'viewed',    // Vendor has viewed the request
+  'quoted',    // Vendor has submitted a quote
+  'accepted',  // Quote has been accepted
+  'rejected',  // Quote has been rejected
+  'expired',   // Request has expired
+]);
+
+// M8-1: Vendors table (subcontractors)
+export const vendors = pgTable('vendors', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: text('user_id').notNull(), // Owner's Clerk ID (who created this vendor)
+  organizationId: uuid('organization_id').references(() => organizations.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  email: text('email').notNull(),
+  phone: text('phone'),
+  company: text('company'),
+  specialty: text('specialty'), // plumbing, electrical, flooring, roofing, HVAC, etc.
+  notes: text('notes'),
+  accessToken: text('access_token').unique(), // For portal login (no Clerk)
+  tokenExpiresAt: timestamp('token_expires_at'),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// M8-1: Quote Requests table
+export const quoteRequests = pgTable('quote_requests', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  estimateId: uuid('estimate_id').references(() => estimates.id, { onDelete: 'cascade' }),
+  vendorId: uuid('vendor_id').references(() => vendors.id, { onDelete: 'cascade' }),
+  status: quoteRequestStatusEnum('status').default('pending'),
+  message: text('message'), // Optional message to vendor
+  expiresAt: timestamp('expires_at'),
+  viewedAt: timestamp('viewed_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// M8-1: Quote Request Items table (line items included in request)
+export const quoteRequestItems = pgTable('quote_request_items', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  quoteRequestId: uuid('quote_request_id').references(() => quoteRequests.id, { onDelete: 'cascade' }),
+  lineItemId: uuid('line_item_id').references(() => lineItems.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// M8-1: Vendor Quotes table (vendor responses)
+export const vendorQuotes = pgTable('vendor_quotes', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  quoteRequestId: uuid('quote_request_id').references(() => quoteRequests.id, { onDelete: 'cascade' }),
+  totalAmount: real('total_amount'),
+  laborAmount: real('labor_amount'),
+  materialAmount: real('material_amount'),
+  notes: text('notes'),
+  validUntil: timestamp('valid_until'),
+  submittedAt: timestamp('submitted_at').defaultNow(),
+});
+
+// M8-1: Vendor Quote Line Items (individual pricing per line item)
+export const vendorQuoteItems = pgTable('vendor_quote_items', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  vendorQuoteId: uuid('vendor_quote_id').references(() => vendorQuotes.id, { onDelete: 'cascade' }),
+  lineItemId: uuid('line_item_id').references(() => lineItems.id, { onDelete: 'cascade' }),
+  unitPrice: real('unit_price'),
+  quantity: real('quantity'),
+  total: real('total'),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Export types for M8 tables
+export type Vendor = typeof vendors.$inferSelect;
+export type NewVendor = typeof vendors.$inferInsert;
+
+export type QuoteRequest = typeof quoteRequests.$inferSelect;
+export type NewQuoteRequest = typeof quoteRequests.$inferInsert;
+
+export type QuoteRequestItem = typeof quoteRequestItems.$inferSelect;
+export type NewQuoteRequestItem = typeof quoteRequestItems.$inferInsert;
+
+export type VendorQuote = typeof vendorQuotes.$inferSelect;
+export type NewVendorQuote = typeof vendorQuotes.$inferInsert;
+
+export type VendorQuoteItem = typeof vendorQuoteItems.$inferSelect;
+export type NewVendorQuoteItem = typeof vendorQuoteItems.$inferInsert;
+
+// Vendor specialty options
+export const VENDOR_SPECIALTIES = [
+  'plumbing',
+  'electrical',
+  'flooring',
+  'roofing',
+  'hvac',
+  'painting',
+  'drywall',
+  'carpentry',
+  'demolition',
+  'cleaning',
+  'mold_remediation',
+  'water_mitigation',
+  'fire_restoration',
+  'general_contractor',
+  'other',
+] as const;
+
+export type VendorSpecialty = typeof VENDOR_SPECIALTIES[number];

@@ -49,6 +49,13 @@ Core tables (implemented):
 - `carrier_sla_rules` - Carrier-specific SLA target hours per milestone
 - `sla_events` - SLA milestone tracking with target/actual times
 
+Vendor Portal tables (M8):
+- `vendors` - Subcontractor info with token-based access
+- `quote_requests` - Quote requests linking estimates to vendors
+- `quote_request_items` - Line items included in each request
+- `vendor_quotes` - Vendor responses with pricing
+- `vendor_quote_items` - Per-item pricing from vendors
+
 Enums:
 - `estimate_status` - draft, in_progress, completed
 - `job_type` - insurance, private
@@ -56,13 +63,12 @@ Enums:
 - `assignment_type` - E, A, R, P, C, Z
 - `assignment_status` - pending, in_progress, submitted, approved, completed
 - `sla_milestone` - assigned, contacted, site_visit, estimate_uploaded, revision_requested, approved, closed
+- `quote_request_status` - pending, viewed, quoted, accepted, rejected, expired
 
 Planned tables:
 - `templates` - Reusable estimate templates
 - `materials` - Material catalog
 - `labor_rates` - Labor pricing
-- `vendors` - Vendor/subcontractor management
-- `quotes` - Vendor quotes
 
 ## Directory Structure
 ```
@@ -74,15 +80,25 @@ src/
 │   │   ├── estimates/
 │   │   │   ├── new/         # Create estimate
 │   │   │   └── [id]/        # Edit estimate
+│   │   ├── portfolio/       # Portfolio page
+│   │   ├── analytics/       # Analytics page
 │   │   └── command-center/  # Development tracking
+│   ├── vendor/              # Vendor portal (token auth)
+│   │   ├── page.tsx         # Vendor dashboard
+│   │   ├── login/           # Token-based login
+│   │   └── quotes/[id]/     # Quote submission
 │   └── api/
 │       ├── estimates/       # Estimate CRUD + export
 │       ├── photos/          # Photo upload and management
+│       ├── vendors/         # Vendor management
+│       ├── quote-requests/  # Quote request management
+│       ├── vendor/          # Vendor auth + quote submission
 │       └── command-center/  # Status & prompts APIs
 ├── components/
 │   ├── ui/                  # Base UI components
 │   └── features/            # Feature-specific components
 ├── lib/
+│   ├── auth/                # Auth libraries (Clerk + vendor token auth)
 │   ├── db/                  # Database schema and queries
 │   └── utils/               # Helper functions
 └── middleware.ts            # Clerk auth middleware
@@ -426,9 +442,54 @@ Full portfolio and analytics dashboards with charts and data visualization:
 - Export to PDF (jsPDF) and Excel (ExcelJS)
 - Date range filtering with preset options
 
+#### Sprint M8: Vendor Portal ✅ COMPLETE
+Full vendor portal with token-based authentication and quote management:
+
+**Database Tables** (in `src/lib/db/schema.ts`):
+- `vendors` - Subcontractor information with token-based access
+- `quoteRequests` - Quote requests linking estimates to vendors
+- `quoteRequestItems` - Line items included in each request
+- `vendorQuotes` - Vendor responses with pricing
+- `vendorQuoteItems` - Per-item pricing from vendors
+- `quoteRequestStatusEnum` - Status tracking
+
+**Vendor Auth Library** (in `src/lib/auth/vendor.ts`):
+- Token generation and validation
+- Cookie-based session management
+- Invite message generation
+
+**Vendor Portal Routes** (in `src/app/vendor/`):
+- `page.tsx` - Vendor dashboard with quote requests
+- `login/page.tsx` - Token-based login
+- `quotes/[id]/page.tsx` - Quote detail and submission
+
+**API Routes**:
+- `GET/POST /api/vendors` - List and create vendors
+- `GET/PATCH/DELETE /api/vendors/[id]` - Single vendor ops
+- `POST/DELETE /api/vendors/[id]/token` - Token management
+- `GET/POST /api/quote-requests` - Quote request management
+- `GET/PATCH/DELETE /api/quote-requests/[id]` - Single request ops
+- `POST /api/vendor/auth/login` - Vendor login
+- `POST /api/vendor/auth/logout` - Vendor logout
+- `GET/POST /api/vendor/quotes` - Quote submission
+
+**UI Components** (in `src/components/features/`):
+- `vendors-tab.tsx` - Vendors tab on estimate detail
+  - Vendor creation form
+  - Quote request creation with line item selection
+  - Quote comparison table with accept/reject
+
+**Features**:
+- Token-based auth for external vendors (no Clerk)
+- Vendor specialty tracking (15 categories)
+- Quote request with expiration dates
+- Per-line-item pricing from vendors
+- Side-by-side quote comparison
+- Accept/reject quote workflow
+- Automatic lowest quote highlighting
+
 ### Future Migration Sprints
 - **M1**: Dashboard & Navigation (sidebar, charts, map)
-- **M8**: Vendor Portal
 
 ### Future Stages (Post-MVP)
 - Stage 7: Templates System
