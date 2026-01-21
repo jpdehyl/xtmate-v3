@@ -668,7 +668,7 @@ export function ScopeTab({ estimateId, isOnline, onOpenAIScope }: ScopeTabProps)
                               }`}
                               title={item.verified ? "Verified" : "Click to verify"}
                               aria-label={item.verified ? "Mark as unverified" : "Mark as verified"}
-                              aria-pressed={item.verified}
+                              aria-pressed={item.verified ?? false}
                             >
                               {item.verified && (
                                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
