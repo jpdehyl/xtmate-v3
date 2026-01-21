@@ -1,69 +1,113 @@
 ---
-name: plan
-description: Break down a complex task into verifiable sub-steps before coding
+description: Restate requirements, assess risks, and create step-by-step implementation plan. WAIT for user CONFIRM before touching any code.
 ---
 
-Before writing any code, create an implementation plan.
+# Plan Command
 
-## Step 1: Understand the Goal
-- What is the expected output?
-- What does "working" look like?
-- How will we verify success?
+This command invokes the **planner** agent to create a comprehensive implementation plan before writing any code.
 
-## Step 2: Identify Dependencies
-- What data/input is needed?
-- What existing code does this build on?
-- Are there relevant skills to read first?
+## What This Command Does
 
-## Step 3: Break Into Sub-Tasks
-Create a numbered list where each task:
-- Does ONE thing
-- Can be tested independently
-- Takes less than 50 lines of code
-- Has clear success criteria
+1. **Restate Requirements** - Clarify what needs to be built
+2. **Identify Risks** - Surface potential issues and blockers
+3. **Create Step Plan** - Break down implementation into phases
+4. **Wait for Confirmation** - MUST receive user approval before proceeding
 
-## Step 4: Identify Risks
-- What's the trickiest part?
-- Where might this fail?
-- What assumptions are we making?
+## When to Use
 
-## Step 5: Propose Order
-- Which task first?
-- What can be parallelized?
-- Where are the verification checkpoints?
+Use `/plan` when:
+- Starting a new feature
+- Making significant architectural changes
+- Working on complex refactoring
+- Multiple files/components will be affected
+- Requirements are unclear or ambiguous
 
----
+## How It Works
 
-## Output Format
+The planner agent will:
+
+1. **Analyze the request** and restate requirements in clear terms
+2. **Break down into phases** with specific, actionable steps
+3. **Identify dependencies** between components
+4. **Assess risks** and potential blockers
+5. **Estimate complexity** (High/Medium/Low)
+6. **Present the plan** and WAIT for your explicit confirmation
+
+## Example Usage
 
 ```
-## Plan: [Task Name]
+User: /plan I need to add real-time notifications when markets resolve
 
-### Goal
-[One sentence describing success]
+Agent (planner):
+# Implementation Plan: Real-Time Market Resolution Notifications
 
-### Pre-requisites
-- [ ] Read skill: [skill name]
-- [ ] Existing code: [file/function]
-- [ ] Data available: [what input we need]
+## Requirements Restatement
+- Send notifications to users when markets they're watching resolve
+- Support multiple notification channels (in-app, email, webhook)
+- Ensure notifications are delivered reliably
+- Include market outcome and user's position result
 
-### Sub-tasks
-1. **[Task 1]** - [Description]
-   - Input: [what it takes]
-   - Output: [what it produces]
-   - Test: [how to verify]
+## Implementation Phases
 
-2. **[Task 2]** - [Description]
-   ...
+### Phase 1: Database Schema
+- Add notifications table with columns: id, user_id, market_id, type, status, created_at
+- Add user_notification_preferences table for channel preferences
+- Create indexes on user_id and market_id for performance
 
-### Risks
-- [Risk 1]: [Mitigation]
-- [Risk 2]: [Mitigation]
+### Phase 2: Notification Service
+- Create notification service in lib/notifications.ts
+- Implement notification queue using BullMQ/Redis
+- Add retry logic for failed deliveries
+- Create notification templates
 
-### Checkpoint Order
-Task 1 → verify → Task 2 → verify → ...
+### Phase 3: Integration Points
+- Hook into market resolution logic (when status changes to "resolved")
+- Query all users with positions in market
+- Enqueue notifications for each user
+
+### Phase 4: Frontend Components
+- Create NotificationBell component in header
+- Add NotificationList modal
+- Implement real-time updates via Supabase subscriptions
+- Add notification preferences page
+
+## Dependencies
+- Redis (for queue)
+- Email service (SendGrid/Resend)
+- Supabase real-time subscriptions
+
+## Risks
+- HIGH: Email deliverability (SPF/DKIM required)
+- MEDIUM: Performance with 1000+ users per market
+- MEDIUM: Notification spam if markets resolve frequently
+- LOW: Real-time subscription overhead
+
+## Estimated Complexity: MEDIUM
+- Backend: 4-6 hours
+- Frontend: 3-4 hours
+- Testing: 2-3 hours
+- Total: 9-13 hours
+
+**WAITING FOR CONFIRMATION**: Proceed with this plan? (yes/no/modify)
 ```
 
----
+## Important Notes
 
-Do NOT proceed to implementation until the plan is approved.
+**CRITICAL**: The planner agent will **NOT** write any code until you explicitly confirm the plan with "yes" or "proceed" or similar affirmative response.
+
+If you want changes, respond with:
+- "modify: [your changes]"
+- "different approach: [alternative]"
+- "skip phase 2 and do phase 3 first"
+
+## Integration with Other Commands
+
+After planning:
+- Use `/tdd` to implement with test-driven development
+- Use `/build-and-fix` if build errors occur
+- Use `/code-review` to review completed implementation
+
+## Related Agents
+
+This command invokes the `planner` agent located at:
+`~/.claude/agents/planner.md`
