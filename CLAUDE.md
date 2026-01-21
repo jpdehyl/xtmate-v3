@@ -172,37 +172,40 @@ Before marking any task complete:
 - Professional formatting with XTmate branding
 - Download buttons on estimate detail page
 
-### Stage 4: AI Scope 🔲 PLANNED
+### Stage 4: AI Scope ✅ COMPLETE
 **User Stories:**
 - US-007: AI suggests scope items based on job type
 - US-008: AI enhances estimate descriptions
 
 **Technical:**
-- Anthropic Claude API integration
-- POST /api/ai/suggest-scope
-- POST /api/ai/enhance-description
+- Anthropic Claude Sonnet 4 integration
+- POST /api/ai/suggest-scope (returns 5-10 scope items with categories)
+- POST /api/ai/enhance-description (professional name rewriting)
+- AIScopeModal and EnhanceDescriptionModal components
 
-### Stage 5: Mobile Sync 🔲 PLANNED
+### Stage 5: Mobile Sync 🟡 PARTIAL
 **User Stories:**
-- US-009: PWA installation on mobile
-- US-010: Offline estimate viewing
+- US-009: PWA installation on mobile (next-pwa installed, needs full config)
+- US-010: Offline estimate viewing (working with IndexedDB)
 
 **Technical:**
-- Service worker for caching
-- manifest.json for PWA
-- IndexedDB for offline data
-- Online/offline status indicator
+- IndexedDB storage (src/lib/offline/storage.ts)
+- Sync queue for pending changes
+- useOnlineStatus, useSyncStatus hooks
+- OfflineIndicator component
+- TODO: Full PWA manifest and service worker
 
-### Stage 6: Polish 🔲 PLANNED
+### Stage 6: Polish ✅ COMPLETE
 **User Stories:**
-- US-011: Dashboard search & filter
-- US-012: Estimate duplication
-- US-013: Loading & empty states
+- US-011: Dashboard search & filter (name, address, city, claim#, policy#)
+- US-012: Estimate duplication (with "(Copy)" suffix)
+- US-013: Loading & empty states (skeleton components)
 
 **Technical:**
-- URL-based filter state
-- Skeleton loaders
-- Toast notifications
+- EstimatesFilters component with search + dropdowns
+- POST /api/estimates/[id]/duplicate endpoint
+- EstimatesTableSkeleton, EstimateDetailSkeleton, FiltersSkeleton
+- TODO: URL-based filter state, toast notifications
 
 ### Future Stages (Post-MVP)
 - Stage 7: Line Items & Pricing
