@@ -18,12 +18,13 @@ import { ScopeTab } from "@/components/features/scope-tab";
 import { PhotosTab } from "@/components/features/photos-tab";
 import { SlaTab } from "@/components/features/sla-tab";
 import { CarrierSelector } from "@/components/features/carrier-selector";
+import { VendorsTab } from "@/components/features/vendors-tab";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { SketchEditor } from "@/components/sketch-editor";
 import type { ScopeSuggestion } from "@/app/api/ai/suggest-scope/route";
 import type { Room } from "@/lib/db/schema";
 
-type TabValue = "details" | "rooms" | "scope" | "photos" | "sla";
+type TabValue = "details" | "rooms" | "scope" | "photos" | "sla" | "vendors";
 
 interface EstimateDetailClientProps {
   initialEstimate: Estimate;
@@ -350,6 +351,7 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
             <TabsTrigger value="scope">Scope</TabsTrigger>
             <TabsTrigger value="photos">Photos</TabsTrigger>
             <TabsTrigger value="sla">SLA</TabsTrigger>
+            <TabsTrigger value="vendors">Vendors</TabsTrigger>
           </TabsList>
 
           <TabsContent value="details">
@@ -643,6 +645,10 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
               isOnline={isOnline}
               carrierId={estimate.carrierId}
             />
+          </TabsContent>
+
+          <TabsContent value="vendors">
+            <VendorsTab estimateId={estimate.id} isOnline={isOnline} />
           </TabsContent>
         </Tabs>
       </main>
