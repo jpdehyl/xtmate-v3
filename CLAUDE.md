@@ -106,6 +106,34 @@ const schema = z.object({ name: z.string().min(1) });
 const body = schema.parse(await req.json());
 ```
 
+### Offline/PWA Pattern
+Use the offline hooks and storage utilities for PWA functionality:
+
+```typescript
+// Check online status
+import { useOnlineStatus, useSyncStatus } from "@/lib/offline/hooks";
+
+const { isOnline, wasOffline } = useOnlineStatus();
+const { isSyncing, startSync } = useSyncStatus();
+
+// Cache estimates offline
+import { saveEstimateOffline, getEstimatesOffline, addToSyncQueue } from "@/lib/offline/storage";
+
+await saveEstimateOffline(estimate);
+const cached = await getEstimatesOffline(userId);
+
+// Queue changes for sync
+await addToSyncQueue({ type: 'update', estimateId: id, data: changes });
+```
+
+Key PWA files:
+- `next.config.ts` - PWA configuration with 6 caching strategies
+- `public/manifest.json` - PWA manifest with icons
+- `src/lib/offline/storage.ts` - IndexedDB operations
+- `src/lib/offline/sync.ts` - Sync queue management
+- `src/lib/offline/hooks.ts` - React hooks for offline state
+- `src/components/offline-indicator.tsx` - UI components
+
 ---
 
 ## RALPH Methodology
@@ -183,17 +211,19 @@ Before marking any task complete:
 - POST /api/ai/enhance-description (professional name rewriting)
 - AIScopeModal and EnhanceDescriptionModal components
 
-### Stage 5: Mobile Sync 🟡 PARTIAL
+### Stage 5: Mobile Sync ✅ COMPLETE
 **User Stories:**
-- US-009: PWA installation on mobile (next-pwa installed, needs full config)
-- US-010: Offline estimate viewing (working with IndexedDB)
+- US-009: PWA installation on mobile
+- US-010: Offline estimate viewing
 
 **Technical:**
-- IndexedDB storage (src/lib/offline/storage.ts)
-- Sync queue for pending changes
-- useOnlineStatus, useSyncStatus hooks
-- OfflineIndicator component
-- TODO: Full PWA manifest and service worker
+- IndexedDB storage with 3 object stores (src/lib/offline/storage.ts)
+- Sync queue for pending changes (src/lib/offline/sync.ts)
+- useOnlineStatus, useSyncStatus, useConnectionQuality hooks (src/lib/offline/hooks.ts)
+- OfflineIndicator component (full + compact variants)
+- PWA manifest with 8 icon sizes (/public/manifest.json, /public/icons/)
+- Service worker via next-pwa (6 runtime caching strategies in next.config.ts)
+- iOS/Android web app meta tags (src/app/layout.tsx)
 
 ### Stage 6: Polish ✅ COMPLETE
 **User Stories:**

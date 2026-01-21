@@ -162,7 +162,7 @@ Acceptance Criteria:
 
 ---
 
-### Stage 5: Mobile Sync 🟡 PARTIAL
+### Stage 5: Mobile Sync ✅ COMPLETE
 **Goal**: PWA with offline support
 
 **User Stories**:
@@ -171,25 +171,27 @@ Acceptance Criteria:
 As a field estimator, I want to install XTmate as an app on my phone.
 
 Acceptance Criteria:
-- [ ] App installable as PWA (next-pwa installed but not fully configured)
-- [ ] App icon and splash screen
-- [ ] Works in standalone mode
+- [x] App installable as PWA (next-pwa with 6 runtime caching strategies)
+- [x] App icon and splash screen (8 icon sizes in /public/icons/)
+- [x] Works in standalone mode (manifest.json configured)
 - [x] Responsive on mobile
 
 **US-010: Offline Viewing**
 As a field estimator, I want to view estimates when offline.
 
 Acceptance Criteria:
-- [x] IndexedDB caches data (idb library)
+- [x] IndexedDB caches data (idb library with 3 object stores)
 - [x] Previously viewed estimates accessible offline
-- [x] Offline indicator visible (OfflineIndicator component)
-- [x] Auto-sync when online (sync queue implementation)
+- [x] Offline indicator visible (OfflineIndicator + OfflineIndicatorCompact)
+- [x] Auto-sync when online (sync queue with background sync + online event fallback)
 
 **Technical Requirements**:
-- manifest.json with icons (TODO)
-- Service worker (next-pwa installed, needs configuration)
-- IndexedDB for offline cache (DONE - src/lib/offline/)
-- Online/offline detection (DONE - useOnlineStatus hook)
+- [x] manifest.json with icons (/public/manifest.json)
+- [x] Service worker (next.config.ts with next-pwa, auto-generates sw.js)
+- [x] IndexedDB for offline cache (src/lib/offline/storage.ts)
+- [x] Online/offline detection (useOnlineStatus hook)
+- [x] Sync queue management (src/lib/offline/sync.ts)
+- [x] iOS web app meta tags (layout.tsx)
 
 ---
 
