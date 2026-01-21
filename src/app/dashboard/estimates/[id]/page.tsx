@@ -15,6 +15,7 @@ import {
 import { AIScopeModal } from "@/components/features/ai-scope-modal";
 import { EnhanceDescriptionModal } from "@/components/features/enhance-description-modal";
 import type { ScopeSuggestion } from "@/app/api/ai/suggest-scope/route";
+import { EstimateDetailSkeleton } from "@/components/ui/skeleton";
 
 type PageParams = { id: string };
 
@@ -35,6 +36,7 @@ export default function EstimateDetailPage({
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isExporting, setIsExporting] = useState<"pdf" | "excel" | null>(null);
   const [isOfflineData, setIsOfflineData] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
   const [showScopeModal, setShowScopeModal] = useState(false);
   const [showEnhanceModal, setShowEnhanceModal] = useState(false);
   const [acceptedSuggestions, setAcceptedSuggestions] = useState<ScopeSuggestion[]>([]);
@@ -188,6 +190,30 @@ export default function EstimateDetailPage({
     }
   }
 
+  async function handleDuplicate() {
+    if (!isOnline) {
+      setError("Duplicate is not available offline");
+      return;
+    }
+
+    setIsDuplicating(true);
+    try {
+      const response = await fetch(`/api/estimates/${id}/duplicate`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to duplicate estimate");
+      }
+
+      const duplicatedEstimate = await response.json();
+      router.push(`/dashboard/estimates/${duplicatedEstimate.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to duplicate");
+      setIsDuplicating(false);
+    }
+  }
+
   function handleAcceptSuggestions(suggestions: ScopeSuggestion[]) {
     setAcceptedSuggestions((prev) => [...prev, ...suggestions]);
   }
@@ -204,8 +230,21 @@ export default function EstimateDetailPage({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+      <div className="min-h-screen">
+        <header className="border-b border-gray-200 dark:border-gray-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="h-4 w-16 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+              <div className="flex items-center gap-4">
+                <div className="h-8 w-16 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                <div className="h-8 w-16 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </header>
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <EstimateDetailSkeleton />
+        </main>
       </div>
     );
   }
@@ -293,6 +332,29 @@ export default function EstimateDetailPage({
                 </svg>
                 <span className="hidden sm:inline">
                   {isExporting === "excel" ? "Exporting..." : "Excel"}
+                </span>
+              </button>
+              <button
+                onClick={handleDuplicate}
+                disabled={isDuplicating || !isOnline}
+                title={!isOnline ? "Duplicate unavailable offline" : "Duplicate estimate"}
+                className="px-3 py-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
+                </svg>
+                <span className="hidden sm:inline">
+                  {isDuplicating ? "Duplicating..." : "Duplicate"}
                 </span>
               </button>
               <button

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import type { Estimate } from "@/lib/db/schema";
 import { useOnlineStatus } from "@/lib/offline/hooks";
 import { getEstimatesOffline, saveEstimatesOffline, type OfflineEstimate } from "@/lib/offline/storage";
+import { EstimatesFilters } from "./estimates-filters";
 
 interface EstimatesListProps {
   initialEstimates: Estimate[];
@@ -42,6 +43,11 @@ export function EstimatesList({ initialEstimates, userId }: EstimatesListProps) 
   const [isOfflineData, setIsOfflineData] = useState(false);
   const { isOnline } = useOnlineStatus();
 
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<Estimate["status"] | "all">("all");
+  const [jobTypeFilter, setJobTypeFilter] = useState<Estimate["jobType"] | "all">("all");
+
   // Save initial estimates to IndexedDB for offline access
   useEffect(() => {
     if (initialEstimates.length > 0) {
@@ -78,11 +84,57 @@ export function EstimatesList({ initialEstimates, userId }: EstimatesListProps) 
     loadOfflineData();
   }, [isOnline, userId]);
 
+  // Filter estimates based on search and filters
+  const filteredEstimates = useMemo(() => {
+    return estimates.filter((estimate) => {
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = estimate.name.toLowerCase().includes(query);
+        const matchesAddress = estimate.propertyAddress?.toLowerCase().includes(query);
+        const matchesCity = estimate.propertyCity?.toLowerCase().includes(query);
+        const matchesClaim = estimate.claimNumber?.toLowerCase().includes(query);
+        const matchesPolicy = estimate.policyNumber?.toLowerCase().includes(query);
+
+        if (!matchesName && !matchesAddress && !matchesCity && !matchesClaim && !matchesPolicy) {
+          return false;
+        }
+      }
+
+      // Status filter
+      if (statusFilter !== "all" && estimate.status !== statusFilter) {
+        return false;
+      }
+
+      // Job type filter
+      if (jobTypeFilter !== "all" && estimate.jobType !== jobTypeFilter) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [estimates, searchQuery, statusFilter, jobTypeFilter]);
+
   return (
     <>
       {isOfflineData && (
         <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-800 dark:text-amber-200 text-sm">
           Showing cached data. Changes will sync when you&apos;re back online.
+        </div>
+      )}
+
+      {estimates.length > 0 && (
+        <div className="mb-6">
+          <EstimatesFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            jobTypeFilter={jobTypeFilter}
+            onJobTypeChange={setJobTypeFilter}
+            resultCount={filteredEstimates.length}
+            totalCount={estimates.length}
+          />
         </div>
       )}
 
@@ -114,6 +166,28 @@ export function EstimatesList({ initialEstimates, userId }: EstimatesListProps) 
             Create Estimate
           </Link>
         </div>
+      ) : filteredEstimates.length === 0 ? (
+        <div className="text-center py-12 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
+          <svg
+            className="mx-auto h-12 w-12 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+          <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-gray-100">
+            No matching estimates
+          </h3>
+          <p className="mt-2 text-gray-500 dark:text-gray-400">
+            Try adjusting your search or filters.
+          </p>
+        </div>
       ) : (
         <div className="overflow-hidden border border-gray-200 dark:border-gray-800 rounded-lg">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
@@ -134,7 +208,7 @@ export function EstimatesList({ initialEstimates, userId }: EstimatesListProps) 
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-950 divide-y divide-gray-200 dark:divide-gray-800">
-              {estimates.map((estimate) => {
+              {filteredEstimates.map((estimate) => {
                 const isPending = "_syncStatus" in estimate && estimate._syncStatus === "pending";
                 return (
                   <tr
