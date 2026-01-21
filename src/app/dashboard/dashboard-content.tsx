@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { WelcomeBanner } from "@/components/dashboard/welcome-banner";
 import { RecentEstimates } from "@/components/dashboard/recent-estimates";
+import { EstimateTable } from "@/components/dashboard/estimate-table";
 
 // Dynamic imports for heavy components (recharts ~300KB, Google Maps ~200KB)
 const PerformanceMetrics = dynamic(
@@ -98,11 +99,28 @@ interface MapData {
   jobType: string | null;
 }
 
+interface TableData {
+  id: string;
+  name: string | null;
+  propertyAddress: string | null;
+  propertyCity: string | null;
+  propertyState: string | null;
+  status: string | null;
+  updatedAt: Date | null;
+  createdAt: Date | null;
+  jobType: string | null;
+  claimNumber?: string | null;
+  policyNumber?: string | null;
+  insuredName?: string | null;
+  total?: number | null;
+}
+
 interface DashboardContentProps {
   activeCount: number;
   metricsData: MetricsData[];
   recentData: RecentData[];
   mapData: MapData[];
+  tableData: TableData[];
 }
 
 export function DashboardContent({
@@ -110,6 +128,7 @@ export function DashboardContent({
   metricsData,
   recentData,
   mapData,
+  tableData,
 }: DashboardContentProps) {
   return (
     <div className="space-y-6">
@@ -128,6 +147,9 @@ export function DashboardContent({
           <ProjectsMap projects={mapData} />
         </Suspense>
       </div>
+
+      {/* Full-width Claims Table with Tabs */}
+      <EstimateTable estimates={tableData} />
     </div>
   );
 }

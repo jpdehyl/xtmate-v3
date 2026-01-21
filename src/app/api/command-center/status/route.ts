@@ -72,14 +72,14 @@ const KNOWN_COMPLETED: Record<string, boolean> = {
   // ============================================================================
 
   // Sprint M1: Dashboard & Navigation
-  "M1-1": false, // Sidebar navigation
-  "M1-2": false, // Welcome banner
-  "M1-3": false, // Stat cards row
-  "M1-4": false, // Monthly claims chart
-  "M1-5": false, // Loss types donut chart
-  "M1-6": false, // Claims table with tabs
-  "M1-7": false, // Projects map
-  "M1-8": false, // Dashboard layout integration
+  "M1-1": true, // Sidebar navigation
+  "M1-2": true, // Welcome banner
+  "M1-3": true, // Stat cards row
+  "M1-4": true, // Monthly claims chart (in performance-metrics.tsx)
+  "M1-5": true, // Loss types donut chart (in performance-metrics.tsx)
+  "M1-6": true, // Claims table with tabs
+  "M1-7": true, // Projects map
+  "M1-8": true, // Dashboard layout integration
 
   // Sprint M2: Database Schema Expansion
   "M2-1": false, // Levels table
@@ -501,20 +501,22 @@ const migrationM1: TaskCheck[] = [
     id: "M1-4",
     name: "Monthly claims chart",
     category: "Web UI",
-    files: ["src/components/dashboard/monthly-chart.tsx"],
+    files: ["src/components/dashboard/performance-metrics.tsx"],
     check: () => checkTask("M1-4", () =>
       fileContains("package.json", "recharts") &&
       (fileExists("src/components/dashboard/monthly-chart.tsx") ||
-       fileContains("src/app/dashboard/page.tsx", "BarChart"))),
+       fileContains("src/app/dashboard/page.tsx", "BarChart") ||
+       fileContains("src/components/dashboard/performance-metrics.tsx", "BarChart"))),
   },
   {
     id: "M1-5",
     name: "Loss types donut chart",
     category: "Web UI",
-    files: ["src/components/dashboard/loss-types-chart.tsx"],
+    files: ["src/components/dashboard/performance-metrics.tsx"],
     check: () => checkTask("M1-5", () =>
       fileExists("src/components/dashboard/loss-types-chart.tsx") ||
-      fileContains("src/app/dashboard/page.tsx", "PieChart")),
+      fileContains("src/app/dashboard/page.tsx", "PieChart") ||
+      fileContains("src/components/dashboard/performance-metrics.tsx", "PieChart")),
   },
   {
     id: "M1-6",
@@ -539,10 +541,15 @@ const migrationM1: TaskCheck[] = [
     id: "M1-8",
     name: "Dashboard layout integration",
     category: "Web UI",
-    files: ["src/app/dashboard/page.tsx"],
+    files: ["src/app/dashboard/page.tsx", "src/components/dashboard/dashboard-layout.tsx"],
     check: () => checkTask("M1-8", () =>
-      fileContains("src/app/dashboard/page.tsx", "Sidebar") &&
-      fileContains("src/app/dashboard/page.tsx", "WelcomeBanner")),
+      // Check if using DashboardLayout wrapper pattern (V3 architecture)
+      (fileContains("src/app/dashboard/page.tsx", "DashboardLayout") &&
+       fileContains("src/components/dashboard/dashboard-layout.tsx", "Sidebar") &&
+       fileContains("src/app/dashboard/dashboard-content.tsx", "WelcomeBanner")) ||
+      // Or direct imports in page.tsx (original spec)
+      (fileContains("src/app/dashboard/page.tsx", "Sidebar") &&
+       fileContains("src/app/dashboard/page.tsx", "WelcomeBanner"))),
   },
 ];
 
