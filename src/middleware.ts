@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export default async function middleware(request: NextRequest) {
-  // Skip Clerk if not configured
   if (!process.env.CLERK_SECRET_KEY) {
-    return NextResponse.next();
+    console.error("CRITICAL: CLERK_SECRET_KEY is not configured");
+    return NextResponse.json(
+      { error: "Authentication service unavailable" },
+      { status: 503 }
+    );
   }
 
   // Dynamic import Clerk middleware to avoid build issues
