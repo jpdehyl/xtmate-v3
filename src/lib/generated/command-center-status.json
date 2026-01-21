@@ -80,10 +80,10 @@
   "M7-4": true,
   "M7-5": true,
   "M7-6": false,
-  "M8-1": false,
-  "M8-2": false,
-  "M8-3": false,
-  "M8-4": false,
-  "M8-5": false,
+  "M8-1": true,
+  "M8-2": true,
+  "M8-3": true,
+  "M8-4": true,
+  "M8-5": true,
   "M8-6": false
 }
