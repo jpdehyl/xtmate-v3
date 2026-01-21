@@ -30,20 +30,20 @@ export default async function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-pd-gold-400 to-pd-gold-600 rounded-lg flex items-center justify-center shadow-md">
-                <span className="text-white font-bold text-lg">PD</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-md">
+                <span className="text-white font-bold text-lg">Xt</span>
               </div>
               <div className="hidden sm:block">
-                <div className="flex items-baseline gap-1.5">
+                <div className="flex items-baseline gap-1">
                   <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-                    PAUL
+                    Xt
                   </span>
-                  <span className="text-xl font-bold text-pd-gold tracking-tight">
-                    DAVIS
+                  <span className="text-xl font-bold text-primary-600 tracking-tight">
+                    Mate
                   </span>
                 </div>
-                <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 tracking-[0.2em] uppercase">
-                  XtMate
+                <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 tracking-[0.15em] uppercase">
+                  Estimation
                 </span>
               </div>
             </div>
@@ -56,7 +56,7 @@ export default async function LandingPage() {
               </Link>
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 bg-pd-gold hover:bg-pd-gold-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
               >
                 Get Started
                 <ArrowRight className="w-4 h-4" />
@@ -70,13 +70,13 @@ export default async function LandingPage() {
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-pd-gold-50 dark:bg-pd-gold-900/20 text-pd-gold-700 dark:text-pd-gold-300 px-4 py-2 rounded-full text-sm font-medium mb-8">
+            <div className="inline-flex items-center gap-2 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 px-4 py-2 rounded-full text-sm font-medium mb-8">
               <Smartphone className="w-4 h-4" />
               iPhone LiDAR + AI-Powered Estimating
             </div>
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white tracking-tight mb-6">
               Property Claims,{" "}
-              <span className="text-pd-gold">Simplified</span>
+              <span className="text-primary-600">Simplified</span>
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto">
               Transform restoration claims processing with LiDAR room capture,
@@ -86,7 +86,7 @@ export default async function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 bg-pd-gold hover:bg-pd-gold-600 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all shadow-lg shadow-pd-gold/25 hover:shadow-xl hover:shadow-pd-gold/30"
+                className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all shadow-lg shadow-primary-600/25 hover:shadow-xl hover:shadow-primary-600/30"
               >
                 Start Free Trial
                 <ArrowRight className="w-5 h-5" />
@@ -103,7 +103,7 @@ export default async function LandingPage() {
           {/* Hero Image/Demo */}
           <div className="mt-16 relative">
             <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl overflow-hidden aspect-video max-w-5xl mx-auto">
-              <div className="absolute inset-0 bg-gradient-to-br from-pd-gold/10 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-600/10 to-transparent" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center text-white">
                   <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
@@ -260,7 +260,7 @@ export default async function LandingPage() {
           </p>
           <Link
             href="/sign-up"
-            className="inline-flex items-center gap-2 bg-pd-gold hover:bg-pd-gold-600 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all shadow-lg shadow-pd-gold/25 hover:shadow-xl hover:shadow-pd-gold/30"
+            className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all shadow-lg shadow-primary-600/25 hover:shadow-xl hover:shadow-primary-600/30"
           >
             Start Your Free Trial
             <ArrowRight className="w-5 h-5" />
@@ -276,11 +276,11 @@ export default async function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-pd-gold-400 to-pd-gold-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">PD</span>
+              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">Xt</span>
               </div>
               <span className="text-sm text-gray-600 dark:text-gray-400">
-                XtMate by Paul Davis Restoration
+                XtMate Estimation
               </span>
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
@@ -321,7 +321,7 @@ function FeatureCard({
 }) {
   return (
     <div className="bg-white dark:bg-card rounded-xl p-6 border border-gray-100 dark:border-border shadow-sm hover:shadow-md transition-shadow">
-      <div className="w-12 h-12 bg-pd-gold-50 dark:bg-pd-gold-900/20 rounded-lg flex items-center justify-center text-pd-gold mb-4">
+      <div className="w-12 h-12 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center text-primary-600 mb-4">
         {icon}
       </div>
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -343,7 +343,7 @@ function WorkflowStep({
 }) {
   return (
     <div className="text-center">
-      <div className="w-12 h-12 bg-pd-gold rounded-full flex items-center justify-center text-white text-xl font-bold mx-auto mb-4">
+      <div className="w-12 h-12 bg-primary-600 rounded-full flex items-center justify-center text-white text-xl font-bold mx-auto mb-4">
         {number}
       </div>
       <h3 className="text-lg font-semibold mb-2">{title}</h3>

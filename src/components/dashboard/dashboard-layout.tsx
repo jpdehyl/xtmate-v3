@@ -34,8 +34,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-pd-gold-400 to-pd-gold-600 rounded-lg flex items-center justify-center shadow-md animate-pulse">
-            <span className="text-white font-bold text-lg">PD</span>
+          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-md animate-pulse">
+            <span className="text-white font-bold text-lg">Xt</span>
           </div>
           <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
