@@ -33,14 +33,32 @@ XTmate is an estimation tool for construction/landscaping projects. V3 is a comp
 | Build failures (Google Fonts) | Local fonts |
 | 60+ fields on estimates | Split into focused tables |
 
-### Database Schema (Target: 15 tables vs V2's 35)
-Core tables:
+### Database Schema (7 tables implemented, target 15)
+Core tables (implemented):
 - `estimates` - Core estimate records with property info
-- `estimate_items` - Line items with quantities (planned)
-- `rooms` - Room data with dimensions (planned)
-- `templates` - Reusable estimate templates (planned)
-- `materials` - Material catalog (planned)
-- `labor_rates` - Labor pricing (planned)
+- `levels` - Floor levels (B, 1, 2, 3, A) with labels
+- `rooms` - Room dimensions, materials, and geometry for sketch editor
+- `annotations` - Damage markers with position, severity, affected surfaces
+- `line_items` - Scope items with Xactimate codes and pricing
+- `photos` - Documentation photos with GPS and timestamps
+- `assignments` - E/A/R/P/C/Z assignment types with totals
+
+Enums:
+- `estimate_status` - draft, in_progress, completed
+- `job_type` - insurance, private
+- `photo_type` - BEFORE, DURING, AFTER, DAMAGE, EQUIPMENT, OVERVIEW
+- `assignment_type` - E, A, R, P, C, Z
+- `assignment_status` - pending, in_progress, submitted, approved, completed
+
+Planned tables:
+- `templates` - Reusable estimate templates
+- `materials` - Material catalog
+- `labor_rates` - Labor pricing
+- `carriers` - Insurance carrier configuration
+- `sla_events` - SLA milestone tracking
+- `vendors` - Vendor/subcontractor management
+- `quotes` - Vendor quotes
+- `price_lists` - Price list imports
 
 ## Directory Structure
 ```
@@ -236,6 +254,28 @@ Before marking any task complete:
 - POST /api/estimates/[id]/duplicate endpoint
 - EstimatesTableSkeleton, EstimateDetailSkeleton, FiltersSkeleton
 - TODO: URL-based filter state, toast notifications
+
+### V2 Migration Sprints (see docs/PRD-V2-MIGRATION.md)
+
+#### Sprint M2: Database Schema ✅ COMPLETE
+Added 6 new tables for full restoration app functionality:
+- `levels` - Floor levels with ordering
+- `rooms` - Room dimensions, materials, geometry (JSONB)
+- `annotations` - Damage markers with 3D positioning
+- `line_items` - Xactimate codes, pricing, AI confidence
+- `photos` - GPS, timestamps, type classification
+- `assignments` - E/A/R/P/C/Z with totals calculations
+
+**To apply to database**: `npx drizzle-kit push` (requires DATABASE_URL)
+
+### Future Migration Sprints
+- **M1**: Dashboard & Navigation (sidebar, charts, map)
+- **M3**: Rooms & Sketch Editor (Konva.js)
+- **M4**: Line Items & Pricing
+- **M5**: Photos & Documentation
+- **M6**: SLA & Workflow
+- **M7**: Portfolio & Analytics
+- **M8**: Vendor Portal
 
 ### Future Stages (Post-MVP)
 - Stage 7: Line Items & Pricing

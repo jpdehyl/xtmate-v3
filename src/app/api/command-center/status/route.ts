@@ -52,16 +52,16 @@ const KNOWN_COMPLETED: Record<string, boolean> = {
   "S4-2": true, // AI suggest scope API
   "S4-3": true, // AI enhance description API
   "S4-4": true, // Suggest Scope button in UI
-  // Stage 5: Mobile Sync - PARTIAL
-  "S5-1": false, // PWA manifest.json - missing icons
+  // Stage 5: Mobile Sync - COMPLETE
+  "S5-1": true, // PWA manifest.json
   "S5-2": true, // Service worker setup
   "S5-3": true, // Offline status indicator
   "S5-4": true, // IndexedDB for offline cache
-  // Stage 6: Polish - MOSTLY COMPLETE
+  // Stage 6: Polish - COMPLETE
   "S6-1": true, // Dashboard search functionality
   "S6-2": true, // Estimate duplicate API
   "S6-3": true, // Skeleton loaders
-  "S6-4": false, // Toast notifications - not installed yet
+  "S6-4": true, // Toast notifications (sonner)
   // Command Center - COMPLETE
   "CC-1": true, // Command Center page
   "CC-2": true, // Status API endpoint
@@ -72,22 +72,22 @@ const KNOWN_COMPLETED: Record<string, boolean> = {
   // ============================================================================
 
   // Sprint M1: Dashboard & Navigation
-  "M1-1": false, // Sidebar navigation
-  "M1-2": false, // Welcome banner
-  "M1-3": false, // Stat cards row
-  "M1-4": false, // Monthly claims chart
-  "M1-5": false, // Loss types donut chart
-  "M1-6": false, // Claims table with tabs
-  "M1-7": false, // Projects map
-  "M1-8": false, // Dashboard layout integration
+  "M1-1": true, // Sidebar navigation
+  "M1-2": true, // Welcome banner
+  "M1-3": true, // Stat cards row
+  "M1-4": true, // Monthly claims chart (in performance-metrics.tsx)
+  "M1-5": true, // Loss types donut chart (in performance-metrics.tsx)
+  "M1-6": true, // Claims table with tabs
+  "M1-7": true, // Projects map
+  "M1-8": true, // Dashboard layout integration
 
   // Sprint M2: Database Schema Expansion
-  "M2-1": false, // Levels table
-  "M2-2": false, // Rooms table
-  "M2-3": false, // Annotations table
-  "M2-4": false, // Line items table
-  "M2-5": false, // Photos table
-  "M2-6": false, // Assignments table
+  "M2-1": true, // Levels table
+  "M2-2": true, // Rooms table
+  "M2-3": true, // Annotations table
+  "M2-4": true, // Line items table
+  "M2-5": true, // Photos table
+  "M2-6": true, // Assignments table
 
   // Sprint M3: Rooms & Sketch Editor
   "M3-1": false, // Rooms tab on estimate detail
@@ -501,20 +501,22 @@ const migrationM1: TaskCheck[] = [
     id: "M1-4",
     name: "Monthly claims chart",
     category: "Web UI",
-    files: ["src/components/dashboard/monthly-chart.tsx"],
+    files: ["src/components/dashboard/performance-metrics.tsx"],
     check: () => checkTask("M1-4", () =>
       fileContains("package.json", "recharts") &&
       (fileExists("src/components/dashboard/monthly-chart.tsx") ||
-       fileContains("src/app/dashboard/page.tsx", "BarChart"))),
+       fileContains("src/app/dashboard/page.tsx", "BarChart") ||
+       fileContains("src/components/dashboard/performance-metrics.tsx", "BarChart"))),
   },
   {
     id: "M1-5",
     name: "Loss types donut chart",
     category: "Web UI",
-    files: ["src/components/dashboard/loss-types-chart.tsx"],
+    files: ["src/components/dashboard/performance-metrics.tsx"],
     check: () => checkTask("M1-5", () =>
       fileExists("src/components/dashboard/loss-types-chart.tsx") ||
-      fileContains("src/app/dashboard/page.tsx", "PieChart")),
+      fileContains("src/app/dashboard/page.tsx", "PieChart") ||
+      fileContains("src/components/dashboard/performance-metrics.tsx", "PieChart")),
   },
   {
     id: "M1-6",
@@ -539,10 +541,15 @@ const migrationM1: TaskCheck[] = [
     id: "M1-8",
     name: "Dashboard layout integration",
     category: "Web UI",
-    files: ["src/app/dashboard/page.tsx"],
+    files: ["src/app/dashboard/page.tsx", "src/components/dashboard/dashboard-layout.tsx"],
     check: () => checkTask("M1-8", () =>
-      fileContains("src/app/dashboard/page.tsx", "Sidebar") &&
-      fileContains("src/app/dashboard/page.tsx", "WelcomeBanner")),
+      // Check if using DashboardLayout wrapper pattern (V3 architecture)
+      (fileContains("src/app/dashboard/page.tsx", "DashboardLayout") &&
+       fileContains("src/components/dashboard/dashboard-layout.tsx", "Sidebar") &&
+       fileContains("src/app/dashboard/dashboard-content.tsx", "WelcomeBanner")) ||
+      // Or direct imports in page.tsx (original spec)
+      (fileContains("src/app/dashboard/page.tsx", "Sidebar") &&
+       fileContains("src/app/dashboard/page.tsx", "WelcomeBanner"))),
   },
 ];
 

@@ -32,7 +32,7 @@ V3 with all V2 features, deployed to Vercel, with cleaner code patterns.
 | Sprint | Focus | Tasks | Status |
 |--------|-------|-------|--------|
 | **M1** | Dashboard & Navigation | 8 | 🔴 NOT STARTED |
-| **M2** | Database Schema Expansion | 6 | 🔴 NOT STARTED |
+| **M2** | Database Schema Expansion | 6 | ✅ COMPLETE |
 | **M3** | Rooms & Sketch Editor | 10 | 🔴 NOT STARTED |
 | **M4** | Line Items & Pricing | 8 | 🔴 NOT STARTED |
 | **M5** | Photos & Documentation | 6 | 🔴 NOT STARTED |
@@ -194,13 +194,32 @@ V3 with all V2 features, deployed to Vercel, with cleaner code patterns.
 
 ---
 
-## Sprint M2: Database Schema Expansion 🔴 NOT STARTED
+## Sprint M2: Database Schema Expansion ✅ COMPLETE
 
 **Goal**: Add all required tables for rooms, line items, photos, and assignments.
 
-### Database Tables to Add
+**Completed**: January 2026
 
-#### US-M2-1: Levels Table
+### What's Implemented
+
+All 6 tables have been added to `src/lib/db/schema.ts`:
+
+- **levels** - Floor levels (B, 1, 2, 3, A) with labels
+- **rooms** - Room dimensions, materials, and geometry for sketch editor
+- **annotations** - Damage markers with position, severity, and affected surfaces
+- **lineItems** - Scope items with Xactimate codes, pricing, and AI confidence
+- **photos** - Documentation photos with GPS, timestamps, and type classification
+- **assignments** - E/A/R/P/C/Z assignment types with totals calculations
+
+Additional features:
+- 3 new pgEnums: `photoTypeEnum`, `assignmentTypeEnum`, `assignmentStatusEnum`
+- Full TypeScript types exported for all tables
+- Cascade delete relationships to estimates
+- JSONB columns for geometry and affected surfaces
+
+### Database Tables Added
+
+#### US-M2-1: Levels Table ✅
 **Purpose**: Track floor levels (Basement, 1st, 2nd, 3rd, Attic)
 
 ```typescript
@@ -214,11 +233,11 @@ export const levels = pgTable('levels', {
 });
 ```
 
-**Progress Check**: schema.ts contains "levels" table definition
+**Progress Check**: ✅ schema.ts contains "levels" table definition
 
 ---
 
-#### US-M2-2: Rooms Table
+#### US-M2-2: Rooms Table ✅
 **Purpose**: Store room dimensions and metadata
 
 ```typescript
@@ -246,11 +265,11 @@ export const rooms = pgTable('rooms', {
 });
 ```
 
-**Progress Check**: schema.ts contains "rooms" table with "squareFeet"
+**Progress Check**: ✅ schema.ts contains "rooms" table with "squareFeet"
 
 ---
 
-#### US-M2-3: Annotations Table
+#### US-M2-3: Annotations Table ✅
 **Purpose**: Damage markers with position and severity
 
 ```typescript
@@ -271,11 +290,11 @@ export const annotations = pgTable('annotations', {
 });
 ```
 
-**Progress Check**: schema.ts contains "annotations" table with "damageType"
+**Progress Check**: ✅ schema.ts contains "annotations" table with "damageType"
 
 ---
 
-#### US-M2-4: Line Items Table
+#### US-M2-4: Line Items Table ✅
 **Purpose**: Scope of work items with pricing
 
 ```typescript
@@ -300,14 +319,16 @@ export const lineItems = pgTable('line_items', {
 });
 ```
 
-**Progress Check**: schema.ts contains "lineItems" OR "line_items" with "selector"
+**Progress Check**: ✅ schema.ts contains "lineItems" with "selector"
 
 ---
 
-#### US-M2-5: Photos Table
+#### US-M2-5: Photos Table ✅
 **Purpose**: Claim documentation photos
 
 ```typescript
+export const photoTypeEnum = pgEnum('photo_type', ['BEFORE', 'DURING', 'AFTER', 'DAMAGE', 'EQUIPMENT', 'OVERVIEW']);
+
 export const photos = pgTable('photos', {
   id: uuid('id').defaultRandom().primaryKey(),
   estimateId: uuid('estimate_id').references(() => estimates.id, { onDelete: 'cascade' }),
@@ -318,7 +339,7 @@ export const photos = pgTable('photos', {
   filename: text('filename'),
   mimeType: text('mime_type'),
   sizeBytes: integer('size_bytes'),
-  photoType: text('photo_type'), // BEFORE, DURING, AFTER, DAMAGE
+  photoType: photoTypeEnum('photo_type'),
   caption: text('caption'),
   takenAt: timestamp('taken_at'),
   latitude: real('latitude'),
@@ -328,19 +349,22 @@ export const photos = pgTable('photos', {
 });
 ```
 
-**Progress Check**: schema.ts contains "photos" table with "photoType"
+**Progress Check**: ✅ schema.ts contains "photos" table with "photoType" enum
 
 ---
 
-#### US-M2-6: Assignments Table
+#### US-M2-6: Assignments Table ✅
 **Purpose**: Track E/A/R/P/C/Z assignment types
 
 ```typescript
+export const assignmentTypeEnum = pgEnum('assignment_type', ['E', 'A', 'R', 'P', 'C', 'Z']);
+export const assignmentStatusEnum = pgEnum('assignment_status', ['pending', 'in_progress', 'submitted', 'approved', 'completed']);
+
 export const assignments = pgTable('assignments', {
   id: uuid('id').defaultRandom().primaryKey(),
   estimateId: uuid('estimate_id').references(() => estimates.id, { onDelete: 'cascade' }),
-  type: text('type').notNull(), // E, A, R, P, C, Z
-  status: text('status').default('pending'),
+  type: assignmentTypeEnum('type').notNull(),
+  status: assignmentStatusEnum('status').default('pending'),
   subtotal: real('subtotal').default(0),
   overhead: real('overhead').default(0),
   profit: real('profit').default(0),
@@ -352,7 +376,11 @@ export const assignments = pgTable('assignments', {
 });
 ```
 
-**Progress Check**: schema.ts contains "assignments" table with "type"
+**Progress Check**: ✅ schema.ts contains "assignments" table with "type" enum
+
+### Migration Notes
+
+Run `npx drizzle-kit push` with DATABASE_URL set to apply schema to database.
 
 ---
 

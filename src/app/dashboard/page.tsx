@@ -55,6 +55,23 @@ export default async function DashboardPage() {
     jobType: e.jobType,
   }));
 
+  // Full data for the claims table with tabs
+  const tableData = userEstimates.map((e) => ({
+    id: e.id,
+    name: e.name,
+    propertyAddress: e.propertyAddress,
+    propertyCity: e.propertyCity,
+    propertyState: e.propertyState,
+    status: e.status,
+    updatedAt: e.updatedAt,
+    createdAt: e.createdAt,
+    jobType: e.jobType,
+    claimNumber: e.claimNumber ?? null,
+    policyNumber: e.policyNumber ?? null,
+    insuredName: null as string | null, // Not in schema yet
+    total: null as number | null, // Not in schema yet
+  }));
+
   return (
     <DashboardLayout>
       <DashboardContent
@@ -62,6 +79,7 @@ export default async function DashboardPage() {
         metricsData={metricsData}
         recentData={recentData}
         mapData={mapData}
+        tableData={tableData}
       />
     </DashboardLayout>
   );
