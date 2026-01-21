@@ -392,9 +392,42 @@ Full SLA tracking system with carrier configuration and milestone management:
 - Dashboard widget with compliance percentage and critical items list
 - Visual timeline with completion tracking and overdue alerts
 
+#### Sprint M7: Portfolio & Analytics ✅ COMPLETE
+Full portfolio and analytics dashboards with charts and data visualization:
+
+**Pages**:
+- `/dashboard/portfolio` - Portfolio overview with summary metrics
+- `/dashboard/analytics` - Analytics dashboard with date range filtering
+
+**Components** (in `src/components/portfolio/`):
+- `activity-feed.tsx` - Activity log with user avatars, timestamps, action types
+- `carrier-breakdown.tsx` - Donut chart with carrier stats table
+- `at-risk-list.tsx` - SLA at-risk/overdue estimates with urgency sorting
+
+**Components** (in `src/components/analytics/`):
+- `date-range-picker.tsx` - Date range selection with presets (7d, 30d, 90d, 1y, YTD, All time)
+- `revenue-chart.tsx` - Area chart with trend calculation
+- `team-metrics.tsx` - Sortable metrics table per team member
+- `export-analytics.tsx` - PDF/Excel export with jsPDF and ExcelJS
+
+**API Routes**:
+- `GET /api/portfolio` - Portfolio stats, activities, carriers, at-risk estimates
+- `GET /api/analytics?start=&end=` - Analytics stats, charts data, team metrics (date range filtered)
+
+**Features**:
+- Portfolio summary metrics (6 stat cards)
+- Activity feed with action icons and relative timestamps
+- At-risk estimates list with SLA status badges
+- Carrier breakdown donut chart with clickable segments
+- Revenue over time area chart with trend indicators
+- Claims by status pie chart
+- Monthly claims volume bar chart
+- Team performance metrics with sortable columns
+- Export to PDF (jsPDF) and Excel (ExcelJS)
+- Date range filtering with preset options
+
 ### Future Migration Sprints
 - **M1**: Dashboard & Navigation (sidebar, charts, map)
-- **M7**: Portfolio & Analytics
 - **M8**: Vendor Portal
 
 ### Future Stages (Post-MVP)
