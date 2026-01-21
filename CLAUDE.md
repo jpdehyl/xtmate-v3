@@ -45,6 +45,9 @@ Core tables (implemented):
 - `assignments` - E/A/R/P/C/Z assignment types with totals
 - `price_lists` - User price lists with regions and effective dates
 - `price_list_items` - Individual price list entries
+- `carriers` - Insurance carrier configuration with SLA rules
+- `carrier_sla_rules` - Carrier-specific SLA target hours per milestone
+- `sla_events` - SLA milestone tracking with target/actual times
 
 Enums:
 - `estimate_status` - draft, in_progress, completed
@@ -52,13 +55,12 @@ Enums:
 - `photo_type` - BEFORE, DURING, AFTER, DAMAGE, EQUIPMENT, OVERVIEW
 - `assignment_type` - E, A, R, P, C, Z
 - `assignment_status` - pending, in_progress, submitted, approved, completed
+- `sla_milestone` - assigned, contacted, site_visit, estimate_uploaded, revision_requested, approved, closed
 
 Planned tables:
 - `templates` - Reusable estimate templates
 - `materials` - Material catalog
 - `labor_rates` - Labor pricing
-- `carriers` - Insurance carrier configuration
-- `sla_events` - SLA milestone tracking
 - `vendors` - Vendor/subcontractor management
 - `quotes` - Vendor quotes
 
@@ -356,9 +358,42 @@ Full photo management system with upload, gallery, and export integration:
 **Environment Variable**:
 - `BLOB_READ_WRITE_TOKEN` - Vercel Blob storage token
 
+#### Sprint M6: SLA & Workflow ✅ COMPLETE
+Full SLA tracking system with carrier configuration and milestone management:
+
+**Database Tables** (in `src/lib/db/schema.ts`):
+- `carriers` - Insurance company configuration with contact info
+- `carrier_sla_rules` - Carrier-specific SLA target hours per milestone
+- `sla_events` - Milestone completions with target/actual timestamps
+- `slaMilestoneEnum` - 7 milestones (assigned, contacted, site_visit, estimate_uploaded, revision_requested, approved, closed)
+- Added `carrierId` to estimates table
+
+**SLA Library** (in `src/lib/sla/`):
+- `types.ts` - TypeScript types, milestone labels, descriptions
+- `calculations.ts` - Status calculation, hours remaining, compliance rate
+- `index.ts` - Module exports
+
+**API Routes**:
+- `GET/POST /api/carriers` - List and create carriers
+- `POST /api/carriers/seed` - Seed 10 major insurance carriers
+- `GET/POST /api/sla-events` - List events, initialize tracking
+- `GET/PATCH/DELETE /api/sla-events/[id]` - Single event operations, complete milestone
+
+**Components** (in `src/components/features/`):
+- `sla-tab.tsx` - Timeline view with milestone progress and complete buttons
+- `sla-badge.tsx` - SLABadge, SLAIndicator, SLADot components
+- `sla-dashboard-widget.tsx` - Dashboard widget with at-risk/overdue counts
+- `carrier-selector.tsx` - Carrier selection dropdown for insurance estimates
+
+**Features**:
+- 7 SLA milestones with configurable target hours
+- Carrier-specific SLA rules (contact within 4h, site visit within 24h, etc.)
+- Real-time status calculation (on_time, at_risk, overdue, completed, pending)
+- Dashboard widget with compliance percentage and critical items list
+- Visual timeline with completion tracking and overdue alerts
+
 ### Future Migration Sprints
 - **M1**: Dashboard & Navigation (sidebar, charts, map)
-- **M6**: SLA & Workflow
 - **M7**: Portfolio & Analytics
 - **M8**: Vendor Portal
 

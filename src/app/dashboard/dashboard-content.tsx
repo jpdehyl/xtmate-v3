@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { WelcomeBanner } from "@/components/dashboard/welcome-banner";
 import { RecentEstimates } from "@/components/dashboard/recent-estimates";
 import { EstimateTable } from "@/components/dashboard/estimate-table";
+import { SlaDashboardWidget } from "@/components/features/sla-dashboard-widget";
 
 // Dynamic imports for heavy components (recharts ~300KB, Google Maps ~200KB)
 const PerformanceMetrics = dynamic(
@@ -140,9 +141,10 @@ export function DashboardContent({
         <PerformanceMetrics estimates={metricsData} />
       </Suspense>
 
-      {/* Two Column Layout: Recent Estimates + Map */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Three Column Layout: Recent Estimates + SLA Widget + Map */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <RecentEstimates estimates={recentData} />
+        <SlaDashboardWidget />
         <Suspense fallback={<ProjectsMapSkeleton />}>
           <ProjectsMap projects={mapData} />
         </Suspense>
