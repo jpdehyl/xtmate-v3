@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { estimates } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { estimates, photos, rooms } from "@/lib/db/schema";
+import { eq, and, asc } from "drizzle-orm";
 import { jsPDF } from "jspdf";
 import ExcelJS from "exceljs";
+import type { Photo, Room } from "@/lib/db/schema";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -35,10 +36,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: "Estimate not found" }, { status: 404 });
   }
 
+  // Fetch photos and rooms for the estimate
+  const [photosList, roomsList] = await Promise.all([
+    db.select().from(photos).where(eq(photos.estimateId, id)).orderBy(asc(photos.order)),
+    db.select().from(rooms).where(eq(rooms.estimateId, id)).orderBy(asc(rooms.order)),
+  ]);
+
   if (format === "pdf") {
-    return generatePDF(estimate);
+    return generatePDF(estimate, photosList, roomsList);
   } else {
-    return generateExcel(estimate);
+    return generateExcel(estimate, photosList, roomsList);
   }
 }
 
@@ -80,9 +87,33 @@ function formatAddress(estimate: {
   return parts.join("\n") || "Not specified";
 }
 
-function generatePDF(
-  estimate: typeof estimates.$inferSelect
-): NextResponse {
+const PHOTO_TYPE_LABELS: Record<string, string> = {
+  BEFORE: "Before",
+  DURING: "During",
+  AFTER: "After",
+  DAMAGE: "Damage",
+  EQUIPMENT: "Equipment",
+  OVERVIEW: "Overview",
+};
+
+async function fetchImageAsBase64(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const buffer = await response.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString("base64");
+    const contentType = response.headers.get("content-type") || "image/jpeg";
+    return `data:${contentType};base64,${base64}`;
+  } catch {
+    return null;
+  }
+}
+
+async function generatePDF(
+  estimate: typeof estimates.$inferSelect,
+  photosList: Photo[],
+  roomsList: Room[]
+): Promise<NextResponse> {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 20;
@@ -187,6 +218,137 @@ function generatePDF(
     addField("Policy #:", estimate.policyNumber || "Not specified");
   }
 
+  // Section: Rooms (if any)
+  if (roomsList.length > 0) {
+    // Check if we need a new page
+    if (y > 220) {
+      doc.addPage();
+      y = 20;
+    }
+
+    y += 10;
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text("Rooms", 20, y);
+    y += 2;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, y, pageWidth - 20, y);
+    y += 12;
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+
+    for (const room of roomsList) {
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      doc.text(room.name, 20, y);
+
+      const roomDetails = [];
+      if (room.squareFeet) roomDetails.push(`${room.squareFeet.toFixed(0)} sq ft`);
+      if (room.category) roomDetails.push(room.category);
+
+      if (roomDetails.length > 0) {
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100, 100, 100);
+        doc.text(` - ${roomDetails.join(", ")}`, 20 + doc.getTextWidth(room.name), y);
+      }
+      y += 8;
+    }
+  }
+
+  // Section: Photos (if any) - show up to 6 photos
+  if (photosList.length > 0) {
+    // Always start photos section on a new page
+    doc.addPage();
+    y = 20;
+
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text("Photo Documentation", 20, y);
+    y += 2;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, y, pageWidth - 20, y);
+    y += 15;
+
+    // Display photos in a grid (2 columns)
+    const photoWidth = 80;
+    const photoHeight = 60;
+    const photoGap = 10;
+    const maxPhotosPerPage = 6;
+    const photosToShow = photosList.slice(0, Math.min(photosList.length, 12)); // Max 12 photos (2 pages)
+
+    let photoIndex = 0;
+    for (const photo of photosToShow) {
+      if (photoIndex > 0 && photoIndex % maxPhotosPerPage === 0) {
+        doc.addPage();
+        y = 20;
+      }
+
+      const col = photoIndex % 2;
+      const row = Math.floor((photoIndex % maxPhotosPerPage) / 2);
+      const x = 20 + col * (photoWidth + photoGap);
+      const photoY = y + row * (photoHeight + 25);
+
+      // Try to add image
+      const imageData = await fetchImageAsBase64(photo.thumbnailUrl || photo.url);
+      if (imageData) {
+        try {
+          doc.addImage(imageData, "JPEG", x, photoY, photoWidth, photoHeight);
+        } catch {
+          // If image fails, draw placeholder
+          doc.setFillColor(240, 240, 240);
+          doc.rect(x, photoY, photoWidth, photoHeight, "F");
+          doc.setFontSize(9);
+          doc.setTextColor(150, 150, 150);
+          doc.text("Image unavailable", x + photoWidth / 2, photoY + photoHeight / 2, { align: "center" });
+        }
+      } else {
+        // Draw placeholder
+        doc.setFillColor(240, 240, 240);
+        doc.rect(x, photoY, photoWidth, photoHeight, "F");
+        doc.setFontSize(9);
+        doc.setTextColor(150, 150, 150);
+        doc.text("Image unavailable", x + photoWidth / 2, photoY + photoHeight / 2, { align: "center" });
+      }
+
+      // Add photo type label
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
+      const typeLabel = photo.photoType ? PHOTO_TYPE_LABELS[photo.photoType] || photo.photoType : "Photo";
+      doc.text(typeLabel, x, photoY + photoHeight + 5);
+
+      // Add caption if present
+      if (photo.caption) {
+        doc.setFontSize(8);
+        doc.setTextColor(80, 80, 80);
+        const captionText = photo.caption.length > 40 ? photo.caption.substring(0, 37) + "..." : photo.caption;
+        doc.text(captionText, x, photoY + photoHeight + 12);
+      }
+
+      photoIndex++;
+    }
+
+    // Note if more photos exist
+    if (photosList.length > photosToShow.length) {
+      const lastRow = Math.ceil(photosToShow.length / 2);
+      const noteY = y + lastRow * (photoHeight + 25) + 10;
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
+      doc.text(
+        `+ ${photosList.length - photosToShow.length} more photos available in the app`,
+        20,
+        Math.min(noteY, 270)
+      );
+    }
+  }
+
   // Footer
   const footerY = doc.internal.pageSize.getHeight() - 15;
   doc.setFontSize(9);
@@ -210,7 +372,9 @@ function generatePDF(
 }
 
 async function generateExcel(
-  estimate: typeof estimates.$inferSelect
+  estimate: typeof estimates.$inferSelect,
+  photosList: Photo[],
+  roomsList: Room[]
 ): Promise<NextResponse> {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "XTmate";
@@ -303,6 +467,54 @@ async function generateExcel(
 
     addDataRow("Claim Number", estimate.claimNumber || "Not specified");
     addDataRow("Policy Number", estimate.policyNumber || "Not specified");
+  }
+
+  // Section: Rooms (if any)
+  if (roomsList.length > 0) {
+    sheet.addRow([]);
+
+    const roomsHeader = sheet.addRow(["Rooms", ""]);
+    roomsHeader.getCell(1).font = { bold: true, size: 12 };
+    roomsHeader.getCell(1).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFF3F4F6" },
+    };
+    sheet.mergeCells(`A${roomsHeader.number}:B${roomsHeader.number}`);
+
+    for (const room of roomsList) {
+      const details = [];
+      if (room.squareFeet) details.push(`${room.squareFeet.toFixed(0)} sq ft`);
+      if (room.category) details.push(room.category);
+      addDataRow(room.name, details.join(", ") || "No dimensions");
+    }
+  }
+
+  // Section: Photos (if any)
+  if (photosList.length > 0) {
+    sheet.addRow([]);
+
+    const photosHeader = sheet.addRow(["Photos", ""]);
+    photosHeader.getCell(1).font = { bold: true, size: 12 };
+    photosHeader.getCell(1).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFF3F4F6" },
+    };
+    sheet.mergeCells(`A${photosHeader.number}:B${photosHeader.number}`);
+
+    addDataRow("Total Photos", photosList.length.toString());
+
+    // Count by type
+    const typeCounts: Record<string, number> = {};
+    for (const photo of photosList) {
+      const type = photo.photoType || "Other";
+      typeCounts[type] = (typeCounts[type] || 0) + 1;
+    }
+
+    for (const [type, count] of Object.entries(typeCounts)) {
+      addDataRow(PHOTO_TYPE_LABELS[type] || type, `${count} photo${count !== 1 ? "s" : ""}`);
+    }
   }
 
   // Add borders to all data cells
