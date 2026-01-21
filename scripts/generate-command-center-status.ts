@@ -63,7 +63,7 @@ const taskChecks: TaskDefinition[] = [
   { id: "S2-1", check: () => fileExists("src/app/api/estimates/route.ts") && fileContains("src/app/api/estimates/route.ts", "GET") },
   { id: "S2-2", check: () => fileExists("src/app/api/estimates/[id]/route.ts") && fileContains("src/app/api/estimates/[id]/route.ts", "PATCH") },
   { id: "S2-3", check: () => fileExists("src/app/dashboard/estimates/new/page.tsx") },
-  { id: "S2-4", check: () => fileExists("src/app/dashboard/estimates/[id]/page.tsx") && fileHasMinLines("src/app/dashboard/estimates/[id]/page.tsx", 100) },
+  { id: "S2-4", check: () => fileExists("src/app/dashboard/estimates/[id]/page.tsx") && fileHasMinLines("src/app/dashboard/estimates/[id]/estimate-detail-client.tsx", 100) },
   { id: "S2-5", check: () => fileContains("src/app/api/estimates/[id]/route.ts", "DELETE") },
   { id: "S2-6", check: () => fileContains("src/app/dashboard/estimates/[id]/estimate-detail-client.tsx", "onBlur") },
 
@@ -86,7 +86,7 @@ const taskChecks: TaskDefinition[] = [
   { id: "S5-4", check: () => fileExists("src/lib/offline/storage.ts") },
 
   // Stage 6: Polish
-  { id: "S6-1", check: () => fileContains("src/app/dashboard/page.tsx", "searchParams") || fileContains("src/app/dashboard/page.tsx", "filter") },
+  { id: "S6-1", check: () => fileContains("src/components/dashboard/estimate-table.tsx", "searchQuery") || fileContains("src/components/estimates-filters.tsx", "searchQuery") },
   { id: "S6-2", check: () => fileExists("src/app/api/estimates/[id]/duplicate/route.ts") },
   { id: "S6-3", check: () => fileExists("src/components/ui/skeleton.tsx") },
   { id: "S6-4", check: () => fileExists("src/components/ui/toast.tsx") || fileContains("package.json", "sonner") },
