@@ -148,9 +148,9 @@ const taskChecks: TaskDefinition[] = [
   { id: "M6-1", check: () => fileContains("src/lib/db/schema.ts", "carriers") },
   { id: "M6-2", check: () => fileContains("src/lib/db/schema.ts", "slaEvents") || fileContains("src/lib/db/schema.ts", "sla_events") },
   { id: "M6-3", check: () => fileExists("src/components/features/sla-tab.tsx") && fileHasMinLines("src/components/features/sla-tab.tsx", 50) },
-  { id: "M6-4", check: () => fileExists("src/app/api/estimates/[id]/status/route.ts") },
-  { id: "M6-5", check: () => fileExists("src/components/dashboard/sla-widget.tsx") },
-  { id: "M6-6", check: () => fileExists("src/components/sla/sla-badge.tsx") || fileExists("src/components/ui/sla-badge.tsx") },
+  { id: "M6-4", check: () => fileExists("src/app/api/sla-events/route.ts") || fileExists("src/app/api/estimates/[id]/status/route.ts") },
+  { id: "M6-5", check: () => fileExists("src/components/features/sla-dashboard-widget.tsx") || fileExists("src/components/dashboard/sla-widget.tsx") },
+  { id: "M6-6", check: () => fileExists("src/components/features/sla-badge.tsx") || fileExists("src/components/sla/sla-badge.tsx") || fileExists("src/components/ui/sla-badge.tsx") },
 
   // Migration M7: Portfolio & Analytics
   { id: "M7-1", check: () => fileExists("src/app/dashboard/portfolio/page.tsx") || fileExists("src/app/(dashboard)/portfolio/page.tsx") },
