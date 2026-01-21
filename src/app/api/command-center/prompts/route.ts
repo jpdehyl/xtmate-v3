@@ -58,6 +58,44 @@ const VALIDATION_FOOTER = `
 - [ ] Loading indicators present
 - [ ] Error messages user-friendly
 - [ ] Mobile responsive
+
+---
+
+## CRITICAL: Update Documentation After Completion
+
+After completing work on this stage, you MUST update the following files:
+
+### 1. Update PRD.md (\`docs/PRD.md\`)
+- Mark completed acceptance criteria with [x]
+- Update stage status (🟡 PARTIAL → ✅ COMPLETE)
+- Add any new acceptance criteria discovered
+- Note any deviations from original plan
+
+### 2. Update CLAUDE.md
+- Update "Migration Stages" section with completion status
+- Add any new patterns or architectural decisions
+- Document any new environment variables
+- Update "Key Patterns" if new patterns were established
+
+### 3. Update Command Center Prompts (if needed)
+- If this stage is now complete, update the prompt to say "COMPLETE - Maintenance Only"
+- Add "What's Implemented" section summarizing the work
+- Move incomplete items to appropriate future stages
+
+### Example Updates:
+\`\`\`markdown
+# In PRD.md - Change:
+### Stage X: Feature Name 🟡 PARTIAL
+# To:
+### Stage X: Feature Name ✅ COMPLETE
+
+# In CLAUDE.md - Change:
+### Stage X: Feature Name 🟡 PARTIAL
+# To:
+### Stage X: Feature Name ✅ COMPLETE
+\`\`\`
+
+**DO NOT skip this step.** Documentation updates are required for proper handoff to future sessions.
 `;
 
 // ============================================================================
@@ -505,7 +543,13 @@ SEVERITY: Critical | High | Medium | Low
 FILE: path/to/file.ts:lineNumber
 ISSUE: Description of the security issue
 REMEDIATION: How to fix it
-\`\`\``,
+\`\`\`
+
+### After Review: Update Documentation
+After completing your security review:
+1. Update PRD.md with any security-related acceptance criteria changes
+2. Update CLAUDE.md if new security patterns were established
+3. Create GitHub issues for any critical/high severity findings`,
   },
   {
     id: "agent-design",
@@ -595,7 +639,13 @@ FILE: path/to/file.tsx
 ISSUE: Description
 RECOMMENDATION: Design improvement
 VISUAL: [Screenshot or description]
-\`\`\``,
+\`\`\`
+
+### After Review: Update Documentation
+After completing your design review:
+1. Update CLAUDE.md with any new design patterns or guidelines
+2. Update tailwind.config.ts if new color/spacing tokens are needed
+3. Document any accessibility requirements in PRD.md`,
   },
   {
     id: "agent-business",
@@ -675,7 +725,13 @@ FINDING: Key insight
 DATA: Supporting evidence
 RECOMMENDATION: Business action
 IMPACT: Expected outcome
-\`\`\``,
+\`\`\`
+
+### After Analysis: Update Documentation
+After completing your business analysis:
+1. Update PRD.md with any new user stories or acceptance criteria
+2. Update the Feature Priority Matrix in this prompt if priorities changed
+3. Document any new business requirements in CLAUDE.md`,
   },
   {
     id: "agent-qa",
@@ -773,7 +829,13 @@ REMEDIATION: How to fix
 ### Key Files
 - \`vitest.config.ts\` - Test configuration
 - \`src/**/*.test.ts\` - Test files
-- \`playwright.config.ts\` - E2E config (if exists)`,
+- \`playwright.config.ts\` - E2E config (if exists)
+
+### After Testing: Update Documentation
+After completing your QA review:
+1. Update PRD.md with test coverage status and any SLA compliance issues
+2. Update CLAUDE.md "Testing Strategy" section with new test patterns
+3. Document any validation rules that need to be added to the codebase`,
   },
 ];
 
@@ -833,7 +895,13 @@ npm run test
 ### Performance
 - [ ] First load under 3s
 - [ ] No console errors
-- [ ] Images optimized`,
+- [ ] Images optimized
+
+### After Deploy: Update Documentation
+After successful deployment:
+1. Update PRD.md version number and deployment date
+2. Update CLAUDE.md with any new environment variables or configuration
+3. Note any deployment issues and resolutions for future reference`,
   },
   {
     id: "review-code-quality",
@@ -875,7 +943,13 @@ grep -r "as any" src/
 
 # Check bundle size
 npm run build
-\`\`\``,
+\`\`\`
+
+### After Review: Update Documentation
+After completing your code quality review:
+1. Update CLAUDE.md "Key Patterns" section if new patterns were identified
+2. Document any new TypeScript conventions in CLAUDE.md
+3. Update PRD.md quality metrics if standards have changed`,
   },
 ];
 
