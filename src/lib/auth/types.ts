@@ -43,7 +43,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   general_manager: "General Manager",
   qa_manager: "QA Manager",
   estimator: "Estimator",
-  pm: "Property Manager",
+  pm: "Project Manager",
   project_admin: "Project Administrator",
   field_staff: "Field Staff",
 };

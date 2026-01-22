@@ -204,7 +204,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.PRELIMINARY_REPORTS_EXPORT_PDF,
   ],
 
-  // Property Manager - field work, capture, photos, vendors
+  // Project Manager - field work, capture, photos, vendors
   pm: [
     // Estimates - create, own/assigned CRUD, export
     PERMISSIONS.ESTIMATES_CREATE,

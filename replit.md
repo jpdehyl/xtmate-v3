@@ -104,7 +104,46 @@ The application includes comprehensive AI-powered features using Anthropic Claud
 - **Technician**: Restoration techniques, safety protocols, documentation
 - **Admin**: Scheduling, communication, document management
 
+## Gmail Integration (Email-to-Estimate)
+The application supports automatic email parsing for incoming claim requests:
+
+### Setup
+1. Create a Google Cloud project and enable Gmail API
+2. Create OAuth 2.0 credentials (Web application type)
+3. Add environment variables:
+   - `GOOGLE_CLIENT_ID` - OAuth client ID
+   - `GOOGLE_CLIENT_SECRET` - OAuth client secret
+   - `GOOGLE_REDIRECT_URI` - Callback URL (optional, defaults to `https://{domain}/api/gmail/callback`)
+
+### Features
+- Connect Gmail account via OAuth from Settings → Integrations
+- Automatically fetch and parse incoming emails
+- AI-powered extraction of claim details (insured, address, carrier, adjuster, claim #)
+- Auto-create draft estimates from parsed emails
+- Incoming Requests dashboard to manage email-created estimates
+
+### Key Endpoints
+- `GET /api/gmail/connect` - Get OAuth URL for Gmail connection
+- `GET /api/gmail/callback` - OAuth callback handler
+- `GET /api/gmail/status` - Get connection status
+- `POST /api/gmail/disconnect` - Disconnect Gmail
+- `POST /api/gmail/sync` - Manually sync emails
+- `GET/POST /api/gmail/emails` - View/manage incoming emails
+
+### Database Tables
+- `email_integrations` - Stores OAuth tokens and settings
+- `incoming_emails` - Stores parsed emails and their status
+
 ## Recent Changes
+- January 22, 2026: Gmail Integration for Email-to-Estimate
+  - Added Gmail API OAuth integration for automatic email parsing
+  - Created AI-powered email parser using GPT-4o for claim detail extraction
+  - Added Settings → Integrations page for Gmail connection management
+  - Added Incoming Requests dashboard for email-created estimates
+  - Added `email_integrations` and `incoming_emails` database tables
+  - Fixed "Property Manager" → "Project Manager" label throughout codebase
+  - Added signed OAuth state for security
+  - Added permission checks for email endpoints
 - January 22, 2026: AI Assistant Integration
   - Added photo analysis endpoint for damage assessment from images
   - Added data fill assistant for intelligent field suggestions
