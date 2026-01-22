@@ -85,6 +85,13 @@ The application supports a two-role workflow:
 `draft` → `pm_assigned` → `pm_in_progress` → `pm_completed` → `estimator_review` → `ready_for_export` → `exported` → `submitted`
 
 ## Recent Changes
+- January 22, 2026: Convert to Line Item Modal & Workflow Status
+  - Added ConvertScopeModal for estimators to convert PM scope items to line items
+  - Pre-populates description from PM notes, calculates quantity from room sq ft
+  - Added WorkflowStatusBadge component with icons for all 8 workflow stages
+  - Added WorkflowProgressBar to show visual progress
+  - Workflow status badge now displays in estimate detail header
+  - Added PATCH `/api/pm-scope/[id]` endpoint to update converted status
 - January 22, 2026: PM/Estimator Workflow Implementation
   - Added `pm_scope_items` table for PM damage observations
   - Added `esx_exports` table for export history tracking
