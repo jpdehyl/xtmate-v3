@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
 import { cn } from '@/lib/utils';
 import { MapPin, ExternalLink, Navigation } from 'lucide-react';
@@ -18,6 +18,11 @@ interface Project {
   jobType?: string | null;
 }
 
+interface GeocodedProject extends Project {
+  geocodedLat?: number;
+  geocodedLng?: number;
+}
+
 interface ProjectsMapProps {
   projects: Project[];
   className?: string;
@@ -30,9 +35,12 @@ const mapContainerStyle = {
 };
 
 const defaultCenter = {
-  lat: 40.7128,  // New York City
+  lat: 40.7128,  // New York City (fallback when no geocoding available)
   lng: -74.006,
 };
+
+// Cache for geocoded addresses to avoid repeated API calls
+const geocodeCache: Record<string, { lat: number; lng: number }> = {};
 
 // Custom map styling for a cleaner look
 const mapStyles = [
@@ -61,28 +69,112 @@ const statusColors: Record<string, string> = {
 };
 
 export function ProjectsMap({ projects, className, googleMapsApiKey }: ProjectsMapProps) {
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedProject, setSelectedProject] = useState<GeocodedProject | null>(null);
+  const [geocodedProjects, setGeocodedProjects] = useState<GeocodedProject[]>([]);
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const geocoderRef = useRef<google.maps.Geocoder | null>(null);
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: googleMapsApiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
   });
 
-  // Filter projects with valid coordinates
+  // Format address for geocoding
+  const formatAddressForGeocoding = useCallback((project: Project) => {
+    const parts = [project.propertyAddress, project.propertyCity, project.propertyState].filter(Boolean);
+    return parts.join(', ');
+  }, []);
+
+  // Geocode a single address
+  const geocodeAddress = useCallback(async (address: string): Promise<{ lat: number; lng: number } | null> => {
+    if (!address || !geocoderRef.current) return null;
+
+    // Check cache first
+    if (geocodeCache[address]) {
+      return geocodeCache[address];
+    }
+
+    return new Promise((resolve) => {
+      geocoderRef.current!.geocode({ address }, (results, status) => {
+        if (status === 'OK' && results && results[0]) {
+          const location = results[0].geometry.location;
+          const coords = { lat: location.lat(), lng: location.lng() };
+          geocodeCache[address] = coords;
+          resolve(coords);
+        } else {
+          resolve(null);
+        }
+      });
+    });
+  }, []);
+
+  // Geocode all projects without coordinates
+  useEffect(() => {
+    if (!isLoaded || !projects.length) return;
+
+    const geocodeProjects = async () => {
+      setIsGeocoding(true);
+
+      // Initialize geocoder
+      if (!geocoderRef.current) {
+        geocoderRef.current = new google.maps.Geocoder();
+      }
+
+      const geocoded: GeocodedProject[] = [];
+
+      for (const project of projects) {
+        // If project already has coordinates, use them
+        if (project.latitude && project.longitude) {
+          geocoded.push({
+            ...project,
+            geocodedLat: project.latitude,
+            geocodedLng: project.longitude,
+          });
+        } else {
+          // Try to geocode the address
+          const address = formatAddressForGeocoding(project);
+          if (address) {
+            const coords = await geocodeAddress(address);
+            if (coords) {
+              geocoded.push({
+                ...project,
+                geocodedLat: coords.lat,
+                geocodedLng: coords.lng,
+              });
+            } else {
+              geocoded.push(project);
+            }
+          } else {
+            geocoded.push(project);
+          }
+        }
+
+        // Small delay between geocoding requests to avoid rate limiting
+        await new Promise(r => setTimeout(r, 100));
+      }
+
+      setGeocodedProjects(geocoded);
+      setIsGeocoding(false);
+    };
+
+    geocodeProjects();
+  }, [isLoaded, projects, formatAddressForGeocoding, geocodeAddress]);
+
+  // Filter projects with valid coordinates (either original or geocoded)
   const projectsWithCoords = useMemo(() => {
-    return projects.filter((p) => p.latitude && p.longitude);
-  }, [projects]);
+    return geocodedProjects.filter((p) => p.geocodedLat && p.geocodedLng);
+  }, [geocodedProjects]);
 
   // Calculate map center from projects
   const mapCenter = useMemo(() => {
     if (projectsWithCoords.length === 0) return defaultCenter;
 
-    const avgLat = projectsWithCoords.reduce((sum, p) => sum + (p.latitude || 0), 0) / projectsWithCoords.length;
-    const avgLng = projectsWithCoords.reduce((sum, p) => sum + (p.longitude || 0), 0) / projectsWithCoords.length;
+    const avgLat = projectsWithCoords.reduce((sum, p) => sum + (p.geocodedLat || 0), 0) / projectsWithCoords.length;
+    const avgLng = projectsWithCoords.reduce((sum, p) => sum + (p.geocodedLng || 0), 0) / projectsWithCoords.length;
 
     return { lat: avgLat, lng: avgLng };
   }, [projectsWithCoords]);
 
-  const onMarkerClick = useCallback((project: Project) => {
+  const onMarkerClick = useCallback((project: GeocodedProject) => {
     setSelectedProject(project);
   }, []);
 
@@ -91,26 +183,32 @@ export function ProjectsMap({ projects, className, googleMapsApiKey }: ProjectsM
   }, []);
 
   // Format address for display
-  const formatAddress = (project: Project) => {
+  const formatAddress = (project: Project | GeocodedProject) => {
     const parts = [project.propertyAddress, project.propertyCity, project.propertyState].filter(Boolean);
     return parts.join(', ');
   };
 
   // Open in Google Maps
-  const openInGoogleMaps = (project: Project) => {
+  const openInGoogleMaps = (project: Project | GeocodedProject) => {
     const address = encodeURIComponent(formatAddress(project));
-    if (project.latitude && project.longitude) {
-      window.open(`https://www.google.com/maps/search/?api=1&query=${project.latitude},${project.longitude}`, '_blank');
+    const geocoded = project as GeocodedProject;
+    const lat = geocoded.geocodedLat || project.latitude;
+    const lng = geocoded.geocodedLng || project.longitude;
+    if (lat && lng) {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
     } else {
       window.open(`https://www.google.com/maps/search/?api=1&query=${address}`, '_blank');
     }
   };
 
   // Get directions
-  const getDirections = (project: Project) => {
+  const getDirections = (project: Project | GeocodedProject) => {
     const address = encodeURIComponent(formatAddress(project));
-    if (project.latitude && project.longitude) {
-      window.open(`https://www.google.com/maps/dir/?api=1&destination=${project.latitude},${project.longitude}`, '_blank');
+    const geocoded = project as GeocodedProject;
+    const lat = geocoded.geocodedLat || project.latitude;
+    const lng = geocoded.geocodedLng || project.longitude;
+    if (lat && lng) {
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
     } else {
       window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank');
     }
@@ -174,7 +272,7 @@ export function ProjectsMap({ projects, className, googleMapsApiKey }: ProjectsM
     );
   }
 
-  if (!isLoaded) {
+  if (!isLoaded || isGeocoding) {
     return (
       <div className={cn('rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden', className)}>
         <div className="p-5 border-b border-gray-200 dark:border-gray-800">
@@ -228,7 +326,7 @@ export function ProjectsMap({ projects, className, googleMapsApiKey }: ProjectsM
           {projectsWithCoords.map((project) => (
             <Marker
               key={project.id}
-              position={{ lat: project.latitude!, lng: project.longitude! }}
+              position={{ lat: project.geocodedLat!, lng: project.geocodedLng! }}
               onClick={() => onMarkerClick(project)}
               icon={{
                 path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z',
@@ -245,8 +343,8 @@ export function ProjectsMap({ projects, className, googleMapsApiKey }: ProjectsM
           {selectedProject && (
             <InfoWindow
               position={{
-                lat: selectedProject.latitude!,
-                lng: selectedProject.longitude!,
+                lat: selectedProject.geocodedLat!,
+                lng: selectedProject.geocodedLng!,
               }}
               onCloseClick={onInfoWindowClose}
             >
