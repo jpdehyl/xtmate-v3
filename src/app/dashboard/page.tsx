@@ -51,8 +51,8 @@ export default async function DashboardPage() {
     propertyAddress: e.propertyAddress,
     propertyCity: e.propertyCity,
     propertyState: e.propertyState,
-    latitude: e.latitude,
-    longitude: e.longitude,
+    latitude: null as number | null,
+    longitude: null as number | null,
     status: e.status,
     jobType: e.jobType,
   }));
