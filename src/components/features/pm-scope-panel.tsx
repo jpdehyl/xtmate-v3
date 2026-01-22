@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { PmScopeItem, Room } from "@/lib/db/schema";
+import { ConvertScopeModal } from "./convert-scope-modal";
 
 interface PmScopeWithRoom extends PmScopeItem {
   room?: Room | null;
@@ -9,7 +10,6 @@ interface PmScopeWithRoom extends PmScopeItem {
 
 interface PmScopePanelProps {
   estimateId: string;
-  onConvertToLineItem?: (scopeItem: PmScopeItem) => void;
 }
 
 const DAMAGE_TYPE_LABELS: Record<string, { label: string; color: string }> = {
@@ -35,10 +35,30 @@ const CATEGORY_LABELS: Record<string, string> = {
   cat3: "Category 3 (Black Water)",
 };
 
-export function PmScopePanel({ estimateId, onConvertToLineItem }: PmScopePanelProps) {
+export function PmScopePanel({ estimateId }: PmScopePanelProps) {
   const [items, setItems] = useState<PmScopeWithRoom[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<PmScopeWithRoom | null>(null);
+  const [showConvertModal, setShowConvertModal] = useState(false);
+
+  function handleConvertClick(item: PmScopeWithRoom) {
+    setSelectedItem(item);
+    setShowConvertModal(true);
+  }
+
+  async function handleConvertSuccess() {
+    try {
+      const response = await fetch(`/api/pm-scope?estimateId=${estimateId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setItems(data);
+      }
+    } catch (err) {
+      console.error("Failed to refresh PM scope items:", err);
+    }
+    setSelectedItem(null);
+  }
 
   useEffect(() => {
     async function fetchItems() {
@@ -194,20 +214,33 @@ export function PmScopePanel({ estimateId, onConvertToLineItem }: PmScopePanelPr
                       </svg>
                       Converted
                     </span>
-                  ) : onConvertToLineItem ? (
+                  ) : (
                     <button
-                      onClick={() => onConvertToLineItem(item)}
+                      onClick={() => handleConvertClick(item)}
                       className="px-3 py-1.5 text-sm font-medium text-pd-gold hover:bg-pd-gold hover:text-white border border-pd-gold rounded-lg transition-colors"
                     >
                       Convert to Line Item
                     </button>
-                  ) : null}
+                  )}
                 </div>
               </div>
             </div>
           );
         })}
       </div>
+
+      {selectedItem && (
+        <ConvertScopeModal
+          isOpen={showConvertModal}
+          onClose={() => {
+            setShowConvertModal(false);
+            setSelectedItem(null);
+          }}
+          scopeItem={selectedItem}
+          estimateId={estimateId}
+          onSuccess={handleConvertSuccess}
+        />
+      )}
     </div>
   );
 }
