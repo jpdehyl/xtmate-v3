@@ -112,18 +112,17 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
         collapsed ? 'justify-center' : 'justify-between'
       )}>
         <Link href="/dashboard" className="flex items-center gap-3">
-          {/* XtMate Icon */}
-          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
-            <span className="text-white font-bold text-lg">Xt</span>
+          <div className="w-10 h-10 bg-gradient-to-br from-pd-gold-400 to-pd-gold-600 rounded-xl flex items-center justify-center shadow-lg shadow-pd-gold/20 flex-shrink-0">
+            <span className="text-white font-bold text-lg">PD</span>
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
               <div className="flex items-baseline gap-1">
-                <span className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Xt</span>
-                <span className="text-lg font-bold text-primary-600 tracking-tight">Mate</span>
+                <span className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">PAUL</span>
+                <span className="text-lg font-bold text-pd-gold tracking-tight">DAVIS</span>
               </div>
               <span className="text-[9px] font-medium text-gray-500 tracking-[0.15em] uppercase">
-                Estimation
+                XtMate Pro
               </span>
             </div>
           )}
@@ -146,7 +145,7 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
         <Button
           asChild
           className={cn(
-            'w-full bg-primary-600 hover:bg-primary-700 text-white shadow-md',
+            'w-full bg-pd-gold hover:bg-pd-gold-600 text-white shadow-lg shadow-pd-gold/25',
             'transition-all duration-200',
             collapsed ? 'px-0 justify-center' : ''
           )}
@@ -171,7 +170,7 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
                   'group flex items-center gap-3 px-3 py-2.5 rounded-xl',
                   'transition-all duration-200',
                   active
-                    ? 'bg-primary-600 text-white shadow-md shadow-primary-600/25'
+                    ? 'bg-pd-gold text-white shadow-md shadow-pd-gold/25'
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                   collapsed && 'justify-center px-0'
                 )}
@@ -257,7 +256,7 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
                 afterSignOutUrl="/sign-in"
                 appearance={{
                   elements: {
-                    avatarBox: 'w-9 h-9 ring-2 ring-primary-600/20'
+                    avatarBox: 'w-9 h-9 ring-2 ring-pd-gold/30'
                   }
                 }}
               />

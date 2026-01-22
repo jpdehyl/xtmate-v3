@@ -53,11 +53,11 @@ const mapStyles = [
   },
 ];
 
-// Status colors for markers
+// Status colors for markers (Paul Davis gold palette)
 const statusColors: Record<string, string> = {
   draft: '#94A3B8',
-  in_progress: '#F59E0B',
-  completed: '#10B981',
+  in_progress: '#b4975a',
+  completed: '#8a7344',
 };
 
 export function ProjectsMap({ projects, className, googleMapsApiKey }: ProjectsMapProps) {
@@ -183,7 +183,7 @@ export function ProjectsMap({ projects, className, googleMapsApiKey }: ProjectsM
         </div>
         <div className="h-[300px] bg-gray-50 dark:bg-gray-800/50 flex items-center justify-center">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-pd-gold border-t-transparent rounded-full animate-spin" />
             <span className="text-sm text-gray-500 dark:text-gray-400">Loading map...</span>
           </div>
         </div>
@@ -203,10 +203,10 @@ export function ProjectsMap({ projects, className, googleMapsApiKey }: ProjectsM
           </div>
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
             <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-amber-500" /> In Progress
+              <span className="w-2 h-2 rounded-full bg-pd-gold" /> In Progress
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" /> Completed
+              <span className="w-2 h-2 rounded-full bg-pd-gold-700" /> Completed
             </span>
           </div>
         </div>
@@ -260,7 +260,7 @@ export function ProjectsMap({ projects, className, googleMapsApiKey }: ProjectsM
                 <div className="flex gap-2">
                   <Link
                     href={`/dashboard/estimates/${selectedProject.id}`}
-                    className="flex-1 text-center text-xs px-2 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
+                    className="flex-1 text-center text-xs px-2 py-1.5 bg-pd-gold text-white rounded hover:bg-pd-gold-600 transition-colors"
                   >
                     View Details
                   </Link>

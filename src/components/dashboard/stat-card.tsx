@@ -40,8 +40,8 @@ export function StatCard({
           </p>
         </div>
         {Icon && (
-          <div className="rounded-md bg-primary-100 dark:bg-primary-900/30 p-2">
-            <Icon className="h-5 w-5 text-primary-600 dark:text-primary-400" aria-hidden="true" />
+          <div className="rounded-md bg-pd-gold/10 p-2">
+            <Icon className="h-5 w-5 text-pd-gold" aria-hidden="true" />
           </div>
         )}
       </div>
@@ -53,7 +53,7 @@ export function StatCard({
               className={cn(
                 'inline-flex items-center rounded-full px-1.5 py-0.5 font-medium tabular-nums',
                 trend.positive
-                  ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                  ? 'bg-pd-gold/15 text-pd-gold-700 dark:text-pd-gold'
                   : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400'
               )}
             >
