@@ -1,13 +1,16 @@
-import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 import type { GmailMessage } from './client';
 
-let openaiClient: OpenAI | null = null;
+let anthropicClient: Anthropic | null = null;
 
-function getOpenAIClient(): OpenAI {
-  if (!openaiClient) {
-    openaiClient = new OpenAI();
+function getAnthropicClient(): Anthropic {
+  if (!anthropicClient) {
+    anthropicClient = new Anthropic({
+      apiKey: process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY,
+      baseURL: process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
+    });
   }
-  return openaiClient;
+  return anthropicClient;
 }
 
 export interface ParsedClaimData {
@@ -72,23 +75,28 @@ ${message.bodyText || stripHtml(message.bodyHtml)}
 `.trim();
 
   try {
-    const openai = getOpenAIClient();
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+    const anthropic = getAnthropicClient();
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1024,
+      system: SYSTEM_PROMPT,
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: emailContent },
       ],
-      response_format: { type: 'json_object' },
-      temperature: 0.1,
     });
 
-    const content = response.choices[0]?.message?.content;
+    const textContent = response.content.find(block => block.type === 'text');
+    const content = textContent?.type === 'text' ? textContent.text : null;
     if (!content) {
       return { data: {}, confidence: 0, isClaimEmail: false };
     }
 
-    const parsed = JSON.parse(content);
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return { data: {}, confidence: 0, isClaimEmail: false };
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
     
     const data: ParsedClaimData = {};
     const fields: (keyof ParsedClaimData)[] = [
