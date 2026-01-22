@@ -1,7 +1,14 @@
 import OpenAI from 'openai';
 import type { GmailMessage } from './client';
 
-const openai = new OpenAI();
+let openaiClient: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openaiClient) {
+    openaiClient = new OpenAI();
+  }
+  return openaiClient;
+}
 
 export interface ParsedClaimData {
   insuredName?: string;
@@ -65,6 +72,7 @@ ${message.bodyText || stripHtml(message.bodyHtml)}
 `.trim();
 
   try {
+    const openai = getOpenAIClient();
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
