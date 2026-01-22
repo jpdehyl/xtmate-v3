@@ -14,14 +14,26 @@ export async function GET() {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
+    console.log('[Gmail Connect] Generating auth URL for org:', context.organizationId);
+    console.log('[Gmail Connect] Environment detection:', {
+      hasGoogleRedirectUri: !!process.env.GOOGLE_REDIRECT_URI,
+      hasVercelUrl: !!process.env.VERCEL_URL,
+      vercelUrl: process.env.VERCEL_URL,
+      vercelProductionUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL,
+      hasReplitDomains: !!process.env.REPLIT_DOMAINS,
+      hasReplitDevDomain: !!process.env.REPLIT_DEV_DOMAIN,
+    });
+
     const signedState = createSignedState(context.organizationId, context.userId);
     const authUrl = getAuthUrl(signedState);
 
+    console.log('[Gmail Connect] Generated auth URL');
+
     return NextResponse.json({ authUrl });
   } catch (error) {
-    console.error('Gmail connect error:', error);
+    console.error('[Gmail Connect] Error:', error);
     return NextResponse.json(
-      { error: 'Failed to generate auth URL' },
+      { error: error instanceof Error ? error.message : 'Failed to generate auth URL' },
       { status: 500 }
     );
   }
