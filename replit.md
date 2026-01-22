@@ -57,7 +57,44 @@ npm run db:studio    # Open Drizzle Studio
 - **Logo**: "PD" icon with PAUL DAVIS text
 - **Color Usage**: All dashboard accents, buttons, active states, and status badges use the pd-gold color palette
 
+## PM/Estimator Workflow
+The application supports a two-role workflow:
+
+### 1. Project Manager (iOS App - Future)
+- Receives assignment via email from RMS-NGS
+- Goes to site with iPhone/iPad
+- Captures LiDAR data → point cloud → 2D render → sketch
+- Documents damage observations (PM Scope items)
+- Syncs data to web app via `/api/sync`
+
+### 2. Estimator (Web App)
+- Reviews PM's captured data and scope of work
+- Views PM Scope items in the "PM Scope" tab
+- Converts PM observations to proper Xactimate line items
+- Adds pricing and Xactimate codes
+- Exports ESX file for Xactimate import
+
+### Key API Endpoints
+- `POST /api/sync` - iOS app uploads rooms, photos, PM scope
+- `GET /api/sync?estimateId=...` - Pull latest data
+- `POST /api/sync/complete` - PM marks site capture complete
+- `GET/POST /api/pm-scope` - Manage PM scope items
+- `GET /api/estimates/[id]/esx` - Download ESX file for Xactimate
+
+### Workflow Status Flow
+`draft` → `pm_assigned` → `pm_in_progress` → `pm_completed` → `estimator_review` → `ready_for_export` → `exported` → `submitted`
+
 ## Recent Changes
+- January 22, 2026: PM/Estimator Workflow Implementation
+  - Added `pm_scope_items` table for PM damage observations
+  - Added `esx_exports` table for export history tracking
+  - Added `sync_queue` table for offline iOS sync support
+  - Added workflow status and assignment fields to estimates
+  - Created sync API endpoints (`/api/sync`, `/api/sync/complete`)
+  - Built ESX export generator (`src/lib/esx/generator.ts`)
+  - Added ESX download endpoint (`/api/estimates/[id]/esx`)
+  - Added PM Scope tab to estimate detail page
+  - Added gold "Xactimate" export button to estimate header
 - January 22, 2026: Dashboard branding update
   - Updated sidebar to show PAUL DAVIS branding with PD logo and pd-gold colors
   - Welcome banner now uses pd-gold gradient
