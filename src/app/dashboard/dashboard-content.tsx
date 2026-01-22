@@ -6,6 +6,8 @@ import { WelcomeBanner } from "@/components/dashboard/welcome-banner";
 import { RecentEstimates } from "@/components/dashboard/recent-estimates";
 import { EstimateTable } from "@/components/dashboard/estimate-table";
 import { SlaDashboardWidget } from "@/components/features/sla-dashboard-widget";
+import { QuickTasks } from "@/components/dashboard/quick-tasks";
+import { CalendarWidget } from "@/components/dashboard/calendar-widget";
 
 // Dynamic imports for heavy components (recharts ~300KB, Google Maps ~200KB)
 const PerformanceMetrics = dynamic(
@@ -140,6 +142,12 @@ export function DashboardContent({
       <Suspense fallback={<PerformanceMetricsSkeleton />}>
         <PerformanceMetrics estimates={metricsData} />
       </Suspense>
+
+      {/* Quick Tasks and Calendar Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <QuickTasks />
+        <CalendarWidget />
+      </div>
 
       {/* Three Column Layout: Recent Estimates + SLA Widget + Map */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
