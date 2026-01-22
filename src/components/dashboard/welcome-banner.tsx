@@ -33,7 +33,7 @@ export function WelcomeBanner({ activeClaimsCount = 0, className }: WelcomeBanne
     <div
       className={cn(
         'relative overflow-hidden rounded-2xl',
-        'bg-gradient-to-br from-primary-500/90 via-primary-600/90 to-primary-700/90',
+        'bg-gradient-to-br from-pd-gold-500 via-pd-gold-600 to-pd-gold-700',
         'p-6 md:p-8',
         className
       )}

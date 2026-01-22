@@ -91,9 +91,9 @@ export function TabsTrigger({
       disabled={disabled}
       onClick={() => setActiveTab(value)}
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pd-gold focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
         isActive
-          ? "bg-white dark:bg-gray-900 text-foreground shadow-sm"
+          ? "bg-pd-gold text-white shadow-sm shadow-pd-gold/25"
           : "text-muted-foreground hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-700",
         className
       )}

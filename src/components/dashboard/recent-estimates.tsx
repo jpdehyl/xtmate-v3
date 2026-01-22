@@ -23,8 +23,8 @@ interface RecentEstimatesProps {
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   draft: { label: 'Draft', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
-  in_progress: { label: 'In Progress', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-  completed: { label: 'Completed', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  in_progress: { label: 'In Progress', color: 'bg-pd-gold/15 text-pd-gold-700 dark:bg-pd-gold/20 dark:text-pd-gold' },
+  completed: { label: 'Completed', color: 'bg-pd-gold/25 text-pd-gold-800 dark:bg-pd-gold/30 dark:text-pd-gold' },
 };
 
 export function RecentEstimates({ estimates, className }: RecentEstimatesProps) {
@@ -74,21 +74,21 @@ export function RecentEstimates({ estimates, className }: RecentEstimatesProps) 
                   <div className={cn(
                     'flex-shrink-0 p-2.5 rounded-xl',
                     estimate.jobType === 'insurance'
-                      ? 'bg-blue-100 dark:bg-blue-900/30'
-                      : 'bg-emerald-100 dark:bg-emerald-900/30'
+                      ? 'bg-pd-gold/15'
+                      : 'bg-gray-100 dark:bg-gray-800'
                   )}>
                     <FileText className={cn(
                       'w-5 h-5',
                       estimate.jobType === 'insurance'
-                        ? 'text-blue-600 dark:text-blue-400'
-                        : 'text-emerald-600 dark:text-emerald-400'
+                        ? 'text-pd-gold'
+                        : 'text-gray-600 dark:text-gray-400'
                     )} />
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-gray-900 dark:text-white truncate group-hover:text-primary-600 transition-colors">
+                      <span className="font-medium text-gray-900 dark:text-white truncate group-hover:text-pd-gold transition-colors">
                         {estimate.name || 'Untitled Estimate'}
                       </span>
                       <span className={cn('px-2 py-0.5 text-xs font-medium rounded-full', status.color)}>
@@ -123,7 +123,7 @@ export function RecentEstimates({ estimates, className }: RecentEstimatesProps) 
         <div className="p-4 border-t border-gray-200 dark:border-gray-800">
           <Link
             href="/dashboard/estimates"
-            className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium flex items-center justify-center gap-1"
+            className="text-sm text-pd-gold hover:text-pd-gold-600 font-medium flex items-center justify-center gap-1"
           >
             View all {estimates.length} estimates
             <ChevronRight className="w-4 h-4" />

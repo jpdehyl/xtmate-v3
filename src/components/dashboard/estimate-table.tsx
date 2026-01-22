@@ -40,14 +40,14 @@ type TabId = typeof tabs[number]['id'];
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   draft: { label: 'Draft', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
-  in_progress: { label: 'Working', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-  completed: { label: 'Synced', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  revision: { label: 'Revision', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+  in_progress: { label: 'Working', color: 'bg-pd-gold/15 text-pd-gold-700 dark:bg-pd-gold/20 dark:text-pd-gold' },
+  completed: { label: 'Synced', color: 'bg-pd-gold/25 text-pd-gold-800 dark:bg-pd-gold/30 dark:text-pd-gold' },
+  revision: { label: 'Revision', color: 'bg-pd-gold/10 text-pd-gold-600 dark:bg-pd-gold/15 dark:text-pd-gold-400' },
 };
 
 const jobTypeConfig: Record<string, { label: string; color: string }> = {
-  insurance: { label: 'Insurance', color: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' },
-  private: { label: 'Private', color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' },
+  insurance: { label: 'Insurance', color: 'bg-pd-gold/15 text-pd-gold-700 dark:bg-pd-gold/20 dark:text-pd-gold' },
+  private: { label: 'Private', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400' },
 };
 
 function formatCurrency(value: number | null | undefined): string {
@@ -138,7 +138,7 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pd-gold focus:border-transparent"
             />
           </div>
         </div>
@@ -152,7 +152,7 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
               className={cn(
                 'px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap',
                 activeTab === tab.id
-                  ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 border-b-2 border-primary-500'
+                  ? 'bg-pd-gold/10 text-pd-gold-700 dark:text-pd-gold border-b-2 border-pd-gold'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800'
               )}
             >
@@ -160,7 +160,7 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
               <span className={cn(
                 'ml-2 px-1.5 py-0.5 text-xs rounded-full',
                 activeTab === tab.id
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-300'
+                  ? 'bg-pd-gold/20 text-pd-gold-700 dark:text-pd-gold'
                   : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
               )}>
                 {tabCounts[tab.id]}
@@ -224,7 +224,7 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
                         href={`/dashboard/estimates/${estimate.id}`}
                         className="block"
                       >
-                        <div className="font-medium text-gray-900 dark:text-white group-hover:text-primary-600 transition-colors">
+                        <div className="font-medium text-gray-900 dark:text-white group-hover:text-pd-gold transition-colors">
                           {estimate.name || 'Untitled Estimate'}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">

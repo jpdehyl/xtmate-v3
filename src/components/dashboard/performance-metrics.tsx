@@ -30,14 +30,14 @@ interface PerformanceMetricsProps {
 }
 
 const JOB_TYPE_COLORS = {
-  insurance: '#3B82F6',
-  private: '#10B981',
+  insurance: '#b4975a',
+  private: '#8a7344',
 };
 
 const STATUS_COLORS = {
   draft: '#94A3B8',
-  in_progress: '#F59E0B',
-  completed: '#10B981',
+  in_progress: '#b4975a',
+  completed: '#8a7344',
 };
 
 export function PerformanceMetrics({ estimates, className }: PerformanceMetricsProps) {
@@ -123,8 +123,8 @@ export function PerformanceMetrics({ estimates, className }: PerformanceMetricsP
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-500/10">
-              <Target className="w-5 h-5 text-blue-500" />
+            <div className="p-2 rounded-lg bg-pd-gold/10">
+              <Target className="w-5 h-5 text-pd-gold" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{kpis.completionRate}%</p>
@@ -134,8 +134,8 @@ export function PerformanceMetrics({ estimates, className }: PerformanceMetricsP
         </div>
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10">
-              <CheckCircle className="w-5 h-5 text-emerald-500" />
+            <div className="p-2 rounded-lg bg-pd-gold/10">
+              <CheckCircle className="w-5 h-5 text-pd-gold" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{kpis.completed}</p>
@@ -145,8 +145,8 @@ export function PerformanceMetrics({ estimates, className }: PerformanceMetricsP
         </div>
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-amber-500/10">
-              <TrendingUp className="w-5 h-5 text-amber-500" />
+            <div className="p-2 rounded-lg bg-pd-gold/10">
+              <TrendingUp className="w-5 h-5 text-pd-gold" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(kpis.avgValue)}</p>
@@ -156,8 +156,8 @@ export function PerformanceMetrics({ estimates, className }: PerformanceMetricsP
         </div>
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple-500/10">
-              <Clock className="w-5 h-5 text-purple-500" />
+            <div className="p-2 rounded-lg bg-pd-gold/10">
+              <Clock className="w-5 h-5 text-pd-gold" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{kpis.total}</p>
@@ -203,7 +203,7 @@ export function PerformanceMetrics({ estimates, className }: PerformanceMetricsP
                 />
                 <Bar
                   dataKey="count"
-                  fill="#0284c7"
+                  fill="#b4975a"
                   radius={[4, 4, 0, 0]}
                   name="Estimates"
                 />
