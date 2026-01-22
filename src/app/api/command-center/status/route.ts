@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
 export const dynamic = "force-dynamic";
 
@@ -240,6 +241,11 @@ const workstreamDefinitions: Workstream[] = [
 ];
 
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   // Build workstreams with status from generated file
   const workstreams = workstreamDefinitions.map((ws) => ({
     ...ws,

@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/lib/db';
-import { estimates, carriers, slaEvents } from '@/lib/db/schema';
-import { eq, and, desc, isNull, isNotNull, or } from 'drizzle-orm';
+import { estimates, carriers, slaEvents, lineItems } from '@/lib/db/schema';
+import { eq, desc, isNull, sum, sql } from 'drizzle-orm';
 import { SLA_MILESTONE_LABELS, getSlaEventWithStatus } from '@/lib/sla';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
   try {
@@ -11,6 +13,14 @@ export async function GET() {
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const rateLimit = checkRateLimit(`portfolio:${userId}`, { windowMs: 60000, maxRequests: 30 });
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil(rateLimit.resetIn / 1000)) } }
+      );
     }
 
     // Fetch all estimates for the user
@@ -26,11 +36,28 @@ export async function GET() {
     const inProgressClaims = userEstimates.filter(e => e.status === 'in_progress').length;
     const completionRate = totalClaims > 0 ? Math.round((completedClaims / totalClaims) * 100) : 0;
 
-    // Calculate total value (placeholder - would need lineItems totals)
-    const totalValue = 0; // TODO: Calculate from line items when available
+    // Calculate total value from line items
+    const estimateIds = userEstimates.map(e => e.id);
+    let totalValue = 0;
+    if (estimateIds.length > 0) {
+      const lineItemTotals = await db
+        .select({ total: sum(lineItems.total) })
+        .from(lineItems)
+        .where(sql`${lineItems.estimateId} = ANY(${estimateIds})`);
+      totalValue = Number(lineItemTotals[0]?.total) || 0;
+    }
 
-    // Calculate average completion time (placeholder)
-    const avgCompletionTime = 48; // TODO: Calculate from actual completion timestamps
+    // Calculate average completion time from actual timestamps
+    const completedEstimates = userEstimates.filter(e => e.status === 'completed' && e.createdAt);
+    let avgCompletionTime = 48;
+    if (completedEstimates.length > 0) {
+      const totalHours = completedEstimates.reduce((sum, e) => {
+        const created = new Date(e.createdAt);
+        const updated = new Date(e.updatedAt);
+        return sum + (updated.getTime() - created.getTime()) / (1000 * 60 * 60);
+      }, 0);
+      avgCompletionTime = Math.round(totalHours / completedEstimates.length);
+    }
 
     const stats = {
       totalClaims,
@@ -150,7 +177,7 @@ export async function GET() {
       atRiskEstimates: atRiskEstimatesData,
     });
   } catch (error) {
-    console.error('Portfolio API error:', error);
+    logger.error('Portfolio API error', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

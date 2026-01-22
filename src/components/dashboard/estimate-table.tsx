@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { FileText, ChevronRight, Search, Filter } from 'lucide-react';
+import { FileText, ChevronRight, Search, Filter, RotateCcw } from 'lucide-react';
 
 interface Estimate {
   id: string;
@@ -38,16 +38,16 @@ const tabs = [
 
 type TabId = typeof tabs[number]['id'];
 
-const statusConfig: Record<string, { label: string; color: string }> = {
-  draft: { label: 'Draft', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
-  in_progress: { label: 'Working', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-  completed: { label: 'Synced', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  revision: { label: 'Revision', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+const statusConfig: Record<string, { label: string; color: string; dotColor: string }> = {
+  draft: { label: 'Draft', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300', dotColor: 'bg-gray-400' },
+  in_progress: { label: 'In Progress', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', dotColor: 'bg-amber-500' },
+  completed: { label: 'Ready', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', dotColor: 'bg-green-500' },
+  revision: { label: 'Revision', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', dotColor: 'bg-red-500' },
 };
 
 const jobTypeConfig: Record<string, { label: string; color: string }> = {
-  insurance: { label: 'Insurance', color: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' },
-  private: { label: 'Private', color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' },
+  insurance: { label: 'Insurance', color: 'bg-pd-gold/15 text-pd-gold-700 dark:bg-pd-gold/20 dark:text-pd-gold' },
+  private: { label: 'Private', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400' },
 };
 
 function formatCurrency(value: number | null | undefined): string {
@@ -72,8 +72,20 @@ function formatDate(date: Date | null | undefined): string {
 export function EstimateTable({ estimates, className }: EstimateTableProps) {
   const [activeTab, setActiveTab] = useState<TabId>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterJobType, setFilterJobType] = useState<string>('');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
 
-  // Filter estimates based on active tab and search
+  const hasActiveFilters = filterJobType || filterDateFrom || filterDateTo;
+
+  const resetFilters = () => {
+    setFilterJobType('');
+    setFilterDateFrom('');
+    setFilterDateTo('');
+    setSearchQuery('');
+  };
+
   const filteredEstimates = useMemo(() => {
     const tabFilter = tabs.find(t => t.id === activeTab)?.filter || (() => true);
 
@@ -91,12 +103,27 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
           e.insuredName?.toLowerCase().includes(query)
         );
       })
+      .filter(e => {
+        if (filterJobType && e.jobType !== filterJobType) return false;
+        if (filterDateFrom) {
+          const fromDate = new Date(filterDateFrom);
+          const created = e.createdAt ? new Date(e.createdAt) : null;
+          if (!created || created < fromDate) return false;
+        }
+        if (filterDateTo) {
+          const toDate = new Date(filterDateTo);
+          toDate.setHours(23, 59, 59, 999);
+          const created = e.createdAt ? new Date(e.createdAt) : null;
+          if (!created || created > toDate) return false;
+        }
+        return true;
+      })
       .sort((a, b) => {
         const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
         const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
         return dateB - dateA;
       });
-  }, [estimates, activeTab, searchQuery]);
+  }, [estimates, activeTab, searchQuery, filterJobType, filterDateFrom, filterDateTo]);
 
   // Get counts for each tab
   const tabCounts = useMemo(() => {
@@ -130,18 +157,82 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
             </p>
           </div>
 
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
+          {/* Search and Filter */}
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pd-gold focus:border-transparent"
+              />
+            </div>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={cn(
+                'flex items-center gap-2 px-3 py-2 text-sm rounded-lg border transition-colors',
+                showFilters || hasActiveFilters
+                  ? 'border-pd-gold bg-pd-gold/10 text-pd-gold'
+                  : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+              )}
+            >
+              <Filter className="w-4 h-4" />
+              Filter
+              {hasActiveFilters && (
+                <span className="w-2 h-2 rounded-full bg-pd-gold"></span>
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Advanced Filter Panel */}
+        {showFilters && (
+          <div className="mx-5 mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Job Type</label>
+                <select
+                  value={filterJobType}
+                  onChange={(e) => setFilterJobType(e.target.value)}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pd-gold focus:border-transparent"
+                >
+                  <option value="">All Types</option>
+                  <option value="insurance">Insurance</option>
+                  <option value="private">Private</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">From Date</label>
+                <input
+                  type="date"
+                  value={filterDateFrom}
+                  onChange={(e) => setFilterDateFrom(e.target.value)}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pd-gold focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">To Date</label>
+                <input
+                  type="date"
+                  value={filterDateTo}
+                  onChange={(e) => setFilterDateTo(e.target.value)}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pd-gold focus:border-transparent"
+                />
+              </div>
+              <div className="flex items-end gap-2">
+                <button
+                  onClick={resetFilters}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-1 px-5 mt-4 overflow-x-auto">
@@ -152,7 +243,7 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
               className={cn(
                 'px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap',
                 activeTab === tab.id
-                  ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 border-b-2 border-primary-500'
+                  ? 'bg-pd-gold/10 text-pd-gold-700 dark:text-pd-gold border-b-2 border-pd-gold'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800'
               )}
             >
@@ -160,7 +251,7 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
               <span className={cn(
                 'ml-2 px-1.5 py-0.5 text-xs rounded-full',
                 activeTab === tab.id
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-300'
+                  ? 'bg-pd-gold/20 text-pd-gold-700 dark:text-pd-gold'
                   : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
               )}>
                 {tabCounts[tab.id]}
@@ -224,7 +315,7 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
                         href={`/dashboard/estimates/${estimate.id}`}
                         className="block"
                       >
-                        <div className="font-medium text-gray-900 dark:text-white group-hover:text-primary-600 transition-colors">
+                        <div className="font-medium text-gray-900 dark:text-white group-hover:text-pd-gold transition-colors">
                           {estimate.name || 'Untitled Estimate'}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -249,7 +340,8 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
                     </td>
                     <td className="px-5 py-4">
                       <Link href={`/dashboard/estimates/${estimate.id}`}>
-                        <span className={cn('px-2 py-1 text-xs font-medium rounded-full', status.color)}>
+                        <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full', status.color)}>
+                          <span className={cn('w-1.5 h-1.5 rounded-full', status.dotColor)}></span>
                           {status.label}
                         </span>
                       </Link>

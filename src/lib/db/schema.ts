@@ -143,6 +143,26 @@ export const estimates = pgTable("estimates", {
   // M6: Carrier for SLA tracking (insurance jobs)
   carrierId: uuid("carrier_id"),
 
+  // PM/Estimator workflow tracking
+  workflowStatus: text("workflow_status").default("draft"), // draft, pm_assigned, pm_in_progress, pm_completed, estimator_review, ready_for_export, exported, submitted
+  assignedPmId: text("assigned_pm_id"), // Clerk user ID of assigned PM
+  assignedEstimatorId: text("assigned_estimator_id"), // Clerk user ID of assigned Estimator
+  pmCompletedAt: timestamp("pm_completed_at"),
+  estimatorStartedAt: timestamp("estimator_started_at"),
+  
+  // Insured contact info
+  insuredName: text("insured_name"),
+  insuredPhone: text("insured_phone"),
+  insuredEmail: text("insured_email"),
+  
+  // Adjuster info (from RMS or manual entry)
+  adjusterName: text("adjuster_name"),
+  adjusterPhone: text("adjuster_phone"),
+  adjusterEmail: text("adjuster_email"),
+  
+  // Date of loss
+  dateOfLoss: timestamp("date_of_loss"),
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -534,3 +554,287 @@ export const VENDOR_SPECIALTIES = [
 ] as const;
 
 export type VendorSpecialty = typeof VENDOR_SPECIALTIES[number];
+
+// ============================================================================
+// PM/ESTIMATOR WORKFLOW
+// ============================================================================
+
+// Workflow status enum - tracks where estimate is in PM→Estimator flow
+export const workflowStatusEnum = pgEnum('workflow_status', [
+  'draft',              // Initial creation
+  'pm_assigned',        // PM has been assigned
+  'pm_in_progress',     // PM is at site capturing data
+  'pm_completed',       // PM has finished site capture
+  'estimator_review',   // Estimator is reviewing/building estimate
+  'ready_for_export',   // Estimate complete, ready for ESX export
+  'exported',           // ESX has been generated
+  'submitted',          // Submitted to carrier/Xactimate
+]);
+
+// PM Scope Items - PM's plain-language damage observations
+// These are converted to proper line items by the estimator
+export const pmScopeItems = pgTable('pm_scope_items', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  estimateId: uuid('estimate_id').references(() => estimates.id, { onDelete: 'cascade' }),
+  roomId: uuid('room_id').references(() => rooms.id, { onDelete: 'set null' }),
+  
+  // Damage details
+  damageType: text('damage_type'), // water, fire, smoke, mold, impact, wind
+  severity: text('severity'), // minor, moderate, severe
+  category: text('category'), // cat1, cat2, cat3 (for water)
+  
+  // PM's observations
+  affectedArea: text('affected_area'), // "floor and lower 2ft of drywall"
+  notes: text('notes'), // Detailed notes from PM
+  suggestedActions: jsonb('suggested_actions'), // ["Remove baseboards", "Cut drywall 2ft"]
+  
+  // Photos linked to this scope item
+  photoIds: jsonb('photo_ids'), // Array of photo UUIDs
+  
+  // Conversion tracking
+  convertedToLineItemId: uuid('converted_to_line_item_id').references(() => lineItems.id, { onDelete: 'set null' }),
+  convertedAt: timestamp('converted_at'),
+  convertedBy: text('converted_by'), // User ID who converted
+  
+  // Metadata
+  capturedAt: timestamp('captured_at').defaultNow(),
+  capturedBy: text('captured_by'), // PM's user ID
+  deviceId: text('device_id'), // iOS device identifier
+  localId: text('local_id'), // Client-side UUID for offline sync
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// ESX Export History - track all exports
+export const esxExports = pgTable('esx_exports', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  estimateId: uuid('estimate_id').references(() => estimates.id, { onDelete: 'cascade' }),
+  
+  // Export details
+  filename: text('filename').notNull(),
+  fileUrl: text('file_url'), // Blob storage URL
+  fileSizeBytes: integer('file_size_bytes'),
+  
+  // What was included
+  roomCount: integer('room_count'),
+  lineItemCount: integer('line_item_count'),
+  photoCount: integer('photo_count'),
+  totalAmount: real('total_amount'),
+  
+  // Export metadata
+  exportedBy: text('exported_by').notNull(), // User ID
+  exportedAt: timestamp('exported_at').defaultNow(),
+  
+  // Version tracking
+  version: integer('version').default(1),
+  notes: text('notes'),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Sync Queue - for offline iOS app sync
+export const syncQueue = pgTable('sync_queue', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  
+  // Device info
+  deviceId: text('device_id').notNull(),
+  userId: text('user_id').notNull(),
+  
+  // Sync data
+  entityType: text('entity_type').notNull(), // room, photo, pm_scope_item
+  entityId: text('entity_id').notNull(), // Local or server UUID
+  action: text('action').notNull(), // create, update, delete
+  payload: jsonb('payload'), // Full entity data
+  
+  // Sync status
+  status: text('status').default('pending'), // pending, processing, completed, failed
+  attempts: integer('attempts').default(0),
+  lastAttemptAt: timestamp('last_attempt_at'),
+  errorMessage: text('error_message'),
+  
+  // Timestamps
+  queuedAt: timestamp('queued_at').defaultNow(),
+  processedAt: timestamp('processed_at'),
+});
+
+// Export types for new tables
+export type PmScopeItem = typeof pmScopeItems.$inferSelect;
+export type NewPmScopeItem = typeof pmScopeItems.$inferInsert;
+
+export type EsxExport = typeof esxExports.$inferSelect;
+export type NewEsxExport = typeof esxExports.$inferInsert;
+
+export type SyncQueueItem = typeof syncQueue.$inferSelect;
+export type NewSyncQueueItem = typeof syncQueue.$inferInsert;
+
+// Damage type options
+export const DAMAGE_TYPES = [
+  'water',
+  'fire',
+  'smoke',
+  'mold',
+  'impact',
+  'wind',
+  'vandalism',
+  'other',
+] as const;
+
+export type DamageType = typeof DAMAGE_TYPES[number];
+
+// Severity options
+export const SEVERITY_LEVELS = [
+  'minor',
+  'moderate',
+  'severe',
+] as const;
+
+export type SeverityLevel = typeof SEVERITY_LEVELS[number];
+
+// Water category options (for water damage)
+export const WATER_CATEGORIES = [
+  'cat1', // Clean water
+  'cat2', // Gray water
+  'cat3', // Black water
+] as const;
+
+export type WaterCategory = typeof WATER_CATEGORIES[number];
+
+// ============================================================================
+// EMAIL INTEGRATION (Gmail API)
+// ============================================================================
+
+export const emailIntegrationStatusEnum = pgEnum('email_integration_status', [
+  'active',
+  'disconnected',
+  'expired',
+  'error',
+]);
+
+export const emailIntegrations = pgTable('email_integrations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  organizationId: uuid('organization_id')
+    .references(() => organizations.id, { onDelete: 'cascade' })
+    .notNull(),
+  
+  // OAuth tokens (encrypted in production)
+  accessToken: text('access_token').notNull(),
+  refreshToken: text('refresh_token'),
+  tokenExpiresAt: timestamp('token_expires_at'),
+  
+  // Gmail account info
+  emailAddress: text('email_address').notNull(),
+  
+  // Settings
+  watchedLabels: jsonb('watched_labels').$type<string[]>().default(['INBOX']),
+  autoCreateEstimates: boolean('auto_create_estimates').default(true),
+  
+  // Sync tracking
+  lastSyncAt: timestamp('last_sync_at'),
+  lastHistoryId: text('last_history_id'),
+  
+  // Status
+  status: emailIntegrationStatusEnum('status').default('active'),
+  errorMessage: text('error_message'),
+  
+  // Created by (admin who set it up)
+  createdBy: text('created_by').notNull(),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const incomingEmailStatusEnum = pgEnum('incoming_email_status', [
+  'pending',
+  'processing',
+  'parsed',
+  'estimate_created',
+  'ignored',
+  'failed',
+]);
+
+export const incomingEmails = pgTable('incoming_emails', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  organizationId: uuid('organization_id')
+    .references(() => organizations.id, { onDelete: 'cascade' })
+    .notNull(),
+  emailIntegrationId: uuid('email_integration_id')
+    .references(() => emailIntegrations.id, { onDelete: 'cascade' })
+    .notNull(),
+  
+  // Gmail message info
+  gmailMessageId: text('gmail_message_id').notNull(),
+  gmailThreadId: text('gmail_thread_id'),
+  
+  // Email content
+  fromAddress: text('from_address'),
+  fromName: text('from_name'),
+  toAddress: text('to_address'),
+  subject: text('subject'),
+  bodyText: text('body_text'),
+  bodyHtml: text('body_html'),
+  receivedAt: timestamp('received_at'),
+  
+  // Parsed claim data
+  parsedData: jsonb('parsed_data').$type<{
+    insuredName?: string;
+    insuredPhone?: string;
+    insuredEmail?: string;
+    propertyAddress?: string;
+    propertyCity?: string;
+    propertyState?: string;
+    propertyZip?: string;
+    claimNumber?: string;
+    policyNumber?: string;
+    carrierName?: string;
+    adjusterName?: string;
+    adjusterPhone?: string;
+    adjusterEmail?: string;
+    dateOfLoss?: string;
+    damageType?: string;
+    notes?: string;
+  }>(),
+  parseConfidence: real('parse_confidence'),
+  
+  // Status and linking
+  status: incomingEmailStatusEnum('status').default('pending'),
+  estimateId: uuid('estimate_id').references(() => estimates.id),
+  
+  // Processing
+  processedAt: timestamp('processed_at'),
+  errorMessage: text('error_message'),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// Email integration relations
+export const emailIntegrationsRelations = relations(emailIntegrations, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [emailIntegrations.organizationId],
+    references: [organizations.id],
+  }),
+  incomingEmails: many(incomingEmails),
+}));
+
+export const incomingEmailsRelations = relations(incomingEmails, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [incomingEmails.organizationId],
+    references: [organizations.id],
+  }),
+  emailIntegration: one(emailIntegrations, {
+    fields: [incomingEmails.emailIntegrationId],
+    references: [emailIntegrations.id],
+  }),
+  estimate: one(estimates, {
+    fields: [incomingEmails.estimateId],
+    references: [estimates.id],
+  }),
+}));
+
+// Type exports for email integration
+export type EmailIntegration = typeof emailIntegrations.$inferSelect;
+export type NewEmailIntegration = typeof emailIntegrations.$inferInsert;
+
+export type IncomingEmail = typeof incomingEmails.$inferSelect;
+export type NewIncomingEmail = typeof incomingEmails.$inferInsert;

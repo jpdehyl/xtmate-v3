@@ -23,7 +23,12 @@ export function Providers({ children }: ProvidersProps) {
   }
 
   return (
-    <ClerkProvider publishableKey={publishableKey} afterSignOutUrl="/">
+    <ClerkProvider 
+      publishableKey={publishableKey} 
+      afterSignOutUrl="/"
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/dashboard"
+    >
       <PermissionsProvider>
         {children}
         <Toaster position="top-right" richColors closeButton />
