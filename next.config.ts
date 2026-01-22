@@ -14,7 +14,7 @@ const withPWA = withPWAInit({
         cacheName: "clerk-cache",
         expiration: {
           maxEntries: 32,
-          maxAgeSeconds: 60 * 60 * 24, // 24 hours
+          maxAgeSeconds: 60 * 60 * 24,
         },
       },
     },
@@ -25,7 +25,7 @@ const withPWA = withPWAInit({
         cacheName: "api-cache",
         expiration: {
           maxEntries: 50,
-          maxAgeSeconds: 60 * 60 * 24, // 24 hours
+          maxAgeSeconds: 60 * 60 * 24,
         },
         networkTimeoutSeconds: 10,
       },
@@ -37,7 +37,7 @@ const withPWA = withPWAInit({
         cacheName: "static-cache",
         expiration: {
           maxEntries: 200,
-          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+          maxAgeSeconds: 60 * 60 * 24 * 30,
         },
       },
     },
@@ -48,7 +48,7 @@ const withPWA = withPWAInit({
         cacheName: "image-cache",
         expiration: {
           maxEntries: 100,
-          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+          maxAgeSeconds: 60 * 60 * 24 * 30,
         },
       },
     },
@@ -59,7 +59,7 @@ const withPWA = withPWAInit({
         cacheName: "image-cache",
         expiration: {
           maxEntries: 100,
-          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+          maxAgeSeconds: 60 * 60 * 24 * 30,
         },
       },
     },
@@ -70,7 +70,7 @@ const withPWA = withPWAInit({
         cacheName: "static-resources",
         expiration: {
           maxEntries: 100,
-          maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+          maxAgeSeconds: 60 * 60 * 24 * 7,
         },
       },
     },
