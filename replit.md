@@ -52,7 +52,21 @@ npm run db:studio    # Open Drizzle Studio
 - `BLOB_READ_WRITE_TOKEN` - Photo uploads
 - `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` - Maps (optional)
 
+## Branding
+- **Primary Color**: Paul Davis Gold (#b4975a) - defined as `pd-gold` in Tailwind config
+- **Logo**: "PD" icon with PAUL DAVIS text
+- **Color Usage**: All dashboard accents, buttons, active states, and status badges use the pd-gold color palette
+
 ## Recent Changes
+- January 22, 2026: Dashboard branding update
+  - Updated sidebar to show PAUL DAVIS branding with PD logo and pd-gold colors
+  - Welcome banner now uses pd-gold gradient
+  - All performance metrics KPI icons and charts use pd-gold palette
+  - Estimate table tabs, status badges, and job type badges use pd-gold styling
+  - Recent estimates and projects map components updated to pd-gold
+  - Stat cards use pd-gold accents for icons and trend indicators
+  - UI tabs component uses pd-gold for active states
+  - Removed all primary-* color classes from dashboard components
 - January 21, 2026: Code quality improvements
   - Added rate limiting to all API endpoints (estimates GET/POST/PATCH/DELETE, portfolio) with Retry-After headers
   - Created structured logging utility (`src/lib/logger.ts`) with levels (debug/info/warn/error) and context
