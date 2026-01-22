@@ -20,6 +20,7 @@ import { SlaTab } from "@/components/features/sla-tab";
 import { CarrierSelector } from "@/components/features/carrier-selector";
 import { VendorsTab } from "@/components/features/vendors-tab";
 import { PmScopePanel } from "@/components/features/pm-scope-panel";
+import { WorkflowStatusBadge, WorkflowProgressBar } from "@/components/features/workflow-status-badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { SketchEditor } from "@/components/sketch-editor";
 import type { ScopeSuggestion } from "@/app/api/ai/suggest-scope/route";
@@ -269,12 +270,15 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
       <header className="border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link
-              href="/dashboard"
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
-            >
-              &larr; Back
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/dashboard"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+              >
+                &larr; Back
+              </Link>
+              <WorkflowStatusBadge status={(estimate as { workflowStatus?: string }).workflowStatus} />
+            </div>
             <div className="flex items-center gap-2 sm:gap-4">
               <OfflineIndicator />
               {isSaving && (
