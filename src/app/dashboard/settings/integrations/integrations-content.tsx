@@ -22,10 +22,11 @@ export function IntegrationsContent() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [connecting, setConnecting] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
   const searchParams = useSearchParams();
 
   const success = searchParams.get("success");
-  const error = searchParams.get("error");
+  const error = searchParams.get("error") || connectError;
 
   useEffect(() => {
     fetchGmailStatus();
@@ -45,14 +46,21 @@ export function IntegrationsContent() {
 
   async function handleConnect() {
     setConnecting(true);
+    setConnectError(null);
     try {
       const res = await fetch("/api/gmail/connect");
       const data = await res.json();
       if (data.authUrl) {
         window.location.href = data.authUrl;
+      } else if (data.error) {
+        console.error("Gmail connect error:", data.error);
+        setConnectError(data.error);
+      } else {
+        setConnectError("Failed to generate authorization URL");
       }
     } catch (err) {
       console.error("Failed to connect Gmail:", err);
+      setConnectError("Network error - please try again");
     } finally {
       setConnecting(false);
     }
