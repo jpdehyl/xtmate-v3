@@ -85,6 +85,15 @@ The application supports a two-role workflow:
 `draft` → `pm_assigned` → `pm_in_progress` → `pm_completed` → `estimator_review` → `ready_for_export` → `exported` → `submitted`
 
 ## Recent Changes
+- January 22, 2026: Enhanced Dashboard with Aniq-UI Design
+  - Added StatCard component with trend indicators showing percentage changes
+  - Created QuickTasks widget for managing daily tasks (add/complete/delete/filter)
+  - Added interactive CalendarWidget with month navigation
+  - Upgraded AreaChart with gradient fills for modern styling
+  - Added advanced filter panel to EstimateTable (job type, date range, reset)
+  - Enhanced status badges with color-coded dot indicators
+  - Created PerformanceAnalytics panel with donut chart and insights
+  - Created `sla_events` database table for SLA tracking
 - January 22, 2026: Convert to Line Item Modal & Workflow Status
   - Added ConvertScopeModal for estimators to convert PM scope items to line items
   - Pre-populates description from PM notes, calculates quantity from room sq ft
