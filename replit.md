@@ -48,7 +48,8 @@ npm run db:studio    # Open Drizzle Studio
 - `DATABASE_URL` - PostgreSQL connection string (auto-configured by Replit)
 - `CLERK_SECRET_KEY` - Clerk authentication
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk public key
-- `ANTHROPIC_API_KEY` - AI features
+- `AI_INTEGRATIONS_ANTHROPIC_API_KEY` - AI features (auto-configured via Replit AI Integrations)
+- `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` - AI endpoint (auto-configured)
 - `BLOB_READ_WRITE_TOKEN` - Photo uploads
 - `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` - Maps (optional)
 
@@ -84,7 +85,33 @@ The application supports a two-role workflow:
 ### Workflow Status Flow
 `draft` → `pm_assigned` → `pm_in_progress` → `pm_completed` → `estimator_review` → `ready_for_export` → `exported` → `submitted`
 
+## AI Assistant Features
+The application includes comprehensive AI-powered features using Anthropic Claude:
+
+### AI Endpoints
+- `POST /api/ai/analyze-photo` - Analyze damage photos and suggest repair scopes
+- `POST /api/ai/fill-data` - AI suggestions for filling estimate fields
+- `POST /api/ai/generate-report` - Generate various report types (executive summary, detailed scope, damage assessment, insurance narrative, homeowner summary)
+- `POST /api/ai/assistant` - Role-based AI assistant for different stakeholders (estimator, project manager, adjuster, homeowner, technician, admin)
+- `POST /api/ai/suggest-scope` - Get AI-generated scope suggestions
+- `POST /api/ai/enhance-description` - Enhance estimate names/descriptions
+
+### Supported User Roles
+- **Estimator**: Technical help with Xactimate codes, quantities, pricing
+- **Project Manager**: Project scheduling, crew coordination, reporting
+- **Adjuster**: Claim review, pricing verification, compliance
+- **Homeowner**: Simple explanations, timeline expectations, process guidance
+- **Technician**: Restoration techniques, safety protocols, documentation
+- **Admin**: Scheduling, communication, document management
+
 ## Recent Changes
+- January 22, 2026: AI Assistant Integration
+  - Added photo analysis endpoint for damage assessment from images
+  - Added data fill assistant for intelligent field suggestions
+  - Added report generation for multiple report types
+  - Added role-based AI assistant for all stakeholders
+  - Updated all AI endpoints to use Replit AI Integrations (Anthropic)
+  - Supported models: claude-sonnet-4-5, claude-haiku-4-5, claude-opus-4-5
 - January 22, 2026: Enhanced Dashboard with Aniq-UI Design
   - Added StatCard component with trend indicators showing percentage changes
   - Created QuickTasks widget for managing daily tasks (add/complete/delete/filter)
