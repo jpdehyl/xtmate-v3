@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+const anthropic = new Anthropic({
+  apiKey: process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
 });
 
 const requestSchema = z.object({
@@ -38,8 +38,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
+    if (!process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY) {
       return NextResponse.json(
         { error: "AI service not configured" },
         { status: 503 }
@@ -48,8 +47,6 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const validatedData = requestSchema.parse(body);
-
-    const anthropic = new Anthropic({ apiKey });
 
     const locationContext = [
       validatedData.propertyAddress,
@@ -90,7 +87,7 @@ Respond in JSON format with this structure:
 }`;
 
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-5",
       max_tokens: 1024,
       messages: [
         {

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+const anthropic = new Anthropic({
+  apiKey: process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
 });
 
 const requestSchema = z.object({
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!process.env.AI_INTEGRATIONS_OPENAI_API_KEY) {
+    if (!process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY) {
       return NextResponse.json(
         { error: "AI service not configured" },
         { status: 503 }
@@ -125,9 +125,7 @@ Always respond in valid JSON format:
 
 Keep responses concise but helpful. Suggest 1-3 relevant actions when appropriate.`;
 
-    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-      { role: "system", content: systemPrompt },
-    ];
+    const messages: Anthropic.MessageParam[] = [];
 
     if (validatedData.conversationHistory) {
       for (const msg of validatedData.conversationHistory.slice(-10)) {
@@ -140,14 +138,15 @@ Keep responses concise but helpful. Suggest 1-3 relevant actions when appropriat
 
     messages.push({ role: "user", content: validatedData.message });
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+    const response = await anthropic.messages.create({
+      model: "claude-haiku-4-5",
       max_tokens: 1024,
+      system: systemPrompt,
       messages,
     });
 
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
+    const textContent = response.content.find((block) => block.type === "text");
+    if (!textContent || textContent.type !== "text") {
       return NextResponse.json(
         { error: "No response from AI" },
         { status: 500 }
@@ -156,7 +155,7 @@ Keep responses concise but helpful. Suggest 1-3 relevant actions when appropriat
 
     let result: AssistantResponse;
     try {
-      let jsonStr = content;
+      let jsonStr = textContent.text;
       const jsonMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
       if (jsonMatch) {
         jsonStr = jsonMatch[1];
@@ -164,7 +163,7 @@ Keep responses concise but helpful. Suggest 1-3 relevant actions when appropriat
       result = JSON.parse(jsonStr.trim());
     } catch {
       result = {
-        response: content,
+        response: textContent.text,
         suggestedActions: [],
         relatedHelp: [],
       };
