@@ -12,7 +12,6 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-  // If no Clerk key, render children without provider
   if (!publishableKey) {
     return (
       <>
@@ -23,7 +22,11 @@ export function Providers({ children }: ProvidersProps) {
   }
 
   return (
-    <ClerkProvider publishableKey={publishableKey} afterSignOutUrl="/">
+    <ClerkProvider 
+      publishableKey={publishableKey}
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/dashboard"
+    >
       <PermissionsProvider>
         {children}
         <Toaster position="top-right" richColors closeButton />
