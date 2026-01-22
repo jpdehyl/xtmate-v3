@@ -99,6 +99,8 @@ interface MapData {
   propertyAddress: string | null;
   propertyCity: string | null;
   propertyState: string | null;
+  latitude: number | null;
+  longitude: number | null;
   status: string | null;
   jobType: string | null;
 }
