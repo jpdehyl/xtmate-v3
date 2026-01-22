@@ -10,23 +10,33 @@ const SCOPES = [
 export function getOAuth2Client(): OAuth2Client {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  
+
   let redirectUri = process.env.GOOGLE_REDIRECT_URI;
   if (!redirectUri) {
-    const domains = process.env.REPLIT_DOMAINS;
-    if (domains) {
-      const productionDomain = domains.split(',')[0];
+    // Priority: explicit env var > Vercel > Replit > localhost
+    if (process.env.VERCEL_URL) {
+      // Vercel deployment - use production URL
+      // VERCEL_URL doesn't include protocol, and for production we use the custom domain
+      const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+      redirectUri = `https://${vercelUrl}/api/gmail/callback`;
+    } else if (process.env.REPLIT_DOMAINS) {
+      // Replit deployment
+      const productionDomain = process.env.REPLIT_DOMAINS.split(',')[0];
       redirectUri = `https://${productionDomain}/api/gmail/callback`;
     } else if (process.env.REPLIT_DEV_DOMAIN) {
+      // Replit dev environment
       redirectUri = `https://${process.env.REPLIT_DEV_DOMAIN}/api/gmail/callback`;
     } else {
-      redirectUri = 'http://localhost:5000/api/gmail/callback';
+      // Local development
+      redirectUri = 'http://localhost:3000/api/gmail/callback';
     }
   }
 
   if (!clientId || !clientSecret) {
     throw new Error('Google OAuth credentials not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.');
   }
+
+  console.log('[Gmail OAuth] Using redirect URI:', redirectUri);
 
   return new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 }
