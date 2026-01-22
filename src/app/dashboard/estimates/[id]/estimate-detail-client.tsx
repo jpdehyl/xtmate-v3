@@ -19,12 +19,13 @@ import { PhotosTab } from "@/components/features/photos-tab";
 import { SlaTab } from "@/components/features/sla-tab";
 import { CarrierSelector } from "@/components/features/carrier-selector";
 import { VendorsTab } from "@/components/features/vendors-tab";
+import { PmScopePanel } from "@/components/features/pm-scope-panel";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { SketchEditor } from "@/components/sketch-editor";
 import type { ScopeSuggestion } from "@/app/api/ai/suggest-scope/route";
 import type { Room } from "@/lib/db/schema";
 
-type TabValue = "details" | "rooms" | "scope" | "photos" | "sla" | "vendors";
+type TabValue = "details" | "rooms" | "pm-scope" | "scope" | "photos" | "sla" | "vendors";
 
 interface EstimateDetailClientProps {
   initialEstimate: Estimate;
@@ -39,7 +40,7 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [isExporting, setIsExporting] = useState<"pdf" | "excel" | null>(null);
+  const [isExporting, setIsExporting] = useState<"pdf" | "excel" | "esx" | null>(null);
   const [isOfflineData, setIsOfflineData] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [showScopeModal, setShowScopeModal] = useState(false);
@@ -148,6 +149,39 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
       window.URL.revokeObjectURL(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Export failed");
+    } finally {
+      setIsExporting(null);
+    }
+  }
+
+  async function handleExportESX() {
+    if (!isOnline) {
+      setError("Export is not available offline");
+      return;
+    }
+
+    setIsExporting("esx");
+    try {
+      const response = await fetch(`/api/estimates/${estimate.id}/esx`);
+      if (!response.ok) {
+        throw new Error("ESX export failed");
+      }
+
+      const blob = await response.blob();
+      const contentDisposition = response.headers.get("Content-Disposition");
+      const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
+      const filename = filenameMatch?.[1] || `estimate.esx`;
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "ESX export failed");
     } finally {
       setIsExporting(null);
     }
@@ -302,6 +336,31 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
                 </span>
               </button>
               <button
+                onClick={handleExportESX}
+                disabled={isExporting !== null || !isOnline}
+                title={!isOnline ? "Export unavailable offline" : "Export for Xactimate (ESX)"}
+                aria-label={isExporting === "esx" ? "Exporting ESX" : "Export for Xactimate"}
+                className="px-3 py-1.5 bg-pd-gold text-white hover:bg-pd-gold-600 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 font-medium"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+                <span className="hidden sm:inline">
+                  {isExporting === "esx" ? "Exporting..." : "Xactimate"}
+                </span>
+              </button>
+              <button
                 onClick={handleDuplicate}
                 disabled={isDuplicating || !isOnline}
                 title={!isOnline ? "Duplicate unavailable offline" : "Duplicate estimate"}
@@ -354,6 +413,7 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
           <TabsList className="mb-6 w-full sm:w-auto flex overflow-x-auto">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="rooms">Rooms</TabsTrigger>
+            <TabsTrigger value="pm-scope">PM Scope</TabsTrigger>
             <TabsTrigger value="scope">Scope</TabsTrigger>
             <TabsTrigger value="photos">Photos</TabsTrigger>
             <TabsTrigger value="sla">SLA</TabsTrigger>
@@ -631,6 +691,12 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
               isOnline={isOnline}
               onOpenSketchEditor={() => setShowSketchEditor(true)}
             />
+          </TabsContent>
+
+          <TabsContent value="pm-scope">
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <PmScopePanel estimateId={estimate.id} />
+            </div>
           </TabsContent>
 
           <TabsContent value="scope">
