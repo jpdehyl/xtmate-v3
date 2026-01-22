@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+const anthropic = new Anthropic({
+  apiKey: process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
 });
 
 const requestSchema = z.object({
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!process.env.AI_INTEGRATIONS_OPENAI_API_KEY) {
+    if (!process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY) {
       return NextResponse.json(
         { error: "AI service not configured" },
         { status: 503 }
@@ -119,23 +119,23 @@ Analyze the image for:
 3. Priority levels for each repair item
 4. Any safety concerns or immediate actions needed`;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+    const message = await anthropic.messages.create({
+      model: "claude-sonnet-4-5",
       max_tokens: 2048,
+      system: systemPrompt,
       messages: [
-        { role: "system", content: systemPrompt },
         {
           role: "user",
           content: [
             { type: "text", text: userPrompt },
-            { type: "image_url", image_url: { url: validatedData.photoUrl } },
+            { type: "image", source: { type: "url", url: validatedData.photoUrl } },
           ],
         },
       ],
     });
 
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
+    const textContent = message.content.find((block) => block.type === "text");
+    if (!textContent || textContent.type !== "text") {
       return NextResponse.json(
         { error: "No response from AI" },
         { status: 500 }
@@ -144,14 +144,14 @@ Analyze the image for:
 
     let result: AnalyzePhotoResponse;
     try {
-      let jsonStr = content;
+      let jsonStr = textContent.text;
       const jsonMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
       if (jsonMatch) {
         jsonStr = jsonMatch[1];
       }
       result = JSON.parse(jsonStr.trim());
     } catch {
-      console.error("Failed to parse AI response:", content);
+      console.error("Failed to parse AI response:", textContent.text);
       return NextResponse.json(
         { error: "Failed to parse photo analysis" },
         { status: 500 }
