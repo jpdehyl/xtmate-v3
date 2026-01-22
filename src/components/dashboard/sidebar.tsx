@@ -14,6 +14,7 @@ import {
   HelpCircle,
   User,
   LineChart,
+  Mail,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -57,6 +58,12 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
       show: true
     },
     {
+      href: '/dashboard/incoming-requests',
+      label: 'Incoming Requests',
+      icon: Mail,
+      show: true
+    },
+    {
       href: '/dashboard/estimates',
       label: 'Estimates',
       icon: FileText,
@@ -84,7 +91,7 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
 
   // Secondary navigation items
   const secondaryNavItems = [
-    { href: '/dashboard/settings', label: 'Settings', icon: Settings, show: true },
+    { href: '/dashboard/settings/integrations', label: 'Settings', icon: Settings, show: true },
     { href: '/dashboard/help', label: 'Help & Support', icon: HelpCircle, show: true },
   ];
 

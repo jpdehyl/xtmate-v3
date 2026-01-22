@@ -699,3 +699,142 @@ export const WATER_CATEGORIES = [
 ] as const;
 
 export type WaterCategory = typeof WATER_CATEGORIES[number];
+
+// ============================================================================
+// EMAIL INTEGRATION (Gmail API)
+// ============================================================================
+
+export const emailIntegrationStatusEnum = pgEnum('email_integration_status', [
+  'active',
+  'disconnected',
+  'expired',
+  'error',
+]);
+
+export const emailIntegrations = pgTable('email_integrations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  organizationId: uuid('organization_id')
+    .references(() => organizations.id, { onDelete: 'cascade' })
+    .notNull(),
+  
+  // OAuth tokens (encrypted in production)
+  accessToken: text('access_token').notNull(),
+  refreshToken: text('refresh_token'),
+  tokenExpiresAt: timestamp('token_expires_at'),
+  
+  // Gmail account info
+  emailAddress: text('email_address').notNull(),
+  
+  // Settings
+  watchedLabels: jsonb('watched_labels').$type<string[]>().default(['INBOX']),
+  autoCreateEstimates: boolean('auto_create_estimates').default(true),
+  
+  // Sync tracking
+  lastSyncAt: timestamp('last_sync_at'),
+  lastHistoryId: text('last_history_id'),
+  
+  // Status
+  status: emailIntegrationStatusEnum('status').default('active'),
+  errorMessage: text('error_message'),
+  
+  // Created by (admin who set it up)
+  createdBy: text('created_by').notNull(),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const incomingEmailStatusEnum = pgEnum('incoming_email_status', [
+  'pending',
+  'processing',
+  'parsed',
+  'estimate_created',
+  'ignored',
+  'failed',
+]);
+
+export const incomingEmails = pgTable('incoming_emails', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  organizationId: uuid('organization_id')
+    .references(() => organizations.id, { onDelete: 'cascade' })
+    .notNull(),
+  emailIntegrationId: uuid('email_integration_id')
+    .references(() => emailIntegrations.id, { onDelete: 'cascade' })
+    .notNull(),
+  
+  // Gmail message info
+  gmailMessageId: text('gmail_message_id').notNull(),
+  gmailThreadId: text('gmail_thread_id'),
+  
+  // Email content
+  fromAddress: text('from_address'),
+  fromName: text('from_name'),
+  toAddress: text('to_address'),
+  subject: text('subject'),
+  bodyText: text('body_text'),
+  bodyHtml: text('body_html'),
+  receivedAt: timestamp('received_at'),
+  
+  // Parsed claim data
+  parsedData: jsonb('parsed_data').$type<{
+    insuredName?: string;
+    insuredPhone?: string;
+    insuredEmail?: string;
+    propertyAddress?: string;
+    propertyCity?: string;
+    propertyState?: string;
+    propertyZip?: string;
+    claimNumber?: string;
+    policyNumber?: string;
+    carrierName?: string;
+    adjusterName?: string;
+    adjusterPhone?: string;
+    adjusterEmail?: string;
+    dateOfLoss?: string;
+    damageType?: string;
+    notes?: string;
+  }>(),
+  parseConfidence: real('parse_confidence'),
+  
+  // Status and linking
+  status: incomingEmailStatusEnum('status').default('pending'),
+  estimateId: uuid('estimate_id').references(() => estimates.id),
+  
+  // Processing
+  processedAt: timestamp('processed_at'),
+  errorMessage: text('error_message'),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// Email integration relations
+export const emailIntegrationsRelations = relations(emailIntegrations, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [emailIntegrations.organizationId],
+    references: [organizations.id],
+  }),
+  incomingEmails: many(incomingEmails),
+}));
+
+export const incomingEmailsRelations = relations(incomingEmails, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [incomingEmails.organizationId],
+    references: [organizations.id],
+  }),
+  emailIntegration: one(emailIntegrations, {
+    fields: [incomingEmails.emailIntegrationId],
+    references: [emailIntegrations.id],
+  }),
+  estimate: one(estimates, {
+    fields: [incomingEmails.estimateId],
+    references: [estimates.id],
+  }),
+}));
+
+// Type exports for email integration
+export type EmailIntegration = typeof emailIntegrations.$inferSelect;
+export type NewEmailIntegration = typeof emailIntegrations.$inferInsert;
+
+export type IncomingEmail = typeof incomingEmails.$inferSelect;
+export type NewIncomingEmail = typeof incomingEmails.$inferInsert;
