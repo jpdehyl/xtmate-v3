@@ -12,7 +12,7 @@ import { TotalsSummary } from "./totals-summary";
 interface ScopeTabProps {
   estimateId: string;
   isOnline: boolean;
-  onOpenAIScope: () => void;
+  onAIScope: () => void;
 }
 
 interface EditingCell {
@@ -50,7 +50,7 @@ function formatCurrency(amount: number | null | undefined): string {
   }).format(amount);
 }
 
-export function ScopeTab({ estimateId, isOnline, onOpenAIScope }: ScopeTabProps) {
+export function ScopeTab({ estimateId, isOnline, onAIScope }: ScopeTabProps) {
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -422,7 +422,7 @@ export function ScopeTab({ estimateId, isOnline, onOpenAIScope }: ScopeTabProps)
           </button>
           <button
             type="button"
-            onClick={onOpenAIScope}
+            onClick={onAIScope}
             disabled={!isOnline}
             title={!isOnline ? "AI features unavailable offline" : "Get AI scope suggestions"}
             aria-label="Get AI-powered scope suggestions"

@@ -708,7 +708,7 @@ export function EstimateDetailClient({ initialEstimate }: EstimateDetailClientPr
               key={scopeTabKey}
               estimateId={estimate.id}
               isOnline={isOnline}
-              onOpenAIScope={() => setShowScopeModal(true)}
+              onAIScope={() => setShowScopeModal(true)}
             />
           </TabsContent>
 
