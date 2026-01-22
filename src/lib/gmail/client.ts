@@ -10,8 +10,19 @@ const SCOPES = [
 export function getOAuth2Client(): OAuth2Client {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || 
-    `https://${process.env.REPLIT_DEV_DOMAIN}/api/gmail/callback`;
+  
+  let redirectUri = process.env.GOOGLE_REDIRECT_URI;
+  if (!redirectUri) {
+    const domains = process.env.REPLIT_DOMAINS;
+    if (domains) {
+      const productionDomain = domains.split(',')[0];
+      redirectUri = `https://${productionDomain}/api/gmail/callback`;
+    } else if (process.env.REPLIT_DEV_DOMAIN) {
+      redirectUri = `https://${process.env.REPLIT_DEV_DOMAIN}/api/gmail/callback`;
+    } else {
+      redirectUri = 'http://localhost:5000/api/gmail/callback';
+    }
+  }
 
   if (!clientId || !clientSecret) {
     throw new Error('Google OAuth credentials not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.');
