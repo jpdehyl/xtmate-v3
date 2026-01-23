@@ -57,6 +57,7 @@ export function PhotoGallery({
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"
@@ -78,10 +79,12 @@ export function PhotoGallery({
     <>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {filteredPhotos.map((photo, index) => (
-          <div
+          <button
+            type="button"
             key={photo.id}
-            className="group relative aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden cursor-pointer"
+            className="group relative aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden cursor-pointer text-left"
             onClick={() => setLightboxIndex(index)}
+            aria-label={`View ${photo.caption || photo.filename || 'photo'}`}
           >
             {/* Image */}
             <img
@@ -89,6 +92,8 @@ export function PhotoGallery({
               alt={photo.caption || photo.filename || "Photo"}
               className="w-full h-full object-cover transition-transform group-hover:scale-105"
               loading="lazy"
+              width={200}
+              height={200}
             />
 
             {/* Overlay on hover */}
@@ -111,7 +116,7 @@ export function PhotoGallery({
                   setDeleteConfirmId(photo.id);
                 }}
                 className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                title="Delete photo"
+                aria-label="Delete photo"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -140,7 +145,7 @@ export function PhotoGallery({
                 Room
               </div>
             )}
-          </div>
+          </button>
         ))}
       </div>
 

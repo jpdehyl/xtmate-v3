@@ -188,7 +188,7 @@ export function PhotoUpload({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" style={{ overscrollBehavior: 'contain' }}>
       <div className="bg-white dark:bg-gray-900 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
@@ -203,6 +203,7 @@ export function PhotoUpload({
             }}
             disabled={isUploading}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50"
+            aria-label="Close upload dialog"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -263,6 +264,9 @@ export function PhotoUpload({
             </div>
             <button
               onClick={() => setGpsEnabled(!gpsEnabled)}
+              role="switch"
+              aria-checked={gpsEnabled}
+              aria-label="GPS Location"
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                 gpsEnabled ? "bg-primary-600" : "bg-gray-200 dark:bg-gray-700"
               }`}
@@ -292,6 +296,8 @@ export function PhotoUpload({
                       src={file.preview}
                       alt="Preview"
                       className="w-12 h-12 object-cover rounded"
+                      width={48}
+                      height={48}
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">
@@ -333,6 +339,7 @@ export function PhotoUpload({
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"

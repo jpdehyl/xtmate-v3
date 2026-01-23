@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   Home,
@@ -119,9 +120,15 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
         collapsed ? 'justify-center' : 'justify-between'
       )}>
         <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="relative w-10 h-10 bg-gold-gradient rounded-xl flex items-center justify-center shadow-lg shadow-gold-500/20 group-hover:shadow-gold-500/30 transition-shadow duration-300 flex-shrink-0">
-            <span className="text-white font-display font-bold text-lg">PD</span>
-            <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" />
+          <div className="relative w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-gold-500/20 group-hover:shadow-gold-500/30 transition-shadow duration-300 flex-shrink-0 overflow-hidden">
+            <Image
+              src="/paul-davis-logo.png"
+              alt="Paul Davis"
+              width={40}
+              height={40}
+              className="object-contain"
+              priority
+            />
           </div>
           {!collapsed && (
             <div className="overflow-hidden">

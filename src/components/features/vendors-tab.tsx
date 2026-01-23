@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -137,11 +137,7 @@ export function VendorsTab({ estimateId, isOnline }: VendorsTabProps) {
   // Quote comparison state
   const [showComparison, setShowComparison] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, [estimateId]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -169,7 +165,11 @@ export function VendorsTab({ estimateId, isOnline }: VendorsTabProps) {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [estimateId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   async function handleCreateVendor(e: React.FormEvent) {
     e.preventDefault();
@@ -735,8 +735,8 @@ export function VendorsTab({ estimateId, isOnline }: VendorsTabProps) {
               <Users className="w-5 h-5" />
               Quote Requests ({quoteRequests.length})
             </CardTitle>
-            <Button variant="ghost" size="sm" onClick={fetchData}>
-              <RefreshCw className="w-4 h-4" />
+            <Button variant="ghost" size="sm" onClick={fetchData} aria-label="Refresh quote requests">
+              <RefreshCw className="w-4 h-4" aria-hidden="true" />
             </Button>
           </div>
         </CardHeader>

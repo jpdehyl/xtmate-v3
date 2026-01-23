@@ -1,11 +1,11 @@
 {
-  "name": "XTmate - Estimation Made Simple",
-  "short_name": "XTmate",
-  "description": "Professional estimation tool for construction and landscaping projects",
+  "name": "XTmate Pro | Paul Davis Restoration",
+  "short_name": "XTmate Pro",
+  "description": "AI-powered restoration estimating. From site visit to approved estimate in record time.",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0284c7",
+  "theme_color": "#a08347",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [

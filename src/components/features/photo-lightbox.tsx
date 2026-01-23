@@ -105,12 +105,12 @@ export function PhotoLightbox({
   if (!currentPhoto) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black">
+    <div className="fixed inset-0 z-50 bg-black" style={{ overscrollBehavior: 'contain' }}>
       {/* Close button */}
       <button
         onClick={onClose}
         className="absolute top-4 right-4 z-10 p-2 text-white/80 hover:text-white transition-colors"
-        title="Close (Esc)"
+        aria-label="Close lightbox"
       >
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -123,6 +123,8 @@ export function PhotoLightbox({
           src={currentPhoto.url}
           alt={currentPhoto.caption || currentPhoto.filename || "Photo"}
           className="max-w-full max-h-full object-contain"
+          width={800}
+          height={600}
         />
       </div>
 
@@ -132,7 +134,7 @@ export function PhotoLightbox({
           <button
             onClick={goPrev}
             className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-white/80 hover:text-white bg-black/30 hover:bg-black/50 rounded-full transition-colors"
-            title="Previous (Left Arrow)"
+            aria-label="Previous photo"
           >
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -141,7 +143,7 @@ export function PhotoLightbox({
           <button
             onClick={goNext}
             className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white/80 hover:text-white bg-black/30 hover:bg-black/50 rounded-full transition-colors"
-            title="Next (Right Arrow)"
+            aria-label="Next photo"
           >
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -185,13 +187,18 @@ export function PhotoLightbox({
             ) : (
               <div>
                 {currentPhoto.caption ? (
-                  <p
-                    className="text-white text-lg mb-1 cursor-pointer hover:text-white/80"
-                    onClick={onUpdateCaption ? handleStartEditCaption : undefined}
-                    title={onUpdateCaption ? "Click to edit caption" : undefined}
-                  >
-                    {currentPhoto.caption}
-                  </p>
+                  onUpdateCaption ? (
+                    <button
+                      type="button"
+                      className="text-white text-lg mb-1 cursor-pointer hover:text-white/80 text-left"
+                      onClick={handleStartEditCaption}
+                      aria-label="Edit caption"
+                    >
+                      {currentPhoto.caption}
+                    </button>
+                  ) : (
+                    <p className="text-white text-lg mb-1">{currentPhoto.caption}</p>
+                  )
                 ) : onUpdateCaption ? (
                   <button
                     onClick={handleStartEditCaption}
@@ -244,7 +251,8 @@ export function PhotoLightbox({
                   ? "bg-white/20 text-white"
                   : "text-white/80 hover:text-white hover:bg-white/10"
               }`}
-              title="Show info (i)"
+              aria-label="Toggle photo information"
+              aria-expanded={showInfo}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -256,7 +264,7 @@ export function PhotoLightbox({
               <button
                 onClick={() => setShowDeleteConfirm(true)}
                 className="p-2 text-white/80 hover:text-red-400 hover:bg-white/10 rounded transition-colors"
-                title="Delete photo"
+                aria-label="Delete photo"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

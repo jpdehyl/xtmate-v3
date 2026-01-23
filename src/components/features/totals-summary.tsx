@@ -57,10 +57,11 @@ export function TotalsSummary({
         <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border-b border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+              <label htmlFor="overhead-percent" className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                 Overhead %
               </label>
               <input
+                id="overhead-percent"
                 type="number"
                 min="0"
                 max="100"
@@ -68,13 +69,15 @@ export function TotalsSummary({
                 value={options.overheadPercent ?? 10}
                 onChange={(e) => handleOptionChange("overheadPercent", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm dark:bg-gray-900"
+                autoComplete="off"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+              <label htmlFor="profit-percent" className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                 Profit %
               </label>
               <input
+                id="profit-percent"
                 type="number"
                 min="0"
                 max="100"
@@ -82,13 +85,15 @@ export function TotalsSummary({
                 value={options.profitPercent ?? 10}
                 onChange={(e) => handleOptionChange("profitPercent", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm dark:bg-gray-900"
+                autoComplete="off"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+              <label htmlFor="tax-percent" className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                 Tax %
               </label>
               <input
+                id="tax-percent"
                 type="number"
                 min="0"
                 max="100"
@@ -96,6 +101,7 @@ export function TotalsSummary({
                 value={options.taxPercent ?? 0}
                 onChange={(e) => handleOptionChange("taxPercent", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm dark:bg-gray-900"
+                autoComplete="off"
               />
             </div>
           </div>
