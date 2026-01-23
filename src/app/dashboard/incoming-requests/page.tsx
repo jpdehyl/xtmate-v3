@@ -240,7 +240,7 @@ export default function IncomingRequestsPage() {
                       </div>
 
                       <div className="flex gap-2 flex-shrink-0">
-                        {email.status === "parsed" && (
+                        {(email.status === "parsed" || email.status === "ignored") && (
                           <>
                             <Button
                               size="sm"
@@ -250,14 +250,16 @@ export default function IncomingRequestsPage() {
                               <Plus className="h-4 w-4 mr-1" />
                               Create Estimate
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleAction(email.id, "ignore")}
-                              disabled={actionLoading === email.id}
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
+                            {email.status === "parsed" && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleAction(email.id, "ignore")}
+                                disabled={actionLoading === email.id}
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            )}
                           </>
                         )}
                         {email.status === "estimate_created" && email.estimateId && (

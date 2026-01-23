@@ -20,6 +20,7 @@ export default async function middleware(request: NextRequest) {
     "/sign-in(.*)",
     "/sign-up(.*)",
     "/api/webhooks(.*)",
+    "/api/gmail/callback", // Gmail OAuth callback - Google redirects here
     "/vendor(.*)", // Vendor portal uses token-based auth, not Clerk
     "/api/vendor(.*)", // Vendor API endpoints
   ]);
