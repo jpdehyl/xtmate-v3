@@ -60,6 +60,7 @@ export default async function DashboardPage() {
   }));
 
   // Full data for the projects table with tabs
+  // Note: projectType and projectNumber will be null until migration is run
   const tableData = userEstimates.map((e) => ({
     id: e.id,
     name: e.name,
@@ -70,8 +71,8 @@ export default async function DashboardPage() {
     updatedAt: e.updatedAt,
     createdAt: e.createdAt,
     jobType: e.jobType,
-    projectType: e.projectType ?? null,
-    projectNumber: e.projectNumber ?? null,
+    projectType: null as string | null, // Available after migration
+    projectNumber: null as string | null, // Available after migration
     claimNumber: e.claimNumber ?? null,
     policyNumber: e.policyNumber ?? null,
     insuredName: e.insuredName ?? null,

@@ -11,10 +11,39 @@ import { eq, desc } from 'drizzle-orm';
 /**
  * Get all estimates for a user, cached per request.
  * Use this instead of direct db queries in Server Components.
+ * Note: Explicitly selecting columns to avoid issues with missing columns during migrations.
  */
 export const getEstimatesByUserId = cache(async (userId: string) => {
   return db
-    .select()
+    .select({
+      id: estimates.id,
+      userId: estimates.userId,
+      name: estimates.name,
+      status: estimates.status,
+      jobType: estimates.jobType,
+      organizationId: estimates.organizationId,
+      propertyAddress: estimates.propertyAddress,
+      propertyCity: estimates.propertyCity,
+      propertyState: estimates.propertyState,
+      propertyZip: estimates.propertyZip,
+      claimNumber: estimates.claimNumber,
+      policyNumber: estimates.policyNumber,
+      carrierId: estimates.carrierId,
+      workflowStatus: estimates.workflowStatus,
+      assignedPmId: estimates.assignedPmId,
+      assignedEstimatorId: estimates.assignedEstimatorId,
+      pmCompletedAt: estimates.pmCompletedAt,
+      estimatorStartedAt: estimates.estimatorStartedAt,
+      insuredName: estimates.insuredName,
+      insuredPhone: estimates.insuredPhone,
+      insuredEmail: estimates.insuredEmail,
+      adjusterName: estimates.adjusterName,
+      adjusterPhone: estimates.adjusterPhone,
+      adjusterEmail: estimates.adjusterEmail,
+      dateOfLoss: estimates.dateOfLoss,
+      createdAt: estimates.createdAt,
+      updatedAt: estimates.updatedAt,
+    })
     .from(estimates)
     .where(eq(estimates.userId, userId))
     .orderBy(desc(estimates.updatedAt));
