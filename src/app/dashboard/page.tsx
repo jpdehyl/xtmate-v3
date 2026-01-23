@@ -21,9 +21,11 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  // Fetch data using cached queries
-  const userEstimates = await getEstimatesByUserId(userId);
-  const activeCount = await getActiveEstimatesCount(userId);
+  // Fetch data using cached queries - parallel for performance
+  const [userEstimates, activeCount] = await Promise.all([
+    getEstimatesByUserId(userId),
+    getActiveEstimatesCount(userId),
+  ]);
 
   // Minimize serialization - only pass needed fields to each component
   const metricsData = userEstimates.map((e) => ({
