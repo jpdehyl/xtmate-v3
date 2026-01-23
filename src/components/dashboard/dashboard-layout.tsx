@@ -45,7 +45,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <Sidebar showCommandCenter={true} />
+      <Sidebar />
 
       {/* Main content with sidebar offset */}
       <main

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/lib/db';
 import { estimates, carriers, slaEvents, lineItems } from '@/lib/db/schema';
-import { eq, desc, isNull, sum, sql } from 'drizzle-orm';
+import { eq, desc, isNull, sum, inArray } from 'drizzle-orm';
 import { SLA_MILESTONE_LABELS, getSlaEventWithStatus } from '@/lib/sla';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
@@ -43,7 +43,7 @@ export async function GET() {
       const lineItemTotals = await db
         .select({ total: sum(lineItems.total) })
         .from(lineItems)
-        .where(sql`${lineItems.estimateId} = ANY(${estimateIds})`);
+        .where(inArray(lineItems.estimateId, estimateIds));
       totalValue = Number(lineItemTotals[0]?.total) || 0;
     }
 

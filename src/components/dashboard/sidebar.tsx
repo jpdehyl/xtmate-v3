@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import {
   Home,
   BarChart3,
-  Command,
   FileText,
   Plus,
   Settings,
@@ -23,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { SignedIn, UserButton, useUser } from '@clerk/nextjs';
 
 interface SidebarProps {
-  showCommandCenter?: boolean;
+  // Reserved for future props
 }
 
 // Lazy initialization helper - reads from localStorage only once on mount
@@ -33,7 +32,7 @@ function getInitialCollapsed(): boolean {
   return saved === 'true';
 }
 
-export function Sidebar({ showCommandCenter = true }: SidebarProps) {
+export function Sidebar({}: SidebarProps) {
   const pathname = usePathname();
   // Lazy state initialization - avoids reading localStorage on every render
   const [collapsed, setCollapsed] = useState(getInitialCollapsed);
@@ -69,12 +68,6 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
       label: 'Projects',
       icon: FileText,
       show: true
-    },
-    {
-      href: '/dashboard/command-center',
-      label: 'Command Center',
-      icon: Command,
-      show: showCommandCenter
     },
     {
       href: '/dashboard/portfolio',
