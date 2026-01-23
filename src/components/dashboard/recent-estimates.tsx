@@ -34,8 +34,8 @@ export function RecentEstimates({ estimates, className }: RecentEstimatesProps) 
     <div className={cn('rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm', className)}>
       <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-800">
         <div>
-          <h3 className="font-semibold text-gray-900 dark:text-white">Recent Estimates</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Your latest {recentEstimates.length} estimates</p>
+          <h3 className="font-semibold text-gray-900 dark:text-white">Recent Projects</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Your latest {recentEstimates.length} projects</p>
         </div>
         <Button asChild variant="outline" size="sm">
           <Link href="/dashboard/estimates/new">
@@ -48,11 +48,11 @@ export function RecentEstimates({ estimates, className }: RecentEstimatesProps) 
       {recentEstimates.length === 0 ? (
         <div className="p-8 text-center">
           <FileText className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">No estimates yet</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">No projects yet</p>
           <Button asChild size="sm">
             <Link href="/dashboard/estimates/new">
               <Plus className="w-4 h-4 mr-1" />
-              Create your first estimate
+              Create your first project
             </Link>
           </Button>
         </div>
@@ -89,7 +89,7 @@ export function RecentEstimates({ estimates, className }: RecentEstimatesProps) 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium text-gray-900 dark:text-white truncate group-hover:text-pd-gold transition-colors">
-                        {estimate.name || 'Untitled Estimate'}
+                        {estimate.name || 'Untitled Project'}
                       </span>
                       <span className={cn('px-2 py-0.5 text-xs font-medium rounded-full', status.color)}>
                         {status.label}
@@ -125,7 +125,7 @@ export function RecentEstimates({ estimates, className }: RecentEstimatesProps) 
             href="/dashboard/estimates"
             className="text-sm text-pd-gold hover:text-pd-gold-600 font-medium flex items-center justify-center gap-1"
           >
-            View all {estimates.length} estimates
+            View all {estimates.length} projects
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>

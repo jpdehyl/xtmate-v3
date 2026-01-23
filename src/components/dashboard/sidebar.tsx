@@ -65,7 +65,7 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
     },
     {
       href: '/dashboard/estimates',
-      label: 'Estimates',
+      label: 'Projects',
       icon: FileText,
       show: true
     },
@@ -147,7 +147,7 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
         )}
       </div>
 
-      {/* New Estimate Button */}
+      {/* New Project Button */}
       <div className={cn('p-4', collapsed && 'px-3')}>
         <Button
           asChild
@@ -159,7 +159,7 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
         >
           <Link href="/dashboard/estimates/new">
             <Plus className="w-4 h-4" />
-            {!collapsed && <span className="ml-2">New Estimate</span>}
+            {!collapsed && <span className="ml-2">New Project</span>}
           </Link>
         </Button>
       </div>

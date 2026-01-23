@@ -15,12 +15,24 @@ interface Estimate {
   updatedAt: Date | null;
   createdAt: Date | null;
   jobType: string | null;
+  projectType?: string | null;
+  projectNumber?: string | null;
   claimNumber?: string | null;
   policyNumber?: string | null;
   insuredName?: string | null;
   total?: number | null;
   userId?: string | null;
 }
+
+// Project type labels for display
+const projectTypeLabels: Record<string, string> = {
+  E: 'Emergency',
+  R: 'Repairs',
+  P: 'Private Repairs',
+  A: 'Private Emergency',
+  C: 'Contents',
+  Z: 'Full Service',
+};
 
 interface EstimateTableProps {
   estimates: Estimate[];
@@ -151,9 +163,9 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
       <div className="border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center justify-between px-5 pt-4">
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">Claims & Projects</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">Projects</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {filteredEstimates.length} {filteredEstimates.length === 1 ? 'estimate' : 'estimates'}
+              {filteredEstimates.length} {filteredEstimates.length === 1 ? 'project' : 'projects'}
             </p>
           </div>
 
@@ -266,7 +278,7 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
         <div className="p-12 text-center">
           <FileText className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {searchQuery ? 'No estimates match your search' : 'No estimates in this category'}
+            {searchQuery ? 'No projects match your search' : 'No projects in this category'}
           </p>
         </div>
       ) : (
@@ -275,16 +287,19 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
             <thead>
               <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
                 <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Claim/Project
+                  Project
+                </th>
+                <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Claim #
                 </th>
                 <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Insured
                 </th>
                 <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Profile
+                  Status
                 </th>
                 <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Status
+                  Type
                 </th>
                 <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Total
@@ -300,10 +315,16 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {filteredEstimates.map((estimate) => {
                 const status = statusConfig[estimate.status || 'draft'] || statusConfig.draft;
-                const jobType = jobTypeConfig[estimate.jobType || 'private'] || jobTypeConfig.private;
-                const address = [estimate.propertyCity, estimate.propertyState]
-                  .filter(Boolean)
-                  .join(', ');
+                const projectType = estimate.projectType || 'R';
+                const projectTypeLabel = projectTypeLabels[projectType] || 'Repairs';
+
+                // Build project display name like Xactimate: "26-0001-R_SMITH"
+                const insuredLastName = estimate.insuredName?.split(' ').pop()?.toUpperCase() ||
+                                        estimate.name?.split(' ').pop()?.toUpperCase() ||
+                                        'PROJECT';
+                const projectDisplay = estimate.projectNumber
+                  ? `${estimate.projectNumber}_${insuredLastName}`
+                  : estimate.name || 'Untitled Project';
 
                 return (
                   <tr
@@ -315,12 +336,22 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
                         href={`/dashboard/estimates/${estimate.id}`}
                         className="block"
                       >
-                        <div className="font-medium text-gray-900 dark:text-white group-hover:text-pd-gold transition-colors">
-                          {estimate.name || 'Untitled Estimate'}
+                        <div className="font-medium text-gray-900 dark:text-white group-hover:text-pd-gold transition-colors font-mono text-sm">
+                          {projectDisplay}
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {estimate.claimNumber || address || 'No location'}
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                          {estimate.propertyCity && estimate.propertyState
+                            ? `${estimate.propertyCity}, ${estimate.propertyState}`
+                            : estimate.propertyAddress || ''}
                         </div>
+                      </Link>
+                    </td>
+                    <td className="px-5 py-4">
+                      <Link
+                        href={`/dashboard/estimates/${estimate.id}`}
+                        className="block text-sm text-gray-600 dark:text-gray-300 font-mono"
+                      >
+                        {estimate.claimNumber || '-'}
                       </Link>
                     </td>
                     <td className="px-5 py-4">
@@ -333,16 +364,16 @@ export function EstimateTable({ estimates, className }: EstimateTableProps) {
                     </td>
                     <td className="px-5 py-4">
                       <Link href={`/dashboard/estimates/${estimate.id}`}>
-                        <span className={cn('px-2 py-1 text-xs font-medium rounded-full', jobType.color)}>
-                          {jobType.label}
+                        <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full', status.color)}>
+                          <span className={cn('w-1.5 h-1.5 rounded-full', status.dotColor)}></span>
+                          {status.label}
                         </span>
                       </Link>
                     </td>
                     <td className="px-5 py-4">
                       <Link href={`/dashboard/estimates/${estimate.id}`}>
-                        <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full', status.color)}>
-                          <span className={cn('w-1.5 h-1.5 rounded-full', status.dotColor)}></span>
-                          {status.label}
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
+                          {projectTypeLabel}
                         </span>
                       </Link>
                     </td>

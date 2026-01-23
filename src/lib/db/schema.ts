@@ -118,12 +118,20 @@ export const organizationMembersRelations = relations(
 // ESTIMATES
 // ============================================================================
 
+// Project type enum (E=Emergency, R=Repairs, P=Private Repairs, A=Private Emergency, C=Contents, Z=Full Service)
+export const projectTypeEnum = pgEnum("project_type", ["E", "R", "P", "A", "C", "Z"]);
+
 export const estimates = pgTable("estimates", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: text("user_id").notNull(),
   name: text("name").notNull(),
   status: estimateStatusEnum("status").notNull().default("draft"),
   jobType: jobTypeEnum("job_type").notNull().default("private"),
+
+  // Project classification (new fields for Xactimate-style naming)
+  projectNumber: text("project_number"), // Auto-generated: "25-0583"
+  projectType: projectTypeEnum("project_type").default("R"), // E, R, P, A, C, Z
+  scopes: jsonb("scopes").$type<string[]>().default(["repairs"]), // Active scopes: ["emergency", "repairs", "contents"]
 
   // Organization (multi-tenant support)
   organizationId: uuid("organization_id").references(() => organizations.id, {
@@ -186,6 +194,27 @@ export type NewOrganizationMember = typeof organizationMembers.$inferInsert;
 
 export type Estimate = typeof estimates.$inferSelect;
 export type NewEstimate = typeof estimates.$inferInsert;
+
+// Project type labels and descriptions
+export const PROJECT_TYPES = {
+  E: { label: "Emergency", description: "Insurance emergency services (water mitigation, board-up)", jobType: "insurance" },
+  R: { label: "Repairs", description: "Insurance repairs/reconstruction", jobType: "insurance" },
+  P: { label: "Private Repairs", description: "Private (non-insurance) repairs", jobType: "private" },
+  A: { label: "Private Emergency", description: "Private (non-insurance) emergency services", jobType: "private" },
+  C: { label: "Contents", description: "Personal property/contents", jobType: "insurance" },
+  Z: { label: "Full Service", description: "Full service (E+R+C combined)", jobType: "insurance" },
+} as const;
+
+export type ProjectType = keyof typeof PROJECT_TYPES;
+
+// Project scopes (work scope types that can be active on a project)
+export const PROJECT_SCOPES = {
+  emergency: { label: "Emergency Services", code: "E", description: "Water extraction, board-up, drying" },
+  repairs: { label: "Repairs", code: "R", description: "Reconstruction and repairs" },
+  contents: { label: "Contents", code: "C", description: "Personal property restoration" },
+} as const;
+
+export type ProjectScope = keyof typeof PROJECT_SCOPES;
 
 // ============================================================================
 // M2: Database Schema Expansion
