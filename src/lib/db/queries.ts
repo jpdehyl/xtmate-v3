@@ -21,6 +21,8 @@ export const getEstimatesByUserId = cache(async (userId: string) => {
       name: estimates.name,
       status: estimates.status,
       jobType: estimates.jobType,
+      projectType: estimates.projectType,
+      projectNumber: estimates.projectNumber,
       organizationId: estimates.organizationId,
       propertyAddress: estimates.propertyAddress,
       propertyCity: estimates.propertyCity,
