@@ -57,7 +57,7 @@ export default async function DashboardPage() {
     jobType: e.jobType,
   }));
 
-  // Full data for the claims table with tabs
+  // Full data for the projects table with tabs
   const tableData = userEstimates.map((e) => ({
     id: e.id,
     name: e.name,
@@ -68,10 +68,12 @@ export default async function DashboardPage() {
     updatedAt: e.updatedAt,
     createdAt: e.createdAt,
     jobType: e.jobType,
+    projectType: e.projectType ?? null,
+    projectNumber: e.projectNumber ?? null,
     claimNumber: e.claimNumber ?? null,
     policyNumber: e.policyNumber ?? null,
-    insuredName: null as string | null, // Not in schema yet
-    total: null as number | null, // Not in schema yet
+    insuredName: e.insuredName ?? null,
+    total: null as number | null, // Calculated from line items
   }));
 
   return (
