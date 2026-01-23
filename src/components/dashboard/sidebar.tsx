@@ -132,11 +132,7 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
-              <div className="flex items-baseline gap-1">
-                <span className="font-display text-lg font-bold text-ink-950 dark:text-white tracking-tight">PAUL</span>
-                <span className="font-display text-lg font-bold text-gold-500 tracking-tight">DAVIS</span>
-              </div>
-              <span className="text-2xs font-medium text-stone-500 tracking-ultra-wide uppercase">
+              <span className="font-display text-lg font-bold text-ink-950 dark:text-white tracking-tight">
                 XtMate Pro
               </span>
             </div>
