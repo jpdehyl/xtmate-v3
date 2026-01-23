@@ -12,6 +12,8 @@ import {
   Zap,
   Building2,
   Phone,
+  Play,
+  Star,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -26,49 +28,50 @@ export default async function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-background">
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-background/95 backdrop-blur-sm border-b border-gray-100 dark:border-border">
+    <div className="min-h-screen bg-stone-50 dark:bg-ink-950">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-ink-950/90 backdrop-blur-md border-b border-stone-200/50 dark:border-ink-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-pd-gold-400 to-pd-gold-600 rounded-xl flex items-center justify-center shadow-lg shadow-pd-gold/20">
-                <span className="text-white font-bold text-xl">PD</span>
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="relative w-11 h-11 bg-gold-gradient rounded-xl flex items-center justify-center shadow-lg shadow-gold-500/20 group-hover:shadow-gold-500/30 transition-shadow duration-300">
+                <span className="text-white font-display font-bold text-lg tracking-tight">PD</span>
+                <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" />
               </div>
               <div className="hidden sm:block">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                <div className="flex items-baseline gap-1">
+                  <span className="font-display text-xl font-bold text-ink-950 dark:text-white tracking-tight">
                     PAUL
                   </span>
-                  <span className="text-2xl font-bold text-pd-gold tracking-tight">
+                  <span className="font-display text-xl font-bold text-gold-500 tracking-tight">
                     DAVIS
                   </span>
                 </div>
-                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-[0.25em] uppercase">
+                <span className="text-2xs font-semibold text-stone-500 dark:text-stone-400 tracking-ultra-wide uppercase">
                   XtMate Pro
                 </span>
               </div>
-            </div>
+            </Link>
+
+            {/* Nav Links */}
             <div className="hidden md:flex items-center gap-8">
-              <Link href="#features" className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-pd-gold transition-colors">
-                Features
-              </Link>
-              <Link href="#workflow" className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-pd-gold transition-colors">
-                How It Works
-              </Link>
-              <Link href="#contact" className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-pd-gold transition-colors">
-                Contact
-              </Link>
+              <NavLink href="#features">Features</NavLink>
+              <NavLink href="#workflow">How It Works</NavLink>
+              <NavLink href="#contact">Contact</NavLink>
             </div>
-            <div className="flex items-center gap-4">
+
+            {/* CTA Buttons */}
+            <div className="flex items-center gap-3">
               <Link
                 href="/sign-in"
-                className="text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-pd-gold transition-colors"
+                className="text-sm font-semibold text-stone-600 dark:text-stone-300 hover:text-gold-600 dark:hover:text-gold-400 transition-colors"
               >
                 Sign In
               </Link>
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 bg-pd-gold hover:bg-pd-gold-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-md shadow-pd-gold/25 hover:shadow-lg hover:shadow-pd-gold/30"
+                className="btn-gold inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
               >
                 Get Started
                 <ArrowRight className="w-4 h-4" />
@@ -78,102 +81,135 @@ export default async function LandingPage() {
         </div>
       </nav>
 
-      <section className="relative pt-28 pb-20 lg:pt-36 lg:pb-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-pd-gold-50/30 dark:from-background dark:via-background dark:to-pd-gold-900/10" />
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-pd-gold-100/50 to-transparent dark:from-pd-gold-900/20 dark:to-transparent" />
-        
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-24 lg:pt-40 lg:pb-32 overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-stone-50 to-gold-50/50 dark:from-ink-950 dark:via-ink-950 dark:to-gold-950/20" />
+        <div className="absolute inset-0 hero-grid opacity-50 dark:opacity-30" />
+        <div className="absolute top-0 right-0 w-[60%] h-[80%] bg-hero-pattern dark:bg-hero-pattern-dark" />
+
+        {/* Decorative elements */}
+        <div className="absolute top-32 left-10 w-72 h-72 bg-gold-400/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-gold-300/10 rounded-full blur-3xl" />
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            {/* Left Content */}
             <div className="order-2 lg:order-1">
-              <div className="inline-flex items-center gap-2 bg-pd-gold-100 dark:bg-pd-gold-900/30 text-pd-gold-700 dark:text-pd-gold-300 px-4 py-2 rounded-full text-sm font-semibold mb-6">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 bg-gold-100 dark:bg-gold-900/40 text-gold-700 dark:text-gold-300 px-4 py-2 rounded-full text-sm font-semibold mb-8 animate-fade-in-up fill-both">
                 <Zap className="w-4 h-4" />
-                AI-Powered Restoration Estimating
+                <span>AI-Powered Restoration Estimating</span>
               </div>
-              
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white leading-[1.1] mb-6">
+
+              {/* Headline */}
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-extrabold text-ink-950 dark:text-white leading-[1.05] mb-8 animate-fade-in-up fill-both delay-100">
                 Estimates Done{" "}
-                <span className="relative">
-                  <span className="text-pd-gold">Right.</span>
-                  <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
-                    <path d="M2 10C50 2 150 2 198 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-pd-gold-300 dark:text-pd-gold-700" />
+                <span className="relative inline-block">
+                  <span className="text-gold-gradient">Right.</span>
+                  <svg
+                    className="absolute -bottom-2 left-0 w-full"
+                    viewBox="0 0 200 8"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M2 6C50 2 150 2 198 6"
+                      stroke="url(#underline-gradient)"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                    />
+                    <defs>
+                      <linearGradient id="underline-gradient" x1="0" y1="0" x2="200" y2="0">
+                        <stop offset="0%" stopColor="#c9b274" />
+                        <stop offset="100%" stopColor="#a08347" />
+                      </linearGradient>
+                    </defs>
                   </svg>
-                </span>{" "}
+                </span>
                 <br />
-                Done <span className="text-pd-gold">Fast.</span>
+                Done <span className="text-gold-gradient">Fast.</span>
               </h1>
-              
-              <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-8 leading-relaxed max-w-xl">
-                Transform your restoration claims with LiDAR scanning, AI-powered scopes, 
+
+              {/* Subheadline */}
+              <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 mb-10 leading-relaxed max-w-xl animate-fade-in-up fill-both delay-200">
+                Transform your restoration claims with LiDAR scanning, AI-powered scopes,
                 and seamless Xactimate export. From site visit to approved estimate in record time.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 mb-10">
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-12 animate-fade-in-up fill-both delay-300">
                 <Link
                   href="/sign-up"
-                  className="inline-flex items-center justify-center gap-2 bg-pd-gold hover:bg-pd-gold-600 text-white px-8 py-4 rounded-xl text-lg font-bold transition-all shadow-xl shadow-pd-gold/30 hover:shadow-2xl hover:shadow-pd-gold/40 hover:-translate-y-0.5"
+                  className="btn-gold inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl text-lg font-bold"
                 >
                   Start Free Trial
                   <ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link
                   href="#workflow"
-                  className="inline-flex items-center justify-center gap-2 bg-white dark:bg-card border-2 border-gray-200 dark:border-border text-gray-700 dark:text-gray-300 px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:border-pd-gold hover:text-pd-gold"
+                  className="inline-flex items-center justify-center gap-3 bg-white dark:bg-ink-900 border-2 border-stone-200 dark:border-ink-700 text-ink-900 dark:text-white px-8 py-4 rounded-2xl text-lg font-semibold transition-all duration-300 hover:border-gold-400 hover:text-gold-600 dark:hover:border-gold-500 dark:hover:text-gold-400"
                 >
+                  <Play className="w-5 h-5" />
                   Watch Demo
                 </Link>
               </div>
 
-              <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-green-500" />
-                  <span>No credit card required</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-green-500" />
-                  <span>14-day free trial</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-green-500" />
-                  <span>Xactimate compatible</span>
-                </div>
+              {/* Trust Signals */}
+              <div className="flex flex-wrap items-center gap-6 text-sm text-stone-500 dark:text-stone-400 animate-fade-in-up fill-both delay-400">
+                <TrustSignal icon={<CheckCircle2 className="w-5 h-5 text-emerald-500" />} text="No credit card required" />
+                <TrustSignal icon={<CheckCircle2 className="w-5 h-5 text-emerald-500" />} text="14-day free trial" />
+                <TrustSignal icon={<CheckCircle2 className="w-5 h-5 text-emerald-500" />} text="Xactimate compatible" />
               </div>
             </div>
 
-            <div className="order-1 lg:order-2 relative">
-              <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl shadow-2xl overflow-hidden aspect-[4/3]">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzMzMyIgc3Ryb2tlLXdpZHRoPSIwLjUiIG9wYWNpdHk9IjAuMyIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30" />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
-                
-                <div className="absolute top-6 left-6 right-6">
-                  <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-3 h-3 rounded-full bg-red-400" />
-                      <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                      <div className="w-3 h-3 rounded-full bg-green-400" />
-                      <span className="ml-2 text-white/60 text-sm">XtMate Dashboard</span>
+            {/* Right - Hero Visual */}
+            <div className="order-1 lg:order-2 relative animate-fade-in fill-both delay-200">
+              <div className="relative">
+                {/* Main Dashboard Preview */}
+                <div className="relative bg-ink-950 rounded-3xl shadow-2xl shadow-ink-950/30 overflow-hidden border border-ink-800/50">
+                  {/* Browser Chrome */}
+                  <div className="flex items-center gap-2 px-4 py-3 bg-ink-900 border-b border-ink-800">
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-400/80" />
+                      <div className="w-3 h-3 rounded-full bg-amber-400/80" />
+                      <div className="w-3 h-3 rounded-full bg-emerald-400/80" />
                     </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="bg-white/5 rounded-lg p-3 text-center">
-                        <div className="text-2xl font-bold text-white">24</div>
-                        <div className="text-xs text-white/60">Active</div>
-                      </div>
-                      <div className="bg-white/5 rounded-lg p-3 text-center">
-                        <div className="text-2xl font-bold text-pd-gold">98%</div>
-                        <div className="text-xs text-white/60">SLA Met</div>
-                      </div>
-                      <div className="bg-white/5 rounded-lg p-3 text-center">
-                        <div className="text-2xl font-bold text-green-400">$2.4M</div>
-                        <div className="text-xs text-white/60">This Month</div>
+                    <div className="flex-1 flex justify-center">
+                      <div className="bg-ink-800 rounded-lg px-4 py-1 text-xs text-stone-400">
+                        app.xtmate.pro
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="absolute bottom-6 left-6 right-6">
-                  <div className="bg-pd-gold/90 backdrop-blur-md rounded-xl p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                        <Brain className="w-5 h-5 text-white" />
+                  {/* Dashboard Content */}
+                  <div className="p-6 space-y-4">
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <StatCard value="24" label="Active" />
+                      <StatCard value="98%" label="SLA Met" highlight />
+                      <StatCard value="$2.4M" label="This Month" variant="success" />
+                    </div>
+
+                    {/* Chart Placeholder */}
+                    <div className="bg-ink-800/50 rounded-xl p-4 h-32">
+                      <div className="flex items-end justify-between h-full gap-2">
+                        {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
+                          <div
+                            key={i}
+                            className="flex-1 bg-gradient-to-t from-gold-500 to-gold-400 rounded-t"
+                            style={{ height: `${h}%` }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI Banner */}
+                  <div className="mx-4 mb-4">
+                    <div className="bg-gold-gradient rounded-xl p-4 flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                        <Brain className="w-6 h-6 text-white" />
                       </div>
                       <div className="flex-1">
                         <div className="text-sm font-semibold text-white">AI generating scope...</div>
@@ -183,50 +219,48 @@ export default async function LandingPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Floating Elements */}
+                <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-gold-400 rounded-2xl rotate-12 opacity-20 blur-2xl" />
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-gold-500 rounded-full opacity-15 blur-2xl" />
               </div>
-
-              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-pd-gold rounded-2xl rotate-12 opacity-20 blur-xl" />
-              <div className="absolute -top-6 -left-6 w-24 h-24 bg-pd-gold rounded-full opacity-20 blur-xl" />
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-16 bg-gray-900 dark:bg-gray-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Stats Bar */}
+      <section className="relative py-16 bg-ink-950 overflow-hidden">
+        <div className="absolute inset-0 hero-dots opacity-20" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-            <div className="text-center">
-              <div className="text-4xl sm:text-5xl font-black text-white mb-2">75%</div>
-              <div className="text-sm font-medium text-gray-400 uppercase tracking-wider">Faster Estimates</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl sm:text-5xl font-black text-pd-gold mb-2">2 min</div>
-              <div className="text-sm font-medium text-gray-400 uppercase tracking-wider">Per Room Scan</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl sm:text-5xl font-black text-white mb-2">95%</div>
-              <div className="text-sm font-medium text-gray-400 uppercase tracking-wider">AI Accuracy</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl sm:text-5xl font-black text-pd-gold mb-2">100%</div>
-              <div className="text-sm font-medium text-gray-400 uppercase tracking-wider">ESX Compatible</div>
-            </div>
+            <MetricDisplay value="75%" label="Faster Estimates" />
+            <MetricDisplay value="2 min" label="Per Room Scan" highlight />
+            <MetricDisplay value="95%" label="AI Accuracy" />
+            <MetricDisplay value="100%" label="ESX Compatible" highlight />
           </div>
         </div>
       </section>
 
-      <section id="features" className="py-24 lg:py-32 bg-white dark:bg-background">
+      {/* Features Section */}
+      <section id="features" className="py-28 lg:py-36 bg-white dark:bg-ink-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-pd-gold font-semibold text-sm uppercase tracking-wider">Features</span>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mt-3 mb-5">
-              Everything You Need to Dominate Claims
+          {/* Section Header */}
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <span className="inline-block text-gold-600 dark:text-gold-400 font-semibold text-sm uppercase tracking-wider mb-4">
+              Features
+            </span>
+            <h2 className="font-display text-4xl sm:text-5xl font-bold text-ink-950 dark:text-white mb-6">
+              Everything You Need to{" "}
+              <span className="text-gold-gradient">Dominate Claims</span>
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400">
-              Built by restoration pros, for restoration pros. Every feature designed to get estimates out faster and approved quicker.
+            <p className="text-lg text-stone-600 dark:text-stone-400">
+              Built by restoration pros, for restoration pros. Every feature designed to
+              get estimates out faster and approved quicker.
             </p>
           </div>
 
+          {/* Features Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             <FeatureCard
               icon={<Smartphone className="w-7 h-7" />}
@@ -263,22 +297,27 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section id="workflow" className="py-24 lg:py-32 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmZmYiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')]" />
-        </div>
-        
+      {/* Workflow Section */}
+      <section id="workflow" className="py-28 lg:py-36 bg-ink-950 text-white relative overflow-hidden">
+        <div className="absolute inset-0 hero-dots opacity-10" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gold-500/5 rounded-full blur-3xl" />
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-pd-gold font-semibold text-sm uppercase tracking-wider">How It Works</span>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mt-3 mb-5">
-              From Site Visit to Export in Minutes
+          {/* Section Header */}
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <span className="inline-block text-gold-400 font-semibold text-sm uppercase tracking-wider mb-4">
+              How It Works
+            </span>
+            <h2 className="font-display text-4xl sm:text-5xl font-bold mb-6">
+              From Site Visit to Export in{" "}
+              <span className="text-gold-gradient">Minutes</span>
             </h2>
-            <p className="text-lg text-gray-400">
+            <p className="text-lg text-stone-400">
               Four simple steps. One powerful result.
             </p>
           </div>
 
+          {/* Workflow Steps */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
             <WorkflowStep
               number="01"
@@ -308,35 +347,47 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section className="py-24 lg:py-32 bg-white dark:bg-background">
+      {/* CTA Section */}
+      <section className="py-28 lg:py-36 bg-stone-50 dark:bg-ink-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-pd-gold-500 to-pd-gold-600 rounded-3xl p-8 sm:p-12 lg:p-16 text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmZmYiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-10" />
-            
+          <div className="relative bg-gold-gradient rounded-3xl p-10 sm:p-16 lg:p-20 text-center overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 hero-dots opacity-10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-gold-700/20 to-transparent" />
+
             <div className="relative">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
+              {/* Stars */}
+              <div className="flex justify-center gap-1 mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-6 h-6 fill-white text-white" />
+                ))}
+              </div>
+
+              <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
                 Ready to Transform Your Estimates?
               </h2>
-              <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
+              <p className="text-xl text-white/90 mb-12 max-w-2xl mx-auto">
                 Join hundreds of restoration professionals saving hours on every claim.
               </p>
+
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   href="/sign-up"
-                  className="inline-flex items-center gap-2 bg-white text-pd-gold-600 px-8 py-4 rounded-xl text-lg font-bold transition-all shadow-xl hover:shadow-2xl hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-3 bg-white text-gold-700 px-8 py-4 rounded-2xl text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-0.5"
                 >
                   Start Your Free Trial
                   <ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link
                   href="#contact"
-                  className="inline-flex items-center gap-2 bg-white/10 text-white border-2 border-white/30 px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:bg-white/20"
+                  className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm text-white border-2 border-white/30 px-8 py-4 rounded-2xl text-lg font-semibold transition-all duration-300 hover:bg-white/20"
                 >
                   <Phone className="w-5 h-5" />
                   Talk to Sales
                 </Link>
               </div>
-              <p className="mt-6 text-sm text-white/70">
+
+              <p className="mt-8 text-sm text-white/70">
                 No credit card required. Cancel anytime.
               </p>
             </div>
@@ -344,58 +395,66 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <footer id="contact" className="bg-gray-900 text-white py-16 lg:py-20">
+      {/* Footer */}
+      <footer id="contact" className="bg-ink-950 text-white py-20 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
+            {/* Brand Column */}
             <div className="lg:col-span-2">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-pd-gold-400 to-pd-gold-600 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">PD</span>
+              <Link href="/" className="flex items-center gap-3 mb-8">
+                <div className="w-12 h-12 bg-gold-gradient rounded-xl flex items-center justify-center shadow-lg shadow-gold-500/20">
+                  <span className="text-white font-display font-bold text-xl">PD</span>
                 </div>
                 <div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-xl font-bold tracking-tight">PAUL</span>
-                    <span className="text-xl font-bold text-pd-gold tracking-tight">DAVIS</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-display text-xl font-bold tracking-tight">PAUL</span>
+                    <span className="font-display text-xl font-bold text-gold-400 tracking-tight">DAVIS</span>
                   </div>
-                  <span className="text-xs font-semibold text-gray-500 tracking-[0.25em] uppercase">XtMate Pro</span>
+                  <span className="text-2xs font-semibold text-stone-500 tracking-ultra-wide uppercase">
+                    XtMate Pro
+                  </span>
                 </div>
-              </div>
-              <p className="text-gray-400 max-w-md mb-6">
-                AI-powered restoration estimating software built for contractors who demand speed, accuracy, and seamless Xactimate integration.
+              </Link>
+              <p className="text-stone-400 max-w-md mb-8">
+                AI-powered restoration estimating software built for contractors who demand
+                speed, accuracy, and seamless Xactimate integration.
               </p>
-              <div className="flex items-center gap-4">
-                <a href="mailto:support@xtmate.com" className="text-pd-gold hover:text-pd-gold-400 transition-colors">
-                  support@xtmate.com
-                </a>
-              </div>
+              <a
+                href="mailto:support@xtmate.com"
+                className="text-gold-400 hover:text-gold-300 transition-colors font-medium"
+              >
+                support@xtmate.com
+              </a>
             </div>
 
+            {/* Links */}
             <div>
-              <h4 className="font-semibold text-white mb-4">Product</h4>
-              <ul className="space-y-3 text-gray-400">
-                <li><Link href="#features" className="hover:text-white transition-colors">Features</Link></li>
-                <li><Link href="#workflow" className="hover:text-white transition-colors">How It Works</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Integrations</Link></li>
+              <h4 className="font-display font-semibold text-white mb-6">Product</h4>
+              <ul className="space-y-4">
+                <FooterLink href="#features">Features</FooterLink>
+                <FooterLink href="#workflow">How It Works</FooterLink>
+                <FooterLink href="#">Pricing</FooterLink>
+                <FooterLink href="#">Integrations</FooterLink>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold text-white mb-4">Company</h4>
-              <ul className="space-y-3 text-gray-400">
-                <li><Link href="#" className="hover:text-white transition-colors">About</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Terms of Service</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Support</Link></li>
+              <h4 className="font-display font-semibold text-white mb-6">Company</h4>
+              <ul className="space-y-4">
+                <FooterLink href="#">About</FooterLink>
+                <FooterLink href="#">Privacy Policy</FooterLink>
+                <FooterLink href="#">Terms of Service</FooterLink>
+                <FooterLink href="#">Support</FooterLink>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-gray-500 text-sm">
+          {/* Bottom Bar */}
+          <div className="border-t border-ink-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-stone-500 text-sm">
               &copy; {new Date().getFullYear()} Paul Davis Restoration. All rights reserved.
             </p>
-            <div className="flex items-center gap-2 text-gray-500 text-sm">
+            <div className="flex items-center gap-2 text-stone-500 text-sm">
               <Building2 className="w-4 h-4" />
               <span>Trusted by restoration professionals across North America</span>
             </div>
@@ -406,6 +465,71 @@ export default async function LandingPage() {
   );
 }
 
+// Component: Navigation Link
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-gold-600 dark:hover:text-gold-400 transition-colors"
+    >
+      {children}
+    </Link>
+  );
+}
+
+// Component: Trust Signal
+function TrustSignal({ icon, text }: { icon: React.ReactNode; text: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      {icon}
+      <span>{text}</span>
+    </div>
+  );
+}
+
+// Component: Dashboard Stat Card (for hero visual)
+function StatCard({
+  value,
+  label,
+  highlight = false,
+  variant = "default"
+}: {
+  value: string;
+  label: string;
+  highlight?: boolean;
+  variant?: "default" | "success";
+}) {
+  return (
+    <div className="bg-ink-800/50 rounded-xl p-3 text-center">
+      <div className={`text-xl font-bold ${
+        highlight ? "text-gold-400" :
+        variant === "success" ? "text-emerald-400" :
+        "text-white"
+      }`}>
+        {value}
+      </div>
+      <div className="text-xs text-stone-500">{label}</div>
+    </div>
+  );
+}
+
+// Component: Metric Display
+function MetricDisplay({ value, label, highlight = false }: { value: string; label: string; highlight?: boolean }) {
+  return (
+    <div className="text-center">
+      <div className={`text-4xl sm:text-5xl font-display font-extrabold mb-2 ${
+        highlight ? "text-gold-400" : "text-white"
+      }`}>
+        {value}
+      </div>
+      <div className="text-sm font-medium text-stone-400 uppercase tracking-wider">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+// Component: Feature Card
 function FeatureCard({
   icon,
   title,
@@ -417,29 +541,33 @@ function FeatureCard({
   description: string;
   highlight?: boolean;
 }) {
+  if (highlight) {
+    return (
+      <div className="relative bg-gold-gradient rounded-2xl p-8 text-white shadow-xl shadow-gold-500/20 overflow-hidden group">
+        <div className="absolute inset-0 hero-dots opacity-10" />
+        <div className="relative">
+          <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+            {icon}
+          </div>
+          <h3 className="font-display text-xl font-bold mb-3">{title}</h3>
+          <p className="text-white/90 leading-relaxed">{description}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`relative rounded-2xl p-6 lg:p-8 transition-all hover:-translate-y-1 ${
-      highlight 
-        ? "bg-gradient-to-br from-pd-gold-500 to-pd-gold-600 text-white shadow-xl shadow-pd-gold/20" 
-        : "bg-gray-50 dark:bg-card border border-gray-100 dark:border-border hover:border-pd-gold-200 dark:hover:border-pd-gold-800"
-    }`}>
-      <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 ${
-        highlight 
-          ? "bg-white/20" 
-          : "bg-pd-gold-100 dark:bg-pd-gold-900/30 text-pd-gold"
-      }`}>
+    <div className="premium-card p-8 group">
+      <div className="w-14 h-14 bg-gold-100 dark:bg-gold-900/40 text-gold-600 dark:text-gold-400 rounded-xl flex items-center justify-center mb-6 group-hover:bg-gold-gradient group-hover:text-white transition-all duration-300">
         {icon}
       </div>
-      <h3 className={`text-xl font-bold mb-3 ${highlight ? "text-white" : "text-gray-900 dark:text-white"}`}>
-        {title}
-      </h3>
-      <p className={highlight ? "text-white/90" : "text-gray-600 dark:text-gray-400"}>
-        {description}
-      </p>
+      <h3 className="font-display text-xl font-bold text-ink-950 dark:text-white mb-3">{title}</h3>
+      <p className="text-stone-600 dark:text-stone-400 leading-relaxed">{description}</p>
     </div>
   );
 }
 
+// Component: Workflow Step
 function WorkflowStep({
   number,
   title,
@@ -452,15 +580,24 @@ function WorkflowStep({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="relative">
-      <div className="text-center lg:text-left">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-pd-gold rounded-2xl text-white mb-6 shadow-lg shadow-pd-gold/30">
-          {icon}
-        </div>
-        <div className="text-pd-gold-400 text-sm font-bold tracking-wider mb-2">{number}</div>
-        <h3 className="text-xl font-bold mb-3">{title}</h3>
-        <p className="text-gray-400 leading-relaxed">{description}</p>
+    <div className="relative text-center lg:text-left group">
+      <div className="inline-flex items-center justify-center w-16 h-16 bg-gold-gradient text-white rounded-2xl mb-6 shadow-lg shadow-gold-500/30 group-hover:shadow-gold-500/50 transition-shadow duration-300">
+        {icon}
       </div>
+      <div className="text-gold-400 text-sm font-bold tracking-wider mb-2 font-display">{number}</div>
+      <h3 className="font-display text-xl font-bold mb-3">{title}</h3>
+      <p className="text-stone-400 leading-relaxed">{description}</p>
     </div>
+  );
+}
+
+// Component: Footer Link
+function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <li>
+      <Link href={href} className="text-stone-400 hover:text-white transition-colors">
+        {children}
+      </Link>
+    </li>
   );
 }

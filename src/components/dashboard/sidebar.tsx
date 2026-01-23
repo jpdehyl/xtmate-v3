@@ -108,27 +108,28 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
       className={cn(
         'fixed left-0 top-0 bottom-0 z-40',
         'flex flex-col',
-        'bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800',
-        'transition-all duration-300 ease-out',
+        'bg-white dark:bg-ink-950 border-r border-stone-200 dark:border-ink-800',
+        'transition-all duration-300 ease-out-expo',
         collapsed ? 'w-[72px]' : 'w-[260px]'
       )}
     >
       {/* Logo Section */}
       <div className={cn(
-        'flex items-center h-16 px-4 border-b border-gray-200 dark:border-gray-800',
+        'flex items-center h-16 px-4 border-b border-stone-200 dark:border-ink-800',
         collapsed ? 'justify-center' : 'justify-between'
       )}>
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-pd-gold-400 to-pd-gold-600 rounded-xl flex items-center justify-center shadow-lg shadow-pd-gold/20 flex-shrink-0">
-            <span className="text-white font-bold text-lg">PD</span>
+        <Link href="/dashboard" className="flex items-center gap-3 group">
+          <div className="relative w-10 h-10 bg-gold-gradient rounded-xl flex items-center justify-center shadow-lg shadow-gold-500/20 group-hover:shadow-gold-500/30 transition-shadow duration-300 flex-shrink-0">
+            <span className="text-white font-display font-bold text-lg">PD</span>
+            <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" />
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
               <div className="flex items-baseline gap-1">
-                <span className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">PAUL</span>
-                <span className="text-lg font-bold text-pd-gold tracking-tight">DAVIS</span>
+                <span className="font-display text-lg font-bold text-ink-950 dark:text-white tracking-tight">PAUL</span>
+                <span className="font-display text-lg font-bold text-gold-500 tracking-tight">DAVIS</span>
               </div>
-              <span className="text-[9px] font-medium text-gray-500 tracking-[0.15em] uppercase">
+              <span className="text-2xs font-medium text-stone-500 tracking-ultra-wide uppercase">
                 XtMate Pro
               </span>
             </div>
@@ -140,7 +141,7 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
             variant="ghost"
             size="icon"
             onClick={toggleCollapsed}
-            className="h-8 w-8 text-gray-500 hover:text-gray-900 dark:hover:text-white"
+            className="h-8 w-8 text-stone-500 hover:text-ink-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-ink-800"
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
@@ -152,20 +153,19 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
         <Button
           asChild
           className={cn(
-            'w-full bg-pd-gold hover:bg-pd-gold-600 text-white shadow-lg shadow-pd-gold/25',
-            'transition-all duration-200',
+            'w-full btn-gold rounded-xl',
             collapsed ? 'px-0 justify-center' : ''
           )}
         >
           <Link href="/dashboard/estimates/new">
             <Plus className="w-4 h-4" />
-            {!collapsed && <span className="ml-2">New Project</span>}
+            {!collapsed && <span className="ml-2 font-semibold">New Project</span>}
           </Link>
         </Button>
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 overflow-y-auto py-2 px-3">
+      <nav className="flex-1 overflow-y-auto py-2 px-3 scrollbar-thin">
         <div className="space-y-1">
           {visibleMainItems.map((item) => {
             const active = isActive(item.href);
@@ -175,16 +175,16 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
                 href={item.href}
                 className={cn(
                   'group flex items-center gap-3 px-3 py-2.5 rounded-xl',
-                  'transition-all duration-200',
+                  'transition-all duration-200 ease-out',
                   active
-                    ? 'bg-pd-gold text-white shadow-md shadow-pd-gold/25'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
+                    ? 'bg-gold-gradient text-white shadow-md shadow-gold-500/20'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-ink-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-ink-800',
                   collapsed && 'justify-center px-0'
                 )}
               >
                 <item.icon className={cn(
-                  'w-5 h-5 flex-shrink-0',
-                  active ? 'text-white' : 'text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white'
+                  'w-5 h-5 flex-shrink-0 transition-colors duration-200',
+                  active ? 'text-white' : 'text-stone-500 dark:text-stone-500 group-hover:text-ink-950 dark:group-hover:text-white'
                 )} />
                 {!collapsed && (
                   <span className={cn(
@@ -201,7 +201,7 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
 
         {/* Divider */}
         <div className={cn(
-          'my-4 border-t border-gray-200 dark:border-gray-800',
+          'my-4 border-t border-stone-200 dark:border-ink-800',
           collapsed && 'mx-2'
         )} />
 
@@ -215,10 +215,10 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
                 href={item.href}
                 className={cn(
                   'group flex items-center gap-3 px-3 py-2.5 rounded-xl',
-                  'transition-all duration-200',
+                  'transition-all duration-200 ease-out',
                   active
-                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
+                    ? 'bg-stone-100 dark:bg-ink-800 text-ink-950 dark:text-white'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-ink-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-ink-800',
                   collapsed && 'justify-center px-0'
                 )}
               >
@@ -241,7 +241,7 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
             variant="ghost"
             size="icon"
             onClick={toggleCollapsed}
-            className="w-full h-10 text-gray-500 hover:text-gray-900 dark:hover:text-white"
+            className="w-full h-10 text-stone-500 hover:text-ink-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-ink-800"
           >
             <ChevronRight className="w-4 h-4" />
           </Button>
@@ -250,7 +250,7 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
 
       {/* User Section */}
       <div className={cn(
-        'border-t border-gray-200 dark:border-gray-800 p-4',
+        'border-t border-stone-200 dark:border-ink-800 p-4',
         collapsed && 'px-3'
       )}>
         <div className={cn(
@@ -263,15 +263,15 @@ export function Sidebar({ showCommandCenter = true }: SidebarProps) {
                 afterSignOutUrl="/sign-in"
                 appearance={{
                   elements: {
-                    avatarBox: 'w-9 h-9 ring-2 ring-pd-gold/30'
+                    avatarBox: 'w-9 h-9 ring-2 ring-gold-500/30'
                   }
                 }}
               />
               {!collapsed && <UserInfo />}
             </SignedIn>
           ) : (
-            <div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-              <User className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            <div className="w-9 h-9 rounded-full bg-stone-200 dark:bg-ink-700 flex items-center justify-center">
+              <User className="w-5 h-5 text-stone-500 dark:text-stone-400" />
             </div>
           )}
         </div>
@@ -287,10 +287,10 @@ function UserInfo() {
 
   return (
     <div className="flex-1 min-w-0">
-      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+      <p className="text-sm font-medium text-ink-950 dark:text-white truncate">
         {user.firstName} {user.lastName}
       </p>
-      <p className="text-xs text-gray-500 truncate">
+      <p className="text-xs text-stone-500 dark:text-stone-400 truncate">
         {user.primaryEmailAddress?.emailAddress}
       </p>
     </div>
