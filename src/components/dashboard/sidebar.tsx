@@ -14,12 +14,12 @@ import {
   HelpCircle,
   User,
   LineChart,
-  Mail,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { SignedIn, UserButton, useUser } from '@clerk/nextjs';
+import { NewProjectModal } from '@/components/new-project';
 
 interface SidebarProps {
   // Reserved for future props
@@ -37,6 +37,7 @@ export function Sidebar({}: SidebarProps) {
   // Lazy state initialization - avoids reading localStorage on every render
   const [collapsed, setCollapsed] = useState(getInitialCollapsed);
   const [mounted, setMounted] = useState(false);
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
 
   // Handle hydration - only for mounted state now
   useEffect(() => {
@@ -49,18 +50,12 @@ export function Sidebar({}: SidebarProps) {
     localStorage.setItem('xtmate_sidebar_collapsed', String(newState));
   };
 
-  // Main navigation items
+  // Main navigation items (Incoming Requests removed - now in New Project modal)
   const mainNavItems = [
     {
       href: '/dashboard',
       label: 'Dashboard',
       icon: Home,
-      show: true
-    },
-    {
-      href: '/dashboard/incoming-requests',
-      label: 'Incoming Requests',
-      icon: Mail,
       show: true
     },
     {
@@ -120,6 +115,7 @@ export function Sidebar({}: SidebarProps) {
               width={40}
               height={40}
               className="object-contain"
+              style={{ width: 'auto', height: 'auto' }}
               priority
             />
           </div>
@@ -147,18 +143,22 @@ export function Sidebar({}: SidebarProps) {
       {/* New Project Button */}
       <div className={cn('p-4', collapsed && 'px-3')}>
         <Button
-          asChild
+          onClick={() => setIsNewProjectModalOpen(true)}
           className={cn(
             'w-full btn-gold rounded-xl',
             collapsed ? 'px-0 justify-center' : ''
           )}
         >
-          <Link href="/dashboard/estimates/new">
-            <Plus className="w-4 h-4" />
-            {!collapsed && <span className="ml-2 font-semibold">New Project</span>}
-          </Link>
+          <Plus className="w-4 h-4" />
+          {!collapsed && <span className="ml-2 font-semibold">New Project</span>}
         </Button>
       </div>
+
+      {/* New Project Modal */}
+      <NewProjectModal
+        isOpen={isNewProjectModalOpen}
+        onClose={() => setIsNewProjectModalOpen(false)}
+      />
 
       {/* Main Navigation */}
       <nav className="flex-1 overflow-y-auto py-2 px-3 scrollbar-thin">
