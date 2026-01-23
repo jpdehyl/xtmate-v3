@@ -48,8 +48,7 @@ npm run db:studio    # Open Drizzle Studio
 - `DATABASE_URL` - PostgreSQL connection string (auto-configured by Replit)
 - `CLERK_SECRET_KEY` - Clerk authentication
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk public key
-- `AI_INTEGRATIONS_ANTHROPIC_API_KEY` - AI features (auto-configured via Replit AI Integrations)
-- `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` - AI endpoint (auto-configured)
+- `ANTHROPIC_API_KEY` - AI features (get from console.anthropic.com)
 - `BLOB_READ_WRITE_TOKEN` - Photo uploads
 - `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` - Maps (optional)
 
