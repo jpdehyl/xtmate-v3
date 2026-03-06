@@ -227,6 +227,17 @@ Acceptance Criteria:
 - [ ] Toast notifications (TODO)
 - [x] Smooth transitions
 
+
+### Sprint M1: Dashboard & Navigation ✅ COMPLETE
+**Goal**: Deliver production-ready navigation and dashboard shell for demos and daily estimator workflow.
+
+**Delivered**:
+- [x] Collapsible sidebar with Dashboard, Estimates, Command Center, Portfolio, QA Review, Analytics, Team, Settings
+- [x] Active route highlighting with Lucide icons and Paul Davis gold (`pd-gold`) accent states
+- [x] Dashboard KPI cards for total estimates, active claims, SLA compliance percentage, and revenue pipeline
+- [x] Recent estimates panel with status badges and quick access to estimate detail
+- [x] Mobile-ready navigation drawer behavior and responsive dashboard spacing
+
 ---
 
 ## Future Stages (Post-MVP)

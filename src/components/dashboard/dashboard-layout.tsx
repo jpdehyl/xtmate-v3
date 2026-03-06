@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { cn } from "@/lib/utils";
@@ -10,12 +10,18 @@ interface DashboardLayoutProps {
   children: ReactNode;
 }
 
+function getInitialCollapsed(): boolean {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem("xtmate_sidebar_collapsed") === "true";
+}
+
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { loading: permissionsLoading, needsOnboarding } = usePermissions();
+  const [collapsed, setCollapsed] = useState(getInitialCollapsed);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Redirect to onboarding if user hasn't completed setup (except on onboarding page)
   useEffect(() => {
     if (
       !permissionsLoading &&
@@ -26,7 +32,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     }
   }, [permissionsLoading, needsOnboarding, pathname, router]);
 
-  // Show loading state while checking permissions, or if redirecting to onboarding
+  const handleToggleCollapsed = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem("xtmate_sidebar_collapsed", String(next));
+  };
+
   if (
     permissionsLoading ||
     (needsOnboarding && pathname !== "/dashboard/onboarding")
@@ -35,7 +46,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-md animate-pulse">
-            <span className="text-white font-bold text-lg">Xt</span>
+            <span className="text-white font-bold text-lg">PD</span>
           </div>
           <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
@@ -45,16 +56,29 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <Sidebar />
+      <Sidebar
+        collapsed={collapsed}
+        onToggleCollapsed={handleToggleCollapsed}
+        mobileOpen={mobileOpen}
+        onCloseMobile={() => setMobileOpen(false)}
+      />
 
-      {/* Main content with sidebar offset */}
+      <button
+        type="button"
+        aria-label="Open sidebar"
+        className="fixed left-4 top-4 z-50 h-10 w-10 rounded-md border bg-white text-sm font-medium shadow-sm md:hidden"
+        onClick={() => setMobileOpen((prev) => !prev)}
+      >
+        ☰
+      </button>
+
       <main
         className={cn(
           "transition-all duration-300 ease-out",
-          "ml-[72px] lg:ml-[260px]" // Collapsed on mobile, expanded on desktop
+          collapsed ? "md:ml-[84px]" : "md:ml-[260px]"
         )}
       >
-        <div className="p-6 lg:p-8">{children}</div>
+        <div className="p-6 pt-20 md:pt-6 lg:p-8">{children}</div>
       </main>
     </div>
   );
