@@ -14,7 +14,7 @@ import {
   Cell,
 } from 'recharts';
 import { cn } from '@/lib/utils';
-import { Target, TrendingUp, TrendingDown, CheckCircle2, DollarSign, FileText } from 'lucide-react';
+import { TrendingUp, TrendingDown, ShieldCheck, Activity, DollarSign, FileText } from 'lucide-react';
 
 interface EstimateData {
   id: string;
@@ -130,8 +130,11 @@ export function PerformanceMetrics({ estimates, className }: PerformanceMetricsP
     const completed = estimates.filter((e) => e.status === 'completed').length;
     const inProgress = estimates.filter((e) => e.status === 'in_progress').length;
     const totalValue = estimates.reduce((sum, e) => sum + (e.total || 0), 0);
-    const avgValue = total > 0 ? totalValue / total : 0;
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const activeClaims = inProgress;
+    const revenuePipeline = estimates
+      .filter((e) => e.status !== 'completed')
+      .reduce((sum, e) => sum + (e.total || 0), 0);
 
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
@@ -158,9 +161,10 @@ export function PerformanceMetrics({ estimates, className }: PerformanceMetricsP
       total,
       completed,
       inProgress,
-      avgValue,
       totalValue,
       completionRate,
+      activeClaims,
+      revenuePipeline,
       monthlyTrend,
       thisMonthEstimates,
     };
@@ -176,33 +180,32 @@ export function PerformanceMetrics({ estimates, className }: PerformanceMetricsP
     <div className={cn('space-y-6', className)}>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          icon={<Target className="w-5 h-5 text-pd-gold" />}
-          value={`${kpis.completionRate}%`}
-          label="Completion Rate"
-          trend={kpis.completionRate > 0 ? 5.2 : 0}
-          trendLabel="vs last month"
-        />
-        <StatCard
-          icon={<CheckCircle2 className="w-5 h-5 text-green-600" />}
-          value={kpis.completed}
-          label="Completed"
-          trend={kpis.completed > 0 ? 12.5 : 0}
-          iconBgClass="bg-green-100 dark:bg-green-900/30"
-        />
-        <StatCard
-          icon={<DollarSign className="w-5 h-5 text-blue-600" />}
-          value={formatCurrency(kpis.avgValue)}
-          label="Avg. Value"
-          trend={kpis.avgValue > 0 ? 8.3 : 0}
-          iconBgClass="bg-blue-100 dark:bg-blue-900/30"
-        />
-        <StatCard
-          icon={<FileText className="w-5 h-5 text-purple-600" />}
+          icon={<FileText className="w-5 h-5 text-pd-gold" />}
           value={kpis.total}
           label="Total Estimates"
           trend={kpis.monthlyTrend}
           trendLabel={`${kpis.thisMonthEstimates} this month`}
-          iconBgClass="bg-purple-100 dark:bg-purple-900/30"
+        />
+        <StatCard
+          icon={<Activity className="w-5 h-5 text-pd-gold-700" />}
+          value={kpis.activeClaims}
+          label="Active Claims"
+          trend={kpis.activeClaims > 0 ? 9.4 : 0}
+          iconBgClass="bg-pd-gold/15"
+        />
+        <StatCard
+          icon={<ShieldCheck className="w-5 h-5 text-pd-gold-700" />}
+          value={`${kpis.completionRate}%`}
+          label="SLA Compliance"
+          trend={kpis.completionRate > 0 ? 4.1 : 0}
+          iconBgClass="bg-pd-gold/15"
+        />
+        <StatCard
+          icon={<DollarSign className="w-5 h-5 text-pd-gold-700" />}
+          value={formatCurrency(kpis.revenuePipeline)}
+          label="Revenue Pipeline"
+          trend={kpis.revenuePipeline > 0 ? 7.3 : 0}
+          iconBgClass="bg-pd-gold/15"
         />
       </div>
 

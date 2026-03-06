@@ -5,15 +5,17 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   Home,
-  BarChart3,
   FileText,
-  Plus,
+  Compass,
+  Briefcase,
+  ShieldCheck,
+  LineChart,
+  Users,
   Settings,
+  Plus,
   ChevronLeft,
   ChevronRight,
-  HelpCircle,
   User,
-  LineChart,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -50,39 +52,17 @@ export function Sidebar({}: SidebarProps) {
     localStorage.setItem('xtmate_sidebar_collapsed', String(newState));
   };
 
-  // Main navigation items (Incoming Requests removed - now in New Project modal)
   const mainNavItems = [
-    {
-      href: '/dashboard',
-      label: 'Dashboard',
-      icon: Home,
-      show: true
-    },
-    {
-      href: '/dashboard/estimates',
-      label: 'Projects',
-      icon: FileText,
-      show: true
-    },
-    {
-      href: '/dashboard/portfolio',
-      label: 'Portfolio',
-      icon: BarChart3,
-      show: true
-    },
-    {
-      href: '/dashboard/analytics',
-      label: 'Analytics',
-      icon: LineChart,
-      show: true
-    },
+    { href: '/dashboard', label: 'Dashboard', icon: Home, show: true },
+    { href: '/dashboard/estimates', label: 'Estimates', icon: FileText, show: true },
+    { href: '/dashboard/command-center', label: 'Command Center', icon: Compass, show: true },
+    { href: '/dashboard/portfolio', label: 'Portfolio', icon: Briefcase, show: true },
+    { href: '/dashboard/qa-review', label: 'QA Review', icon: ShieldCheck, show: true },
+    { href: '/dashboard/analytics', label: 'Analytics', icon: LineChart, show: true },
+    { href: '/dashboard/team', label: 'Team', icon: Users, show: true },
+    { href: '/dashboard/settings', label: 'Settings', icon: Settings, show: true },
   ];
 
-  // Secondary navigation items
-  const secondaryNavItems = [
-    { href: '/dashboard/settings/integrations', label: 'Settings', icon: Settings, show: true },
-    { href: '/dashboard/help', label: 'Help & Support', icon: HelpCircle, show: true },
-  ];
 
   const isActive = (href: string) => {
     if (href === '/dashboard') return pathname === '/dashboard';
@@ -90,7 +70,6 @@ export function Sidebar({}: SidebarProps) {
   };
 
   const visibleMainItems = mainNavItems.filter(item => item.show);
-  const visibleSecondaryItems = secondaryNavItems.filter(item => item.show);
 
   return (
     <aside
@@ -173,7 +152,7 @@ export function Sidebar({}: SidebarProps) {
                   'group flex items-center gap-3 px-3 py-2.5 rounded-xl',
                   'transition-all duration-200 ease-out',
                   active
-                    ? 'bg-gold-gradient text-white shadow-md shadow-gold-500/20'
+                    ? 'bg-pd-gold text-white shadow-md shadow-pd-gold/20'
                     : 'text-stone-600 dark:text-stone-400 hover:text-ink-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-ink-800',
                   collapsed && 'justify-center px-0'
                 )}
@@ -195,39 +174,6 @@ export function Sidebar({}: SidebarProps) {
           })}
         </div>
 
-        {/* Divider */}
-        <div className={cn(
-          'my-4 border-t border-stone-200 dark:border-ink-800',
-          collapsed && 'mx-2'
-        )} />
-
-        {/* Secondary Navigation */}
-        <div className="space-y-1">
-          {visibleSecondaryItems.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'group flex items-center gap-3 px-3 py-2.5 rounded-xl',
-                  'transition-all duration-200 ease-out',
-                  active
-                    ? 'bg-stone-100 dark:bg-ink-800 text-ink-950 dark:text-white'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-ink-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-ink-800',
-                  collapsed && 'justify-center px-0'
-                )}
-              >
-                <item.icon className="w-5 h-5 flex-shrink-0" />
-                {!collapsed && (
-                  <span className="text-sm font-medium">
-                    {item.label}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </div>
       </nav>
 
       {/* Collapse Toggle (when collapsed) */}
@@ -259,7 +205,7 @@ export function Sidebar({}: SidebarProps) {
                 afterSignOutUrl="/sign-in"
                 appearance={{
                   elements: {
-                    avatarBox: 'w-9 h-9 ring-2 ring-gold-500/30'
+                    avatarBox: 'w-9 h-9 ring-2 ring-pd-gold/40'
                   }
                 }}
               />

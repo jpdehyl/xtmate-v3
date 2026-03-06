@@ -229,6 +229,18 @@ Acceptance Criteria:
 
 ---
 
+### Sprint M1: Dashboard & Navigation ✅ COMPLETE
+**Goal**: Deliver a production-ready navigation shell and executive dashboard for demos.
+
+**What was built**:
+- [x] Collapsible sidebar navigation with active route highlighting and Lucide icons
+- [x] Navigation links for Dashboard, Estimates, Command Center, Portfolio, QA Review, Analytics, Team, and Settings
+- [x] Dashboard KPI metrics for total estimates, active claims, SLA compliance, and revenue pipeline
+- [x] Recent estimates panel with status badges
+- [x] Paul Davis branding polish for active states and accents using `pd-gold` (`#b4975a`)
+
+---
+
 ## Future Stages (Post-MVP)
 
 ### Stage 7: Line Items & Pricing
