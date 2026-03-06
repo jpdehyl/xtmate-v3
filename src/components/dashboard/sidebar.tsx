@@ -5,83 +5,55 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   Home,
-  BarChart3,
   FileText,
-  Plus,
+  Command,
+  Briefcase,
+  ShieldCheck,
+  BarChart3,
+  Users,
   Settings,
+  Plus,
   ChevronLeft,
   ChevronRight,
-  HelpCircle,
+  X,
   User,
-  LineChart,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { SignedIn, UserButton, useUser } from '@clerk/nextjs';
 import { NewProjectModal } from '@/components/new-project';
 
 interface SidebarProps {
-  // Reserved for future props
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
+  mobileOpen: boolean;
+  onCloseMobile: () => void;
 }
 
-// Lazy initialization helper - reads from localStorage only once on mount
-function getInitialCollapsed(): boolean {
-  if (typeof window === 'undefined') return false;
-  const saved = localStorage.getItem('xtmate_sidebar_collapsed');
-  return saved === 'true';
-}
-
-export function Sidebar({}: SidebarProps) {
+export function Sidebar({
+  collapsed,
+  onToggleCollapsed,
+  mobileOpen,
+  onCloseMobile,
+}: SidebarProps) {
   const pathname = usePathname();
-  // Lazy state initialization - avoids reading localStorage on every render
-  const [collapsed, setCollapsed] = useState(getInitialCollapsed);
   const [mounted, setMounted] = useState(false);
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
 
-  // Handle hydration - only for mounted state now
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const toggleCollapsed = () => {
-    const newState = !collapsed;
-    setCollapsed(newState);
-    localStorage.setItem('xtmate_sidebar_collapsed', String(newState));
-  };
-
-  // Main navigation items (Incoming Requests removed - now in New Project modal)
-  const mainNavItems = [
-    {
-      href: '/dashboard',
-      label: 'Dashboard',
-      icon: Home,
-      show: true
-    },
-    {
-      href: '/dashboard/estimates',
-      label: 'Projects',
-      icon: FileText,
-      show: true
-    },
-    {
-      href: '/dashboard/portfolio',
-      label: 'Portfolio',
-      icon: BarChart3,
-      show: true
-    },
-    {
-      href: '/dashboard/analytics',
-      label: 'Analytics',
-      icon: LineChart,
-      show: true
-    },
-  ];
-
-  // Secondary navigation items
-  const secondaryNavItems = [
-    { href: '/dashboard/settings/integrations', label: 'Settings', icon: Settings, show: true },
-    { href: '/dashboard/help', label: 'Help & Support', icon: HelpCircle, show: true },
+  const navItems = [
+    { href: '/dashboard', label: 'Dashboard', icon: Home },
+    { href: '/dashboard/estimates', label: 'Estimates', icon: FileText },
+    { href: '/dashboard/command-center', label: 'Command Center', icon: Command },
+    { href: '/dashboard/portfolio', label: 'Portfolio', icon: Briefcase },
+    { href: '/dashboard/qa-review', label: 'QA Review', icon: ShieldCheck },
+    { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
+    { href: '/dashboard/team', label: 'Team', icon: Users },
+    { href: '/dashboard/settings', label: 'Settings', icon: Settings },
   ];
 
   const isActive = (href: string) => {
@@ -89,206 +61,112 @@ export function Sidebar({}: SidebarProps) {
     return pathname.startsWith(href);
   };
 
-  const visibleMainItems = mainNavItems.filter(item => item.show);
-  const visibleSecondaryItems = secondaryNavItems.filter(item => item.show);
-
   return (
-    <aside
-      className={cn(
-        'fixed left-0 top-0 bottom-0 z-40',
-        'flex flex-col',
-        'bg-white dark:bg-ink-950 border-r border-stone-200 dark:border-ink-800',
-        'transition-all duration-300 ease-out-expo',
-        collapsed ? 'w-[72px]' : 'w-[260px]'
+    <>
+      {mobileOpen && (
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          className="fixed inset-0 bg-black/30 z-30 md:hidden"
+          onClick={onCloseMobile}
+        />
       )}
-    >
-      {/* Logo Section */}
-      <div className={cn(
-        'flex items-center h-16 px-4 border-b border-stone-200 dark:border-ink-800',
-        collapsed ? 'justify-center' : 'justify-between'
-      )}>
-        <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="relative w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-gold-500/20 group-hover:shadow-gold-500/30 transition-shadow duration-300 flex-shrink-0 overflow-hidden">
-            <Image
-              src="/paul-davis-logo.png"
-              alt="Paul Davis"
-              width={40}
-              height={40}
-              className="object-contain"
-              style={{ width: 'auto', height: 'auto' }}
-              priority
-            />
-          </div>
-          {!collapsed && (
-            <div className="overflow-hidden">
-              <span className="font-display text-lg font-bold text-ink-950 dark:text-white tracking-tight">
-                XtMate Pro
-              </span>
-            </div>
-          )}
-        </Link>
 
-        {!collapsed && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleCollapsed}
-            className="h-8 w-8 text-stone-500 hover:text-ink-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-ink-800"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
+      <aside
+        className={cn(
+          'fixed left-0 top-0 bottom-0 z-40 flex flex-col border-r border-stone-200 bg-white dark:border-ink-800 dark:bg-ink-950 transition-all duration-300',
+          collapsed ? 'md:w-[84px]' : 'md:w-[260px]',
+          mobileOpen ? 'w-[260px] translate-x-0' : 'w-[260px] -translate-x-full md:translate-x-0'
         )}
-      </div>
+      >
+        <div className={cn('flex h-16 items-center border-b border-stone-200 px-4 dark:border-ink-800', collapsed ? 'md:justify-center' : 'justify-between')}>
+          <Link href="/dashboard" className="flex items-center gap-3 group" onClick={onCloseMobile}>
+            <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-pd-gold/40 bg-pd-gold/10">
+              <Image src="/paul-davis-logo.png" alt="Paul Davis" fill className="object-contain p-1" priority />
+            </div>
+            <div className={cn('overflow-hidden', collapsed && 'md:hidden')}>
+              <p className="font-semibold text-ink-950 dark:text-white">XtMate</p>
+              <p className="text-xs uppercase tracking-wide text-pd-gold">Paul Davis</p>
+            </div>
+          </Link>
 
-      {/* New Project Button */}
-      <div className={cn('p-4', collapsed && 'px-3')}>
-        <Button
-          onClick={() => setIsNewProjectModalOpen(true)}
-          className={cn(
-            'w-full btn-gold rounded-xl',
-            collapsed ? 'px-0 justify-center' : ''
-          )}
-        >
-          <Plus className="w-4 h-4" />
-          {!collapsed && <span className="ml-2 font-semibold">New Project</span>}
-        </Button>
-      </div>
-
-      {/* New Project Modal */}
-      <NewProjectModal
-        isOpen={isNewProjectModalOpen}
-        onClose={() => setIsNewProjectModalOpen(false)}
-      />
-
-      {/* Main Navigation */}
-      <nav className="flex-1 overflow-y-auto py-2 px-3 scrollbar-thin">
-        <div className="space-y-1">
-          {visibleMainItems.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'group flex items-center gap-3 px-3 py-2.5 rounded-xl',
-                  'transition-all duration-200 ease-out',
-                  active
-                    ? 'bg-gold-gradient text-white shadow-md shadow-gold-500/20'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-ink-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-ink-800',
-                  collapsed && 'justify-center px-0'
-                )}
-              >
-                <item.icon className={cn(
-                  'w-5 h-5 flex-shrink-0 transition-colors duration-200',
-                  active ? 'text-white' : 'text-stone-500 dark:text-stone-500 group-hover:text-ink-950 dark:group-hover:text-white'
-                )} />
-                {!collapsed && (
-                  <span className={cn(
-                    'text-sm font-medium',
-                    active ? 'text-white' : ''
-                  )}>
-                    {item.label}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Divider */}
-        <div className={cn(
-          'my-4 border-t border-stone-200 dark:border-ink-800',
-          collapsed && 'mx-2'
-        )} />
-
-        {/* Secondary Navigation */}
-        <div className="space-y-1">
-          {visibleSecondaryItems.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'group flex items-center gap-3 px-3 py-2.5 rounded-xl',
-                  'transition-all duration-200 ease-out',
-                  active
-                    ? 'bg-stone-100 dark:bg-ink-800 text-ink-950 dark:text-white'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-ink-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-ink-800',
-                  collapsed && 'justify-center px-0'
-                )}
-              >
-                <item.icon className="w-5 h-5 flex-shrink-0" />
-                {!collapsed && (
-                  <span className="text-sm font-medium">
-                    {item.label}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* Collapse Toggle (when collapsed) */}
-      {collapsed && (
-        <div className="px-3 py-2">
           <Button
             variant="ghost"
             size="icon"
-            onClick={toggleCollapsed}
-            className="w-full h-10 text-stone-500 hover:text-ink-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-ink-800"
+            onClick={onCloseMobile}
+            className="md:hidden"
           >
-            <ChevronRight className="w-4 h-4" />
+            <X className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleCollapsed}
+            className="hidden md:inline-flex"
+          >
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
         </div>
-      )}
 
-      {/* User Section */}
-      <div className={cn(
-        'border-t border-stone-200 dark:border-ink-800 p-4',
-        collapsed && 'px-3'
-      )}>
-        <div className={cn(
-          'flex items-center gap-3',
-          collapsed && 'justify-center'
-        )}>
-          {mounted ? (
-            <SignedIn>
-              <UserButton
-                afterSignOutUrl="/sign-in"
-                appearance={{
-                  elements: {
-                    avatarBox: 'w-9 h-9 ring-2 ring-gold-500/30'
-                  }
-                }}
-              />
-              {!collapsed && <UserInfo />}
-            </SignedIn>
-          ) : (
-            <div className="w-9 h-9 rounded-full bg-stone-200 dark:bg-ink-700 flex items-center justify-center">
-              <User className="w-5 h-5 text-stone-500 dark:text-stone-400" />
-            </div>
-          )}
+        <div className={cn('p-4', collapsed && 'md:px-3')}>
+          <Button onClick={() => setIsNewProjectModalOpen(true)} className={cn('w-full bg-pd-gold text-white hover:bg-pd-gold/90', collapsed && 'md:px-0 md:justify-center')}>
+            <Plus className="h-4 w-4" />
+            <span className={cn('ml-2', collapsed && 'md:hidden')}>New Estimate</span>
+          </Button>
         </div>
-      </div>
-    </aside>
+
+        <NewProjectModal isOpen={isNewProjectModalOpen} onClose={() => setIsNewProjectModalOpen(false)} />
+
+        <nav className="flex-1 space-y-1 px-3 py-2 overflow-y-auto">
+          {navItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onCloseMobile}
+                className={cn(
+                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors',
+                  active
+                    ? 'bg-pd-gold text-white'
+                    : 'text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-ink-800',
+                  collapsed && 'md:justify-center md:px-0'
+                )}
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                <span className={cn(collapsed && 'md:hidden')}>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className={cn('border-t border-stone-200 p-4 dark:border-ink-800', collapsed && 'md:px-3')}>
+          <div className={cn('flex items-center gap-3', collapsed && 'md:justify-center')}>
+            {mounted ? (
+              <SignedIn>
+                <UserButton afterSignOutUrl="/sign-in" />
+                <UserInfo hide={collapsed} />
+              </SignedIn>
+            ) : (
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-200 dark:bg-ink-700">
+                <User className="h-4 w-4" />
+              </div>
+            )}
+          </div>
+        </div>
+      </aside>
+    </>
   );
 }
 
-function UserInfo() {
+function UserInfo({ hide }: { hide: boolean }) {
   const { user } = useUser();
-
-  if (!user) return null;
+  if (!user || hide) return null;
 
   return (
-    <div className="flex-1 min-w-0">
-      <p className="text-sm font-medium text-ink-950 dark:text-white truncate">
-        {user.firstName} {user.lastName}
-      </p>
-      <p className="text-xs text-stone-500 dark:text-stone-400 truncate">
-        {user.primaryEmailAddress?.emailAddress}
-      </p>
+    <div className="min-w-0">
+      <p className="truncate text-sm font-medium">{user.firstName} {user.lastName}</p>
+      <p className="truncate text-xs text-stone-500">{user.primaryEmailAddress?.emailAddress}</p>
     </div>
   );
 }

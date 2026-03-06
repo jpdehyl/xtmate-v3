@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { WelcomeBanner } from "@/components/dashboard/welcome-banner";
 import { RecentEstimates } from "@/components/dashboard/recent-estimates";
+import { DashboardMetrics } from "@/components/dashboard/dashboard-metrics";
 import { EstimateTable } from "@/components/dashboard/estimate-table";
 import { SlaDashboardWidget } from "@/components/features/sla-dashboard-widget";
 import { QuickTasks } from "@/components/dashboard/quick-tasks";
@@ -140,6 +141,8 @@ export function DashboardContent({
     <div className="space-y-6">
       {/* Welcome Banner */}
       <WelcomeBanner activeClaimsCount={activeCount} />
+
+      <DashboardMetrics estimates={metricsData} activeCount={activeCount} />
 
       {/* Performance Metrics with Charts - dynamically loaded */}
       <Suspense fallback={<PerformanceMetricsSkeleton />}>
