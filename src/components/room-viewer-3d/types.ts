@@ -49,3 +49,24 @@ export interface Room3DViewerProps {
   showGrid?: boolean;
   showHelpers?: boolean;
 }
+
+/** Props for the RoomScene component (raw dimensions in feet) */
+export interface RoomViewerProps {
+  width: number;
+  length: number;
+  height: number;
+}
+
+/** Geometry output from room generation functions */
+export interface RoomGeometry {
+  walls: WallGeometry[];
+  floorSize: [number, number];
+  floorPosition: [number, number, number];
+  height: number;
+}
+
+/** Individual wall geometry for 3D rendering */
+export interface WallGeometry {
+  position: [number, number, number];
+  size: [number, number, number];
+}
