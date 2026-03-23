@@ -96,14 +96,24 @@ export async function POST(request: NextRequest) {
             })
           : null;
 
+        // Merge geometry: prefer scanData (3D), fall back to sketch (2D)
+        const geometryPayload = room.scanData ?? room.sketch ?? null;
+
+        // Extract bounding box from scanData if available (for auto-computing dimensions)
+        const bbox = room.scanData?.levels?.[0]?.boundingBox;
+        const METERS_TO_INCHES = 39.3701;
+
         if (existingRoom) {
           await db.update(rooms)
             .set({
-              lengthIn: room.dimensions?.length ? room.dimensions.length * 12 : existingRoom.lengthIn,
-              widthIn: room.dimensions?.width ? room.dimensions.width * 12 : existingRoom.widthIn,
-              heightIn: room.dimensions?.height ? room.dimensions.height * 12 : existingRoom.heightIn,
+              lengthIn: room.dimensions?.length ? room.dimensions.length * 12
+                : bbox ? Math.round(bbox.length * METERS_TO_INCHES) : existingRoom.lengthIn,
+              widthIn: room.dimensions?.width ? room.dimensions.width * 12
+                : bbox ? Math.round(bbox.width * METERS_TO_INCHES) : existingRoom.widthIn,
+              heightIn: room.dimensions?.height ? room.dimensions.height * 12
+                : bbox ? Math.round(bbox.height * METERS_TO_INCHES) : existingRoom.heightIn,
               squareFeet: room.dimensions?.squareFeet,
-              geometry: room.sketch,
+              geometry: geometryPayload,
               updatedAt: new Date(),
             })
             .where(eq(rooms.id, existingRoom.id));
@@ -114,11 +124,14 @@ export async function POST(request: NextRequest) {
             levelId,
             name: room.name,
             category: room.category,
-            lengthIn: room.dimensions?.length ? room.dimensions.length * 12 : null,
-            widthIn: room.dimensions?.width ? room.dimensions.width * 12 : null,
-            heightIn: room.dimensions?.height ? room.dimensions.height * 12 : 96,
+            lengthIn: room.dimensions?.length ? room.dimensions.length * 12
+              : bbox ? Math.round(bbox.length * METERS_TO_INCHES) : null,
+            widthIn: room.dimensions?.width ? room.dimensions.width * 12
+              : bbox ? Math.round(bbox.width * METERS_TO_INCHES) : null,
+            heightIn: room.dimensions?.height ? room.dimensions.height * 12
+              : bbox ? Math.round(bbox.height * METERS_TO_INCHES) : 96,
             squareFeet: room.dimensions?.squareFeet,
-            geometry: room.sketch,
+            geometry: geometryPayload,
             order: room.order || 0,
           }).returning();
           results.rooms.push({ localId: room.localId, serverId: newRoom.id });
