@@ -1,0 +1,3 @@
+[submodule "packages/pascal-editor"]
+	path = packages/pascal-editor
+	url = https://github.com/pascalorg/editor.git

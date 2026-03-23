@@ -1,8 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import type { Room, Level } from "@/lib/db/schema";
 import { ROOM_CATEGORIES } from "@/lib/geometry/types";
+import { roomToViewerProps } from "@/components/room-viewer-3d/adapters";
+
+const RoomViewer3D = lazy(() =>
+  import("@/components/room-viewer-3d").then((mod) => ({
+    default: mod.RoomViewer3D,
+  }))
+);
 
 interface RoomsTabProps {
   estimateId: string;
@@ -14,9 +21,10 @@ interface RoomCardProps {
   room: Room;
   onEdit: (room: Room) => void;
   onDelete: (roomId: string) => void;
+  onView3D: (room: Room) => void;
 }
 
-function RoomCard({ room, onEdit, onDelete }: RoomCardProps) {
+function RoomCard({ room, onEdit, onDelete, onView3D }: RoomCardProps) {
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
       <div className="flex items-start justify-between gap-3">
@@ -67,6 +75,18 @@ function RoomCard({ room, onEdit, onDelete }: RoomCardProps) {
           )}
         </div>
         <div className="flex gap-1">
+          {room.lengthIn && room.widthIn && (
+            <button
+              onClick={() => onView3D(room)}
+              className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"
+              aria-label={`View ${room.name} in 3D`}
+              title="3D View"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            </button>
+          )}
           <button
             onClick={() => onEdit(room)}
             className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -362,6 +382,7 @@ export function RoomsTab({ estimateId, isOnline, onOpenSketchEditor }: RoomsTabP
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [viewing3DRoom, setViewing3DRoom] = useState<Room | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -561,6 +582,7 @@ export function RoomsTab({ estimateId, isOnline, onOpenSketchEditor }: RoomsTabP
               room={room}
               onEdit={(r) => setEditingRoom(r)}
               onDelete={(id) => setShowDeleteConfirm(id)}
+              onView3D={(r) => setViewing3DRoom(r)}
             />
           ))}
         </div>
@@ -576,6 +598,50 @@ export function RoomsTab({ estimateId, isOnline, onOpenSketchEditor }: RoomsTabP
         levels={levels}
         editingRoom={editingRoom}
       />
+
+      {/* 3D Room Viewer Modal */}
+      {viewing3DRoom && (() => {
+        const viewerProps = roomToViewerProps(viewing3DRoom);
+        return (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-3xl h-[70vh] flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  3D View — {viewing3DRoom.name}
+                </h3>
+                <button
+                  onClick={() => setViewing3DRoom(null)}
+                  className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  aria-label="Close 3D view"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="flex-1 min-h-0">
+                {viewerProps ? (
+                  <Suspense
+                    fallback={
+                      <div className="flex items-center justify-center h-full">
+                        <div className="w-8 h-8 border-2 border-gray-300 border-t-primary-500 rounded-full animate-spin" />
+                      </div>
+                    }
+                  >
+                    <RoomViewer3D {...viewerProps} />
+                  </Suspense>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-center p-6">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Add dimensions (length &amp; width) to this room to enable 3D view.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
