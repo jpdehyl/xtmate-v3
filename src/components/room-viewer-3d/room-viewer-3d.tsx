@@ -1,222 +1,193 @@
 'use client';
 
-import React, { Suspense, useCallback, useMemo } from 'react';
+import React, { Suspense, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import type { Room } from '@/lib/db/schema';
-import { adaptRoomDataTo3D, feetToMeters, getMaterialColor, getFloorColor, getCeilingColor } from './adapters';
+import type { ScanScene, ScanWall } from '@/lib/scan/types';
+import { dimensionsToScanScene } from '@/lib/scan/types';
+import { getMaterialColor, getFloorColor, getCeilingColor } from './adapters';
 
 interface Room3DViewerProps {
   room: Room;
   isLoading?: boolean;
   error?: string | null;
   showGrid?: boolean;
-  showHelpers?: boolean;
 }
 
-/**
- * Scene Content Component
- * Renders the 3D room geometry
- */
-function SceneContent({ room, showGrid = true, showHelpers = true }: { room: Room; showGrid?: boolean; showHelpers?: boolean }) {
-  const geometry = useMemo(() => adaptRoomDataTo3D(room), [room]);
+// ─────────────────────────────────────────────
+// Scene Components
+// ─────────────────────────────────────────────
 
-  // Convert feet to meters for Three.js
-  const widthM = feetToMeters(geometry.width);
-  const lengthM = feetToMeters(geometry.length);
-  const heightM = feetToMeters(geometry.height);
+/** Render a single wall as a box mesh */
+function WallMesh({ wall, color }: { wall: ScanWall; color: number }) {
+  const dx = wall.end.x - wall.start.x;
+  const dz = wall.end.z - wall.start.z;
+  const length = Math.sqrt(dx * dx + dz * dz);
+  const angle = Math.atan2(dx, dz); // rotation around Y axis
 
-  // Center the room at origin
-  const offsetX = -widthM / 2;
-  const offsetY = -lengthM / 2;
+  const cx = (wall.start.x + wall.end.x) / 2;
+  const cy = wall.height / 2;
+  const cz = (wall.start.z + wall.end.z) / 2;
 
-  const floorColor = getFloorColor(room.floorMaterial);
-  const wallColor = getMaterialColor(room.wallMaterial);
-  const ceilingColor = getCeilingColor(room.ceilingMaterial);
+  return (
+    <mesh position={[cx, cy, cz]} rotation={[0, angle, 0]} castShadow receiveShadow>
+      <boxGeometry args={[wall.thickness, wall.height, length]} />
+      <meshStandardMaterial color={color} roughness={0.8} metalness={0} />
+    </mesh>
+  );
+}
+
+/** Render floor slab from polygon */
+function SlabMesh({ polygon, color }: { polygon: { x: number; z: number }[]; color: number }) {
+  const shape = useMemo(() => {
+    const s = new THREE.Shape();
+    if (polygon.length < 3) return s;
+    s.moveTo(polygon[0].x, polygon[0].z);
+    for (let i = 1; i < polygon.length; i++) {
+      s.lineTo(polygon[i].x, polygon[i].z);
+    }
+    s.closePath();
+    return s;
+  }, [polygon]);
+
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+      <shapeGeometry args={[shape]} />
+      <meshStandardMaterial color={color} roughness={0.8} metalness={0.05} />
+    </mesh>
+  );
+}
+
+/** Main scene content from a ScanScene */
+function SceneContent({
+  scene,
+  room,
+  showGrid,
+}: {
+  scene: ScanScene;
+  room: Room;
+  showGrid: boolean;
+}) {
+  const level = scene.levels[0];
+  if (!level) return null;
+
+  const bbox = level.boundingBox ?? { width: 4, length: 4, height: 2.4 };
+  const maxDim = Math.max(bbox.width, bbox.length, bbox.height);
+
+  const wallColor = getMaterialColor(room.wallMaterial ?? undefined);
+  const floorColor = getFloorColor(room.floorMaterial ?? undefined);
 
   return (
     <>
-      {/* Ambient light */}
-      <ambientLight intensity={0.6} />
+      <ambientLight intensity={0.55} />
+      <directionalLight
+        position={[5, 8, 5]}
+        intensity={0.85}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+      />
+      <directionalLight position={[-4, 6, -4]} intensity={0.3} />
 
-      {/* Directional light (sun-like) */}
-      <directionalLight position={[5, 8, 5]} intensity={0.8} castShadow shadow-mapSize-width={2048} shadow-mapSize-height={2048} />
-
-      {/* Grid helper — using native Three.js via primitive */}
+      {/* Grid */}
       {showGrid && (
         <primitive
-          object={new THREE.GridHelper(Math.max(widthM, lengthM) * 1.5, 20)}
-          position={[0, 0, 0]}
+          object={new THREE.GridHelper(maxDim * 2, 20, 0x888888, 0xcccccc)}
+          position={[0, -0.01, 0]}
         />
       )}
 
-      {/* Floor (slab) — rotated to XZ plane */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[offsetX + widthM / 2, -0.05, offsetY + lengthM / 2]} receiveShadow>
-        <planeGeometry args={[widthM, lengthM]} />
-        <meshStandardMaterial color={floorColor} metalness={0.1} roughness={0.8} />
-      </mesh>
-
       {/* Walls */}
-      <RoomWalls
-        width={widthM}
-        length={lengthM}
-        height={heightM}
-        wallColor={wallColor}
-        offsetX={offsetX}
-        offsetY={offsetY}
-      />
+      {level.walls.map((wall) => (
+        <WallMesh key={wall.id} wall={wall} color={wallColor} />
+      ))}
 
-      {/* Ceiling — rotated to XZ plane, flipped to face down */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[offsetX + widthM / 2, heightM, offsetY + lengthM / 2]} receiveShadow>
-        <planeGeometry args={[widthM, lengthM]} />
-        <meshStandardMaterial color={ceilingColor} metalness={0.05} roughness={0.9} side={THREE.BackSide} />
-      </mesh>
-
-      {/* Orbit controls */}
-      <OrbitControls enableDamping dampingFactor={0.05} enableZoom enablePan autoRotate={false} />
+      {/* Floor slab */}
+      {level.slab && (
+        <SlabMesh polygon={level.slab.polygon} color={floorColor} />
+      )}
 
       {/* Camera */}
       <PerspectiveCamera
         makeDefault
-        position={[widthM * 0.7, heightM * 0.6, lengthM * 0.7]}
+        position={[bbox.width * 0.9, bbox.height * 0.8, bbox.length * 0.9]}
         fov={50}
-        near={0.1}
-        far={1000}
+        near={0.05}
+        far={500}
+      />
+      <OrbitControls
+        enableDamping
+        dampingFactor={0.06}
+        target={[0, bbox.height / 2, 0]}
+        minDistance={0.5}
+        maxDistance={maxDim * 4}
       />
     </>
   );
 }
 
-/**
- * Room Walls Component
- * Renders all 4 walls of the rectangular room
- */
-function RoomWalls({
-  width,
-  length,
-  height,
-  wallColor,
-  offsetX,
-  offsetY,
-}: {
-  width: number;
-  length: number;
-  height: number;
-  wallColor: number;
-  offsetX: number;
-  offsetY: number;
-}) {
-  return (
-    <>
-      {/* Back wall (along length, at x=0) */}
-      <mesh position={[offsetX, height / 2, offsetY + length / 2]} castShadow receiveShadow>
-        <planeGeometry args={[0.05, height]} />
-        <meshStandardMaterial color={wallColor} metalness={0} roughness={0.8} />
-      </mesh>
-      <mesh position={[offsetX, height / 2, offsetY + length / 2]} castShadow receiveShadow>
-        <boxGeometry args={[0.05, height, length]} />
-        <meshStandardMaterial color={wallColor} metalness={0} roughness={0.8} />
-      </mesh>
+// ─────────────────────────────────────────────
+// Fallbacks
+// ─────────────────────────────────────────────
 
-      {/* Front wall (along length, at x=width) */}
-      <mesh position={[offsetX + width, height / 2, offsetY + length / 2]} castShadow receiveShadow>
-        <boxGeometry args={[0.05, height, length]} />
-        <meshStandardMaterial color={wallColor} metalness={0} roughness={0.8} />
-      </mesh>
-
-      {/* Left wall (along width, at y=0) */}
-      <mesh position={[offsetX + width / 2, height / 2, offsetY]} castShadow receiveShadow>
-        <boxGeometry args={[width, height, 0.05]} />
-        <meshStandardMaterial color={wallColor} metalness={0} roughness={0.8} />
-      </mesh>
-
-      {/* Right wall (along width, at y=length) */}
-      <mesh position={[offsetX + width / 2, height / 2, offsetY + length]} castShadow receiveShadow>
-        <boxGeometry args={[width, height, 0.05]} />
-        <meshStandardMaterial color={wallColor} metalness={0} roughness={0.8} />
-      </mesh>
-    </>
-  );
-}
-
-/**
- * Error Boundary Fallback
- */
-function ErrorFallback({ error }: { error: string }) {
-  return (
-    <div className="w-full h-full flex items-center justify-center bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-      <div className="text-center px-4">
-        <p className="text-red-700 dark:text-red-400 font-medium">3D View Error</p>
-        <p className="text-sm text-red-600 dark:text-red-300 mt-1">{error}</p>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Loading Fallback
- */
 function LoadingFallback() {
   return (
-    <div className="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-lg">
+    <div className="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg">
       <div className="text-center">
-        <div className="inline-block w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mb-2" />
-        <p className="text-sm text-gray-600 dark:text-gray-400">Loading 3D view...</p>
+        <div className="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-2" />
+        <p className="text-sm text-gray-500">Loading 3D view…</p>
       </div>
     </div>
   );
 }
 
-/**
- * RoomViewer3D Component
- * 
- * Renders a 3D visualization of a room using React Three Fiber.
- * Displays floor, walls, ceiling with materials and lighting.
- * 
- * Props:
- * - room: Room data from XtMate
- * - isLoading?: Show loading state
- * - error?: Display error message
- * - showGrid?: Show floor grid (default true)
- * - showHelpers?: Show debug helpers (default true)
- */
-export function RoomViewer3D({
-  room,
-  isLoading = false,
-  error = null,
-  showGrid = true,
-  showHelpers = true,
-}: Room3DViewerProps) {
-  if (error) {
-    return <ErrorFallback error={error} />;
+function ErrorFallback({ message }: { message: string }) {
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-red-50 rounded-lg border border-red-200">
+      <p className="text-sm text-red-600 px-4 text-center">{message}</p>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Main Component
+// ─────────────────────────────────────────────
+
+export function RoomViewer3D({ room, isLoading, error, showGrid = true }: Room3DViewerProps) {
+  if (error) return <ErrorFallback message={error} />;
+  if (isLoading) return <LoadingFallback />;
+
+  // Resolve scene: prefer stored ScanScene, fall back to building from dimensions
+  let scene: ScanScene | null = null;
+
+  const geo = room.geometry as Record<string, unknown> | null;
+  if (geo && geo.version === 'xtmate-scan-v1') {
+    scene = geo as unknown as ScanScene;
+  } else if (room.widthIn && room.lengthIn) {
+    scene = dimensionsToScanScene({
+      widthIn: room.widthIn,
+      lengthIn: room.lengthIn,
+      heightIn: room.heightIn ?? 96,
+    });
   }
 
-  if (isLoading) {
-    return <LoadingFallback />;
-  }
-
-  // Validate room has required dimensions
-  if (!room.widthIn || !room.lengthIn) {
+  if (!scene) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-        <div className="text-center px-4">
-          <p className="text-amber-700 dark:text-amber-400 font-medium">Missing Dimensions</p>
-          <p className="text-sm text-amber-600 dark:text-amber-300 mt-1">Room width and length are required for 3D view</p>
-        </div>
+      <div className="w-full h-full flex items-center justify-center bg-amber-50 rounded-lg border border-amber-200">
+        <p className="text-sm text-amber-700">Add room dimensions to enable 3D view</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-900">
+    <div className="w-full h-full rounded-lg overflow-hidden border border-gray-200 bg-gray-900">
       <Suspense fallback={<LoadingFallback />}>
-        <Canvas shadows dpr={[1, 2]} gl={{ antialias: true, alpha: false }}>
-          <SceneContent room={room} showGrid={showGrid} showHelpers={showHelpers} />
+        <Canvas shadows dpr={[1, 1.5]} gl={{ antialias: true }}>
+          <SceneContent scene={scene} room={room} showGrid={showGrid} />
         </Canvas>
       </Suspense>
     </div>
   );
 }
-
-export type { Room3DViewerProps };
