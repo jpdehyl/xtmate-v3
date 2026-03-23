@@ -41,7 +41,7 @@ export function Room3DViewerModal({ isOpen, room, onClose }: Room3DViewerModalPr
 
         {/* 3D Viewer */}
         <div className="flex-1 overflow-hidden">
-          <RoomViewer3D room={room} showGrid showHelpers />
+          <RoomViewer3D room={room} showGrid />
         </div>
 
         {/* Footer with dimensions */}
