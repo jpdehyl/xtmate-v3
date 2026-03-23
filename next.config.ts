@@ -85,6 +85,16 @@ const nextConfig: NextConfig = {
       '@react-google-maps/api',
     ],
   },
+  // Exclude Pascal Editor submodule's Next.js app from this build
+  // We only consume its packages/core and packages/viewer source
+  webpack: (config, { webpack }) => {
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^@pascal-app\/(editor|ui)$/,
+      })
+    );
+    return config;
+  },
   allowedDevOrigins: [
     '*.replit.dev',
     '*.repl.co',
