@@ -7,7 +7,7 @@
     "prebuild": "npx tsx scripts/generate-command-center-status.ts",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
